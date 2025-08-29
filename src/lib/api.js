@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://linkshala-backend.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production' ? 'https://linkshala-backend.onrender.com/api' : 'http://localhost:5000/api');
 
 class ApiService {
   constructor() {
