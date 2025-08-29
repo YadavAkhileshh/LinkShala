@@ -52,3 +52,4 @@ src/constants/
 # Temporary files
 *.tmp
 *.temp
+.vercel
