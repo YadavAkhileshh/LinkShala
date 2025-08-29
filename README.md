@@ -44,7 +44,6 @@ cp .env.example .env
 **Required Environment Variables:**
 ```env
 MONGODB_URI=mongodb://localhost:27017/linkshala
-JWT_SECRET=your-super-secret-jwt-key
 ADMIN_PASSWORD=your-secure-admin-password
 PORT=5000
 NODE_ENV=development
@@ -79,7 +78,6 @@ npm run dev
 
 ### 5. Access the Application
 - **Frontend**: http://localhost:5173
-- **Admin Dashboard**: http://localhost:5173/dashboard
 - **API**: http://localhost:5000/api
 
 ## 🏗️ Architecture
@@ -109,13 +107,6 @@ npm run dev
 - `GET /api/links/:id` - Get single link (increments click count)
 - `POST /api/links/:id/share` - Increment share count
 
-### Admin API (Requires Authentication)
-- `POST /api/admin/login` - Admin authentication
-- `GET /api/admin/links` - Get all links
-- `POST /api/admin/links` - Create new link
-- `PUT /api/admin/links/:id` - Update existing link
-- `DELETE /api/admin/links/:id` - Delete link
-- `POST /api/admin/links/bulk` - Bulk create links
 
 ## 🤖 AI Features
 
@@ -158,7 +149,6 @@ Update your production environment variables:
 ```env
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/linkshala
 JWT_SECRET=your-production-secret-key
-ADMIN_PASSWORD=your-secure-admin-password
 PORT=5000
 NODE_ENV=production
 GEMINI_API_KEY=your-production-gemini-key
