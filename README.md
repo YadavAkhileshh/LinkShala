@@ -8,7 +8,7 @@ A professional SaaS application for sharing and managing curated links. Built wi
 - **🔍 Smart Search**: Advanced search and filtering capabilities
 - **🤖 AI Descriptions**: Auto-generated descriptions using Groq/Gemini APIs
 - **📊 Analytics**: Track clicks and shares
-- **🔐 Admin Dashboard**: Secure admin panel at `/dashboard`
+- **🔐 Admin Dashboard**: Secure admin panel 
 - **📱 Mobile-First**: Fully responsive across all devices
 - **⚡ Fast Performance**: Optimized with Vite + React frontend
 - **🗄️ MongoDB Integration**: Scalable database with full CRUD operations
@@ -18,7 +18,7 @@ A professional SaaS application for sharing and managing curated links. Built wi
 ### Prerequisites
 - Node.js 18+
 - MongoDB (local or cloud)
-- npm or yarn
+- npm 
 
 ### 1. Clone and Install
 ```bash
@@ -108,23 +108,6 @@ npm run dev
 - `POST /api/links/:id/share` - Increment share count
 
 
-## 🤖 AI Features
-
-LinkShala automatically generates descriptions for links using:
-- **Groq API**: Fast inference with Mixtral model
-- **Gemini API**: Google's Gemini Pro as fallback
-- **Smart Fallback**: Creative descriptions if APIs fail
-
-## 🔐 Admin Dashboard
-
-Access the admin dashboard at `/dashboard` with your configured password.
-
-**Admin Features:**
-- 📊 Analytics Dashboard
-- ➕ Link Management (CRUD operations)
-- 📤 Bulk Upload (JSON format)
-- 🔍 Advanced Search
-- 📈 Performance Tracking
 
 ## 🛠 Tech Stack
 
