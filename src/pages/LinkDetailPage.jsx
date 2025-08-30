@@ -195,7 +195,7 @@ const LinkDetailPage = () => {
             
             <div className="flex items-center space-x-2 text-vintage-brown dark:text-dark-muted mb-4">
               <Calendar size={16} />
-              <span className="font-serif">Added {new Date(link.createdAt).toLocaleDateString()}</span>
+              <span className="font-serif">Published {new Date(link.publishedDate || link.createdAt).toLocaleDateString()}</span>
             </div>
             
             {/* Description */}

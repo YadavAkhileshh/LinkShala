@@ -36,6 +36,10 @@ const linkSchema = new mongoose.Schema({
   shareCount: {
     type: Number,
     default: 0
+  },
+  publishedDate: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true

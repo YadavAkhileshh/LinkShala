@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { Bookmark } from 'lucide-react'
 import apiService from '../lib/api'
+import bookmarkService from '../lib/bookmarkService'
 
 const LinkCard = ({ link, index }) => {
   const navigate = useNavigate()
@@ -11,6 +13,11 @@ const LinkCard = ({ link, index }) => {
   })
   const [isHovered, setIsHovered] = useState(false)
   const [isSharing, setIsSharing] = useState(false)
+  const [isBookmarked, setIsBookmarked] = useState(false)
+
+  useEffect(() => {
+    setIsBookmarked(bookmarkService.isBookmarked(link._id || link.id))
+  }, [link._id, link.id])
 
   const handleCardClick = async (e) => {
     // If clicking on share button, don't navigate
@@ -77,6 +84,26 @@ const LinkCard = ({ link, index }) => {
     setTimeout(() => setIsSharing(false), 1000)
   }
 
+  const handleBookmark = (e) => {
+    e.stopPropagation()
+    
+    if (isBookmarked) {
+      bookmarkService.removeBookmark(link._id || link.id)
+      setIsBookmarked(false)
+      const event = new CustomEvent('showToast', {
+        detail: { message: 'Bookmark removed!', type: 'success' }
+      })
+      window.dispatchEvent(event)
+    } else {
+      bookmarkService.addBookmark(link)
+      setIsBookmarked(true)
+      const event = new CustomEvent('showToast', {
+        detail: { message: 'Bookmarked!', type: 'success' }
+      })
+      window.dispatchEvent(event)
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, rotateX: -15 }}
@@ -131,13 +158,26 @@ const LinkCard = ({ link, index }) => {
             </motion.h3>
             
             {/* Stats Bar */}
-            <div className="flex items-center space-x-2 text-xs text-vintage-brown/50 dark:text-dark-muted/50">
-              <motion.div 
-                className="w-2 h-2 rounded-full bg-vintage-gold"
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <span className="font-serif">{link.category ? link.category.charAt(0).toUpperCase() + link.category.slice(1) : 'Featured'}</span>
+            <div className="flex items-center justify-between text-xs text-vintage-brown/50 dark:text-dark-muted/50">
+              <div className="flex items-center space-x-2">
+                <motion.div 
+                  className="w-2 h-2 rounded-full bg-vintage-gold"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <span className="font-serif">{link.category ? link.category.charAt(0).toUpperCase() + link.category.slice(1) : 'Featured'}</span>
+              </div>
+              <div className="flex items-center space-x-1 text-vintage-brown/40 dark:text-dark-muted/40">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
+                </svg>
+                <span className="font-serif text-xs">
+                  {new Date(link.publishedDate || link.createdAt).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -218,6 +258,20 @@ const LinkCard = ({ link, index }) => {
             
             <div className="flex items-center space-x-2">
               <motion.button
+                onClick={handleBookmark}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-xs font-serif transition-all duration-300 ${
+                  isBookmarked 
+                    ? 'bg-vintage-gold text-white shadow-glow' 
+                    : 'bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent hover:bg-vintage-gold hover:text-white'
+                }`}
+              >
+                <Bookmark className={`w-3 h-3 ${isBookmarked ? 'fill-current' : ''}`} />
+                <span>{isBookmarked ? 'Saved' : 'Save'}</span>
+              </motion.button>
+              
+              <motion.button
                 onClick={handleVisitLink}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -225,6 +279,7 @@ const LinkCard = ({ link, index }) => {
               >
                 Visit
               </motion.button>
+              
               <motion.button
                 onClick={handleShare}
                 whileHover={{ scale: 1.05 }}

@@ -28,7 +28,8 @@ const EnhancedAdminDashboard = () => {
     title: '',
     url: '',
     category: 'tools',
-    tags: ''
+    tags: '',
+    publishedDate: new Date().toISOString().split('T')[0]
   })
 
   useEffect(() => {
@@ -121,7 +122,8 @@ const EnhancedAdminDashboard = () => {
       title: link.title,
       url: link.url,
       category: link.category,
-      tags: Array.isArray(link.tags) ? link.tags.join(', ') : link.tags || ''
+      tags: Array.isArray(link.tags) ? link.tags.join(', ') : link.tags || '',
+      publishedDate: link.publishedDate ? new Date(link.publishedDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
     })
     setIsEditing(true)
   }
@@ -136,7 +138,8 @@ const EnhancedAdminDashboard = () => {
       setIsLoading(true)
       const linkData = {
         ...formData,
-        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : []
+        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
+        publishedDate: formData.publishedDate ? new Date(formData.publishedDate) : new Date()
       }
       
       if (editingLink) {
@@ -208,7 +211,8 @@ const EnhancedAdminDashboard = () => {
       title: '',
       url: '',
       category: 'tools',
-      tags: ''
+      tags: '',
+      publishedDate: new Date().toISOString().split('T')[0]
     })
   }
 
@@ -546,6 +550,13 @@ const EnhancedAdminDashboard = () => {
                       <option value="learning">Learning</option>
                     </select>
                     <input
+                      type="date"
+                      value={formData.publishedDate}
+                      onChange={(e) => setFormData({...formData, publishedDate: e.target.value})}
+                      className="p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
+                      title="Published Date"
+                    />
+                    <input
                       type="text"
                       placeholder="Tags (comma separated)"
                       value={formData.tags}
@@ -607,6 +618,10 @@ const EnhancedAdminDashboard = () => {
                             <div>
                               <div className="font-serif font-medium text-vintage-black dark:text-dark-text">{link.title}</div>
                               <div className="text-sm text-vintage-brown dark:text-dark-muted truncate max-w-xs">{link.url}</div>
+                              <div className="text-xs text-vintage-brown/60 dark:text-dark-muted/60 mt-1 flex items-center space-x-1">
+                                <Calendar size={12} />
+                                <span>{new Date(link.publishedDate || link.createdAt).toLocaleDateString()}</span>
+                              </div>
                             </div>
                           </td>
                           <td className="px-6 py-4">

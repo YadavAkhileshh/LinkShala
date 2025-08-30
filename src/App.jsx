@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage'
 import EnhancedAdminDashboard from './pages/EnhancedAdminDashboard'
 import LinkDetailPage from './pages/LinkDetailPage'
 import EnhancedAboutPage from './pages/EnhancedAboutPage'
+import BookmarksPage from './pages/BookmarksPage'
 import GradientBackground from './components/GradientBackground'
 import ParticleSystem from './components/ParticleSystem'
 import ToastContainer from './components/ToastContainer'
@@ -19,6 +20,7 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<EnhancedAboutPage />} />
+        <Route path="/bookmarks" element={<BookmarksPage />} />
         <Route path="/dashboard" element={<EnhancedAdminDashboard />} />
         <Route path="/link/:id" element={<LinkDetailPage />} />
       </Routes>
