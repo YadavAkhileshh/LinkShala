@@ -9,17 +9,25 @@ const linkSchema = new mongoose.Schema({
   url: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    validate: {
+      validator: function(v) {
+        // Allow any non-empty string - we'll normalize it in the application
+        return v && v.length > 0;
+      },
+      message: 'URL is required'
+    }
   },
   description: {
     type: String,
-    required: true,
-    trim: true
+    required: false,
+    trim: true,
+    default: ''
   },
   category: {
     type: String,
     required: true,
-    enum: ['ui', 'backgrounds', 'icons', 'learning', 'tools']
+    enum: ['tools', 'ui-libraries', 'backgrounds', 'icons', 'learning']
   },
   tags: [{
     type: String,

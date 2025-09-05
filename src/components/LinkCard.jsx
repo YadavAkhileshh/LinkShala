@@ -20,8 +20,8 @@ const LinkCard = ({ link, index }) => {
   }, [link._id, link.id])
 
   const handleCardClick = async (e) => {
-    // If clicking on share button, don't navigate
-    if (e.target.closest('.share-button')) {
+    // If clicking on action buttons, don't navigate
+    if (e.target.closest('.action-button')) {
       return
     }
     
@@ -261,7 +261,7 @@ const LinkCard = ({ link, index }) => {
                 onClick={handleBookmark}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-xs font-serif transition-all duration-300 ${
+                className={`action-button flex items-center space-x-1 px-3 py-1 rounded-lg text-xs font-serif transition-all duration-300 ${
                   isBookmarked 
                     ? 'bg-vintage-gold text-white shadow-glow' 
                     : 'bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent hover:bg-vintage-gold hover:text-white'
@@ -275,7 +275,7 @@ const LinkCard = ({ link, index }) => {
                 onClick={handleVisitLink}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-vintage-gold text-white px-3 py-1 rounded-lg hover:bg-vintage-brass transition-colors text-xs font-serif"
+                className="action-button bg-vintage-gold text-white px-3 py-1 rounded-lg hover:bg-vintage-brass transition-colors text-xs font-serif"
               >
                 Visit
               </motion.button>
@@ -284,7 +284,7 @@ const LinkCard = ({ link, index }) => {
                 onClick={handleShare}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`share-button flex items-center space-x-1 px-3 py-1 rounded-lg text-xs font-serif transition-all duration-300 ${
+                className={`action-button flex items-center space-x-1 px-3 py-1 rounded-lg text-xs font-serif transition-all duration-300 ${
                   isSharing 
                     ? 'bg-vintage-green text-white shadow-glow' 
                     : 'bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent hover:bg-vintage-gold hover:text-white'

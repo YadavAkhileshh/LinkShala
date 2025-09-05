@@ -8,6 +8,8 @@ import EnhancedAdminDashboard from './pages/EnhancedAdminDashboard'
 import LinkDetailPage from './pages/LinkDetailPage'
 import EnhancedAboutPage from './pages/EnhancedAboutPage'
 import BookmarksPage from './pages/BookmarksPage'
+import Portfolio from './components/Port'
+import ErrorBoundary from './components/ErrorBoundary'
 import GradientBackground from './components/GradientBackground'
 import ParticleSystem from './components/ParticleSystem'
 import ToastContainer from './components/ToastContainer'
@@ -23,39 +25,60 @@ function AnimatedRoutes() {
         <Route path="/bookmarks" element={<BookmarksPage />} />
         <Route path="/dashboard" element={<EnhancedAdminDashboard />} />
         <Route path="/link/:id" element={<LinkDetailPage />} />
+        <Route path="/portfolio" element={<Portfolio />} />
       </Routes>
     </AnimatePresence>
   )
 }
 
 function App() {
+  const location = useLocation()
+  const isPortfolio = location.pathname === '/portfolio'
+  
+  if (isPortfolio) {
+    return (
+      <ThemeProvider>
+        <VintagePortfolio />
+      </ThemeProvider>
+    )
+  }
+  
   return (
     <ThemeProvider>
-      <Router>
-        <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg transition-colors duration-300 relative overflow-hidden">
-          {/* Particle System Background */}
-          <ParticleSystem count={30} color="rgba(218, 165, 32, 0.6)" />
-          
-          {/* Gradient Background */}
-          <GradientBackground variant="default">
-            <Header />
-            <motion.main
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="pt-20 relative z-10"
-            >
-              <AnimatedRoutes />
-            </motion.main>
-            <Footer />
-          </GradientBackground>
-          
-          {/* Toast Notifications */}
-          <ToastContainer />
-        </div>
-      </Router>
+      <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg transition-colors duration-300 relative overflow-x-hidden">
+        {/* Particle System Background */}
+        <ParticleSystem count={30} color="rgba(218, 165, 32, 0.6)" />
+        
+        {/* Gradient Background */}
+        <GradientBackground variant="default">
+          <Header />
+          <motion.main
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="pt-20 relative z-10"
+            style={{ scrollBehavior: 'smooth' }}
+          >
+            <AnimatedRoutes />
+          </motion.main>
+          <Footer />
+        </GradientBackground>
+        
+        {/* Toast Notifications */}
+        <ToastContainer />
+      </div>
     </ThemeProvider>
   )
 }
 
-export default App
+function AppWrapper() {
+  return (
+    <ErrorBoundary>
+      <Router>
+        <App />
+      </Router>
+    </ErrorBoundary>
+  )
+}
+
+export default AppWrapper

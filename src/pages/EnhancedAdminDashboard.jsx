@@ -11,6 +11,7 @@ import CategoryManager from '../components/CategoryManager'
 const EnhancedAdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [links, setLinks] = useState([])
   const [stats, setStats] = useState({})
   const [isLoading, setIsLoading] = useState(false)
@@ -27,16 +28,28 @@ const EnhancedAdminDashboard = () => {
   const [formData, setFormData] = useState({
     title: '',
     url: '',
+    description: '',
     category: 'tools',
     tags: '',
     publishedDate: new Date().toISOString().split('T')[0]
   })
 
   useEffect(() => {
-    if (apiService.isAuthenticated()) {
-      setIsAuthenticated(true)
-      loadDashboardData()
+    const checkAuth = async () => {
+      if (apiService.isAuthenticated()) {
+        try {
+          // Test the token by making a simple API call
+          await apiService.getAdminStats()
+          setIsAuthenticated(true)
+          loadDashboardData()
+        } catch (error) {
+          // Token is invalid, clear it
+          apiService.adminLogout()
+          setIsAuthenticated(false)
+        }
+      }
     }
+    checkAuth()
   }, [])
 
   useEffect(() => {
@@ -121,6 +134,7 @@ const EnhancedAdminDashboard = () => {
     setFormData({
       title: link.title,
       url: link.url,
+      description: link.description || '',
       category: link.category,
       tags: Array.isArray(link.tags) ? link.tags.join(', ') : link.tags || '',
       publishedDate: link.publishedDate ? new Date(link.publishedDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
@@ -128,9 +142,21 @@ const EnhancedAdminDashboard = () => {
     setIsEditing(true)
   }
 
+  const normalizeUrl = (url) => {
+    if (!url) return ''
+    const trimmedUrl = url.trim()
+    if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+      return trimmedUrl
+    }
+    return `https://${trimmedUrl}`
+  }
+
   const handleSave = async () => {
     if (!formData.title || !formData.url) {
-      alert('Please fill in required fields')
+      const event = new CustomEvent('showToast', {
+        detail: { message: 'Please fill in required fields', type: 'error' }
+      })
+      window.dispatchEvent(event)
       return
     }
 
@@ -138,14 +164,24 @@ const EnhancedAdminDashboard = () => {
       setIsLoading(true)
       const linkData = {
         ...formData,
+        url: normalizeUrl(formData.url),
+        description: formData.description || '',
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
         publishedDate: formData.publishedDate ? new Date(formData.publishedDate) : new Date()
       }
       
       if (editingLink) {
         await apiService.updateLink(editingLink._id, linkData)
+        const event = new CustomEvent('showToast', {
+          detail: { message: 'Link updated successfully!', type: 'success' }
+        })
+        window.dispatchEvent(event)
       } else {
         await apiService.createLink(linkData)
+        const event = new CustomEvent('showToast', {
+          detail: { message: 'Link created successfully!', type: 'success' }
+        })
+        window.dispatchEvent(event)
       }
       
       setIsEditing(false)
@@ -155,7 +191,10 @@ const EnhancedAdminDashboard = () => {
       loadDashboardData()
     } catch (error) {
       console.error('Error saving link:', error)
-      alert('Error saving link. Please try again.')
+      const event = new CustomEvent('showToast', {
+        detail: { message: error.message || 'Error saving link. Please try again.', type: 'error' }
+      })
+      window.dispatchEvent(event)
     } finally {
       setIsLoading(false)
     }
@@ -166,11 +205,18 @@ const EnhancedAdminDashboard = () => {
       try {
         setIsLoading(true)
         await apiService.deleteLink(id)
+        const event = new CustomEvent('showToast', {
+          detail: { message: 'Link deleted successfully!', type: 'success' }
+        })
+        window.dispatchEvent(event)
         loadLinks()
         loadDashboardData()
       } catch (error) {
         console.error('Error deleting link:', error)
-        alert('Error deleting link')
+        const event = new CustomEvent('showToast', {
+          detail: { message: 'Error deleting link', type: 'error' }
+        })
+        window.dispatchEvent(event)
       } finally {
         setIsLoading(false)
       }
@@ -210,6 +256,7 @@ const EnhancedAdminDashboard = () => {
     setFormData({
       title: '',
       url: '',
+      description: '',
       category: 'tools',
       tags: '',
       publishedDate: new Date().toISOString().split('T')[0]
@@ -259,16 +306,25 @@ const EnhancedAdminDashboard = () => {
               <label htmlFor="password" className="block text-sm font-serif font-medium text-vintage-brown dark:text-dark-muted mb-2">
                 Admin Password
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold focus:border-transparent bg-vintage-paper dark:bg-dark-card text-vintage-black dark:text-dark-text"
-                placeholder="Enter admin password"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 pr-12 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold focus:border-transparent bg-vintage-paper dark:bg-dark-card text-vintage-black dark:text-dark-text"
+                  placeholder="Enter admin password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-vintage-brown dark:text-dark-muted hover:text-vintage-gold dark:hover:text-dark-accent transition-colors"
+                >
+                  {showPassword ? <Eye size={20} /> : <Eye size={20} className="opacity-60" />}
+                </button>
+              </div>
             </div>
             <motion.button
               type="submit"
@@ -531,13 +587,20 @@ const EnhancedAdminDashboard = () => {
                       onChange={(e) => setFormData({...formData, title: e.target.value})}
                       className="p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
                     />
-                    <input
-                      type="url"
-                      placeholder="URL *"
-                      value={formData.url}
-                      onChange={(e) => setFormData({...formData, url: e.target.value})}
-                      className="p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
-                    />
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        placeholder="URL * (e.g., example.com or https://example.com)"
+                        value={formData.url}
+                        onChange={(e) => setFormData({...formData, url: e.target.value})}
+                        className="w-full p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
+                      />
+                      {formData.url && (
+                        <p className="text-xs text-vintage-brown dark:text-dark-muted font-serif">
+                          Will be saved as: <span className="font-medium">{normalizeUrl(formData.url)}</span>
+                        </p>
+                      )}
+                    </div>
                     <select
                       value={formData.category}
                       onChange={(e) => setFormData({...formData, category: e.target.value})}

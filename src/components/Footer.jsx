@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 const Footer = () => {
   const currentYear = new Date().getFullYear()
   const lastUpdated = new Date().toLocaleDateString('en-US', { 
@@ -15,7 +17,7 @@ const Footer = () => {
           </div>
           
           <div>
-            website by <span className="text-vintage-black dark:text-dark-text font-medium"> <a href="http://github.com/YadavAkhileshh" target="_naya">Akhilesh Yadav</a></span>
+            website by <Link to="/portfolio" className="text-vintage-black dark:text-dark-text font-medium hover:text-vintage-gold transition-colors cursor-pointer">Akhilesh Yadav</Link>
           </div>
           
           <div>

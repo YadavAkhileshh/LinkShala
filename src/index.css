@@ -5,13 +5,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
+  * {
+    scroll-behavior: smooth;
+  }
+  
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: 80px;
   }
   
   body {
     font-family: 'Inter', sans-serif;
     transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
   }
   
   .font-vintage {
@@ -74,22 +80,30 @@
   animation: shimmer 2s infinite;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar with smooth transitions */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #daa520;
   border-radius: 4px;
+  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #b8860b;
+}
+
+/* Smooth scrolling for all scrollable elements */
+.overflow-y-auto,
+.overflow-auto {
+  scroll-behavior: smooth;
 }
 
 /* Dark mode scrollbar */

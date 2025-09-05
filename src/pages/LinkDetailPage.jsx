@@ -231,11 +231,10 @@ const LinkDetailPage = () => {
               className="inline-flex items-center space-x-2 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-8 py-4 rounded-lg font-serif font-medium hover:from-vintage-brass hover:to-vintage-gold transition-all duration-300 shadow-glow"
             >
               <ExternalLink size={20} />
-              <span>Visit Website</span>
+              <span>Open in New Tab</span>
             </motion.a>
           </div>
         </motion.div>
-
 
       </div>
     </div>

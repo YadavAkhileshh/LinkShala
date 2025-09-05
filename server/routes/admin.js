@@ -67,10 +67,25 @@ router.get('/links', authenticateAdmin, async (req, res) => {
   }
 });
 
+// URL normalization helper
+const normalizeUrl = (url) => {
+  if (!url) return '';
+  const trimmedUrl = url.trim();
+  if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+    return trimmedUrl;
+  }
+  return `https://${trimmedUrl}`;
+};
+
 // Create new link
 router.post('/links', authenticateAdmin, async (req, res) => {
   try {
-    const link = new Link(req.body);
+    const linkData = {
+      ...req.body,
+      url: normalizeUrl(req.body.url),
+      description: req.body.description || ''
+    };
+    const link = new Link(linkData);
     await link.save();
     res.status(201).json(link);
   } catch (error) {
@@ -81,9 +96,14 @@ router.post('/links', authenticateAdmin, async (req, res) => {
 // Update link
 router.put('/links/:id', authenticateAdmin, async (req, res) => {
   try {
+    const updateData = {
+      ...req.body,
+      url: req.body.url ? normalizeUrl(req.body.url) : undefined
+    };
+    
     const link = await Link.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
     
@@ -121,7 +141,13 @@ router.post('/links/bulk', authenticateAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Links must be an array' });
     }
     
-    const createdLinks = await Link.insertMany(links);
+    const processedLinks = links.map(link => ({
+      ...link,
+      url: normalizeUrl(link.url),
+      description: link.description || ''
+    }));
+    
+    const createdLinks = await Link.insertMany(processedLinks);
     res.status(201).json({
       message: `${createdLinks.length} links created successfully`,
       links: createdLinks

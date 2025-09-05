@@ -77,5 +77,5 @@ This will populate your database with 10 sample links across different categorie
 ## Troubleshooting
 
 1. **MongoDB connection issues**: Ensure MongoDB is running and connection string is correct
-2. **Port conflicts**: Change PORT in `.env` if 5000 is occupied
+2. **Port conflicts**: Change PORT in `.env` if 5001 is occupied
 3. **API keys**: AI descriptions are optional - app works without them

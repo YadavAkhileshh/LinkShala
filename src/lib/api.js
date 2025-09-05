@@ -1,8 +1,13 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production' ? 'https://linkshala-backend.onrender.com/api' : 'http://localhost:5000/api');
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production' ? 'https://linkshala-backend.onrender.com/api' : 'http://localhost:5001/api');
 
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL;
+    this.token = localStorage.getItem('admin_token');
+    this.refreshToken();
+  }
+
+  refreshToken() {
     this.token = localStorage.getItem('admin_token');
   }
 
@@ -25,6 +30,10 @@ class ApiService {
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 401 && data.error === 'Invalid token.') {
+          this.adminLogout();
+          window.location.reload();
+        }
         throw new Error(data.error || 'Request failed');
       }
 
