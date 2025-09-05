@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Bookmark } from 'lucide-react'
 import apiService from '../lib/api'
 import bookmarkService from '../lib/bookmarkService'
+import { trackLinkClick } from '../lib/analytics'
 
 const LinkCard = ({ link, index }) => {
   const navigate = useNavigate()
@@ -38,6 +39,7 @@ const LinkCard = ({ link, index }) => {
         await apiService.getLink(link._id)
         setStats(prev => ({ ...prev, clickCount: prev.clickCount + 1 }))
       }
+      trackLinkClick(link.title || link.name, link.url)
     } catch (err) {
       console.log('Error updating click count:', err)
     }

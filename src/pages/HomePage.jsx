@@ -6,6 +6,7 @@ import LinkCard from '../components/LinkCard'
 import SkeletonCard from '../components/SkeletonCard'
 import CategorySelector from '../components/CategorySelector'
 import FloatingActionButton from '../components/FloatingActionBtn'
+import { trackSearch, trackCategorySelect } from '../lib/analytics'
 
 
 const HomePage = () => {
@@ -83,13 +84,18 @@ const HomePage = () => {
   }
   
   const handleSearch = (e) => {
-    setSearchTerm(e.target.value)
+    const term = e.target.value
+    setSearchTerm(term)
     setCurrentPage(1)
+    if (term.length > 2) {
+      trackSearch(term)
+    }
   }
   
   const handleCategoryChange = (category) => {
     setSelectedCategory(category)
     setCurrentPage(1)
+    trackCategorySelect(category)
   }
 
   const scrollToTop = () => {
