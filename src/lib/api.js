@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production' ? 'https://linkshala-backend.onrender.com/api' : 'http://localhost:5001/api');
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production' ? 'https://linkshala-backend.onrender.com/api' : 'http://localhost:5002/api');
 
 class ApiService {
   constructor() {
@@ -120,6 +120,31 @@ class ApiService {
 
   async getAdminStats() {
     return this.request('/admin/stats');
+  }
+
+  // Category API methods
+  async getCategories() {
+    return this.request('/admin/categories');
+  }
+
+  async createCategory(categoryData) {
+    return this.request('/admin/categories', {
+      method: 'POST',
+      body: JSON.stringify(categoryData)
+    });
+  }
+
+  async updateCategory(id, categoryData) {
+    return this.request(`/admin/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(categoryData)
+    });
+  }
+
+  async deleteCategory(id) {
+    return this.request(`/admin/categories/${id}`, {
+      method: 'DELETE'
+    });
   }
 
   isAuthenticated() {

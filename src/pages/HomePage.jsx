@@ -163,7 +163,7 @@ const HomePage = () => {
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <motion.span
-                    className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent font-bold cursor-pointer"
+                    className="bg-gradient-to-r from-vintage-gold via-vintage-brass to-vintage-gold bg-clip-text text-transparent font-bold cursor-pointer"
                     animate={{
                       backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
                     }}
@@ -179,7 +179,7 @@ const HomePage = () => {
                     web's finest resources
                   </motion.span>
                   <motion.div
-                    className="absolute -bottom-2 left-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full"
+                    className="absolute -bottom-2 left-0 h-1 bg-gradient-to-r from-vintage-gold via-vintage-brass to-vintage-gold rounded-full"
                     initial={{ width: 0, opacity: 0 }}
                     whileHover={{ width: '100%', opacity: 1 }}
                     transition={{ duration: 0.4 }}

@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import Link from '../models/Link.js';
+import Category from '../models/Category.js';
 
 
 const router = express.Router();
@@ -203,6 +204,106 @@ router.get('/stats', authenticateAdmin, async (req, res) => {
       categoryStats,
       topLinks
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Category CRUD operations
+
+// Get all categories
+router.get('/categories', authenticateAdmin, async (req, res) => {
+  try {
+    const categories = await Category.find().sort({ name: 1 });
+    
+    // Get link count for each category
+    const categoriesWithCount = await Promise.all(
+      categories.map(async (category) => {
+        const linkCount = await Link.countDocuments({ category: category.slug });
+        return {
+          ...category.toObject(),
+          linkCount
+        };
+      })
+    );
+    
+    res.json(categoriesWithCount);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create new category
+router.post('/categories', authenticateAdmin, async (req, res) => {
+  try {
+    const { name } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ error: 'Category name is required' });
+    }
+    
+    const category = new Category({ name });
+    await category.save();
+    
+    res.status(201).json(category);
+  } catch (error) {
+    if (error.code === 11000) {
+      res.status(400).json({ error: 'Category already exists' });
+    } else {
+      res.status(400).json({ error: error.message });
+    }
+  }
+});
+
+// Update category
+router.put('/categories/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { name } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ error: 'Category name is required' });
+    }
+    
+    const category = await Category.findByIdAndUpdate(
+      req.params.id,
+      { name },
+      { new: true, runValidators: true }
+    );
+    
+    if (!category) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+    
+    res.json(category);
+  } catch (error) {
+    if (error.code === 11000) {
+      res.status(400).json({ error: 'Category name already exists' });
+    } else {
+      res.status(400).json({ error: error.message });
+    }
+  }
+});
+
+// Delete category
+router.delete('/categories/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    
+    if (!category) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+    
+    // Check if category is being used by any links
+    const linkCount = await Link.countDocuments({ category: category.slug });
+    
+    if (linkCount > 0) {
+      return res.status(400).json({ 
+        error: `Cannot delete category. ${linkCount} links are using this category.` 
+      });
+    }
+    
+    await Category.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Category deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

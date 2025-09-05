@@ -101,10 +101,11 @@ const EnhancedCategorySelector = ({ selectedCategory, onCategoryChange }) => {
             {/* Selection Indicator */}
             {isSelected && (
               <motion.div
-                layoutId="categorySelector"
                 className="absolute inset-0 rounded-2xl border-2 border-vintage-gold"
-                initial={false}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
               />
             )}
           </motion.button>
