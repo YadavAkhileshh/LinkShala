@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Filter, ChevronDown, ArrowUp, Plus } from 'lucide-react'
+import { Search, ArrowUp } from 'lucide-react'
 import apiService from '../lib/api'
 import LinkCard from '../components/LinkCard'
 import SkeletonCard from '../components/SkeletonCard'
-import EnhancedCategorySelector from '../components/EnhancedCategorySelector'
-import FloatingActionButton from '../components/FloatingActionButton'
-import useScreenSize from '../hooks/use-screen-size'
+import CategorySelector from '../components/CategorySelector'
+import FloatingActionButton from '../components/FloatingActionBtn'
+
 
 const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -18,7 +18,6 @@ const HomePage = () => {
   const [hasMore, setHasMore] = useState(true)
   const [showBackToTop, setShowBackToTop] = useState(false)
   const scrollContainerRef = useRef(null)
-  const screenSize = useScreenSize()
   
   useEffect(() => {
     loadInitialData()
@@ -156,7 +155,7 @@ const HomePage = () => {
               transition={{ delay: 0.6 }}
             >
               <div className="text-2xl md:text-4xl text-vintage-coffee dark:text-dark-muted font-serif leading-relaxed mb-6">
-                <span>Empowering developers with the </span>
+                <span>Your ultimate </span>
                 <motion.span
                   className="relative inline-block"
                   whileHover={{ scale: 1.05, rotate: 2 }}
@@ -176,7 +175,7 @@ const HomePage = () => {
                       backgroundSize: '300% 300%'
                     }}
                   >
-                    web's finest resources
+                    developer toolkit
                   </motion.span>
                   <motion.div
                     className="absolute -bottom-2 left-0 h-1 bg-gradient-to-r from-vintage-gold via-vintage-brass to-vintage-gold rounded-full"
@@ -185,18 +184,68 @@ const HomePage = () => {
                     transition={{ duration: 0.4 }}
                   />
                 </motion.span>
-                <span> for creators like you</span>
+                <span> awaits</span>
               </div>
               
-              <motion.p 
-                className="text-xl text-vintage-coffee dark:text-dark-muted max-w-4xl mx-auto leading-relaxed font-serif"
+              <motion.div 
+                className="text-lg md:text-xl text-vintage-coffee dark:text-dark-muted max-w-4xl mx-auto leading-relaxed"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
               >
-                Every link is handpicked, every resource is verified, and every discovery is designed to inspire your next breakthrough. 
-                Welcome to the future of web curation.
-              </motion.p>
+                <div className="space-y-2">
+                  <motion.span 
+                    className="block font-medium"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1 }}
+                  >
+                    Curated with <span className="text-vintage-gold font-semibold">precision</span>, 
+                    trusted by <span className="text-vintage-gold font-semibold">developers</span> worldwide.
+                  </motion.span>
+                  
+                  <motion.span 
+                    className="block"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.2 }}
+                  >
+                    From <motion.span 
+                      className="font-semibold text-vintage-brass cursor-pointer"
+                      whileHover={{ scale: 1.05, color: "#DAA520" }}
+                    >
+                      React libraries
+                    </motion.span> to 
+                    <motion.span 
+                      className="font-semibold text-vintage-brass cursor-pointer"
+                      whileHover={{ scale: 1.05, color: "#DAA520" }}
+                    >
+                      AI tools
+                    </motion.span>, 
+                    <motion.span 
+                      className="font-semibold text-vintage-brass cursor-pointer"
+                      whileHover={{ scale: 1.05, color: "#DAA520" }}
+                    >
+                      design resources
+                    </motion.span> to 
+                    <motion.span 
+                      className="font-semibold text-vintage-brass cursor-pointer"
+                      whileHover={{ scale: 1.05, color: "#DAA520" }}
+                    >
+                      dev platforms
+                    </motion.span> — everything you need.
+                  </motion.span>
+                  
+                  <motion.span 
+                    className="block font-medium text-vintage-black dark:text-dark-text mt-4"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.4 }}
+                  >
+                    ⚡ Skip the hunt. Find your tools. <span className="text-vintage-gold">Build faster.</span>
+                  </motion.span>
+                </div>
+              </motion.div>
             </motion.div>
           </motion.div>
         </div>
@@ -266,7 +315,7 @@ const HomePage = () => {
             <h2 className="text-2xl font-vintage font-bold text-vintage-black dark:text-dark-text text-center mb-8">
               Browse by Category
             </h2>
-            <EnhancedCategorySelector 
+            <CategorySelector 
               selectedCategory={selectedCategory}
               onCategoryChange={handleCategoryChange}
             />

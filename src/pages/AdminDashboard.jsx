@@ -8,7 +8,7 @@ import {
 import apiService from '../lib/api'
 import CategoryManager from '../components/CategoryManager'
 
-const EnhancedAdminDashboard = () => {
+const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -19,6 +19,7 @@ const EnhancedAdminDashboard = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState('overview')
+  const [availableCategories, setAvailableCategories] = useState([])
   
   // Form states
   const [isEditing, setIsEditing] = useState(false)
@@ -29,7 +30,7 @@ const EnhancedAdminDashboard = () => {
     title: '',
     url: '',
     description: '',
-    category: 'tools',
+    category: '',
     tags: '',
     publishedDate: new Date().toISOString().split('T')[0]
   })
@@ -55,8 +56,35 @@ const EnhancedAdminDashboard = () => {
   useEffect(() => {
     if (isAuthenticated && activeTab === 'links') {
       loadLinks()
+      loadCategories()
     }
   }, [currentPage, searchTerm, isAuthenticated, activeTab])
+
+  useEffect(() => {
+    // Listen for category updates
+    const handleCategoriesUpdated = () => {
+      loadCategories()
+    }
+    
+    window.addEventListener('categoriesUpdated', handleCategoriesUpdated)
+    
+    return () => {
+      window.removeEventListener('categoriesUpdated', handleCategoriesUpdated)
+    }
+  }, [])
+
+  const loadCategories = async () => {
+    try {
+      const categories = await apiService.getCategories()
+      setAvailableCategories(categories)
+      // Set default category if none selected
+      if (!formData.category && categories.length > 0) {
+        setFormData(prev => ({ ...prev, category: categories[0].slug }))
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error)
+    }
+  }
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -257,7 +285,7 @@ const EnhancedAdminDashboard = () => {
       title: '',
       url: '',
       description: '',
-      category: 'tools',
+      category: availableCategories.length > 0 ? availableCategories[0].slug : '',
       tags: '',
       publishedDate: new Date().toISOString().split('T')[0]
     })
@@ -606,11 +634,12 @@ const EnhancedAdminDashboard = () => {
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
                       className="p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
                     >
-                      <option value="tools">Tools</option>
-                      <option value="ui-libraries">UI Libraries</option>
-                      <option value="backgrounds">Backgrounds</option>
-                      <option value="icons">Icons</option>
-                      <option value="learning">Learning</option>
+                      <option value="">Select Category</option>
+                      {availableCategories.map(category => (
+                        <option key={category._id} value={category.slug}>
+                          {category.name}
+                        </option>
+                      ))}
                     </select>
                     <input
                       type="date"
@@ -767,4 +796,4 @@ const EnhancedAdminDashboard = () => {
   )
 }
 
-export default EnhancedAdminDashboard
+export default AdminDashboard

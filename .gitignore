@@ -45,7 +45,6 @@ coverage/
 ehthumbs.db
 Thumbs.db
 
-# Constants folder (using MongoDB instead)
 constants/
 src/constants/
 
@@ -53,6 +52,5 @@ src/constants/
 *.tmp
 *.temp
 .vercel
-
 
 src/components/Port.jsx

@@ -4,9 +4,9 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import HomePage from './pages/HomePage'
-import EnhancedAdminDashboard from './pages/EnhancedAdminDashboard'
+import AdminDashboard from './pages/AdminDashboard'
 import LinkDetailPage from './pages/LinkDetailPage'
-import EnhancedAboutPage from './pages/EnhancedAboutPage'
+import AboutPage from './pages/AboutPage'
 import BookmarksPage from './pages/BookmarksPage'
 import Portfolio from './components/Port'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -21,9 +21,9 @@ function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<EnhancedAboutPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/bookmarks" element={<BookmarksPage />} />
-        <Route path="/dashboard" element={<EnhancedAdminDashboard />} />
+        <Route path="/dashboard" element={<AdminDashboard />} />
         <Route path="/link/:id" element={<LinkDetailPage />} />
         <Route path="/portfolio" element={<Portfolio />} />
       </Routes>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Menu, X, Bookmark } from 'lucide-react'
-import EnhancedThemeToggle from './EnhancedThemeToggle'
+import ThemeToggle from './ThemeToggle'
 import bookmarkService from '../lib/bookmarkService'
 
 const Header = () => {
@@ -96,12 +96,12 @@ const Header = () => {
                 </Link>
               )
             })}
-            <EnhancedThemeToggle />
+            <ThemeToggle />
           </nav>
 
           {/* Mobile Actions */}
           <div className="md:hidden flex items-center space-x-3">
-            <EnhancedThemeToggle />
+            <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-3 rounded-xl hover:bg-vintage-gold/10 dark:hover:bg-dark-accent/10 transition-colors"

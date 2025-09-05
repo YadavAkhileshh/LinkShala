@@ -48,6 +48,9 @@ const CategoryManager = () => {
       setNewCategoryName('')
       setIsEditing(false)
       loadCategories()
+      
+      // Trigger category refresh for other components
+      window.dispatchEvent(new CustomEvent('categoriesUpdated'))
     } catch (error) {
       showToast(error.message || 'Error adding category', 'error')
     } finally {
@@ -62,6 +65,9 @@ const CategoryManager = () => {
         await apiService.deleteCategory(categoryId)
         showToast(`Category "${categoryName}" deleted successfully!`, 'success')
         loadCategories()
+        
+        // Trigger category refresh for other components
+        window.dispatchEvent(new CustomEvent('categoriesUpdated'))
       } catch (error) {
         showToast(error.message || 'Error deleting category', 'error')
       } finally {
@@ -91,6 +97,9 @@ const CategoryManager = () => {
       setEditingCategory(null)
       setNewCategoryName('')
       loadCategories()
+      
+      // Trigger category refresh for other components
+      window.dispatchEvent(new CustomEvent('categoriesUpdated'))
     } catch (error) {
       showToast(error.message || 'Error updating category', 'error')
     } finally {

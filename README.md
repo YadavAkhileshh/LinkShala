@@ -45,7 +45,7 @@ cp .env.example .env
 ```env
 MONGODB_URI=mongodb://localhost:27017/linkshala
 ADMIN_PASSWORD=your-secure-admin-password
-PORT=5001
+PORT=5002
 NODE_ENV=development
 
 # Optional - for AI descriptions
@@ -78,7 +78,7 @@ npm run dev
 
 ### 5. Access the Application
 - **Frontend**: http://localhost:5173
-- **API**: http://localhost:5001/api
+- **API**: http://localhost:5002/api
 
 ## 🏗️ Architecture
 
@@ -132,7 +132,7 @@ Update your production environment variables:
 ```env
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/linkshala
 JWT_SECRET=your-production-secret-key
-PORT=5001
+PORT=5002
 NODE_ENV=production
 GEMINI_API_KEY=your-production-gemini-key
 GROQ_API_KEY=your-production-groq-key
