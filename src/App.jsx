@@ -8,7 +8,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import LinkDetailPage from './pages/LinkDetailPage'
 import AboutPage from './pages/AboutPage'
 import BookmarksPage from './pages/BookmarksPage'
-import Portfolio from './components/Port'
+import Portfolio from './components/Port.jsx'
 import ErrorBoundary from './components/ErrorBoundary'
 import GradientBackground from './components/GradientBackground'
 import ParticleSystem from './components/ParticleSystem'
@@ -38,7 +38,7 @@ function App() {
   if (isPortfolio) {
     return (
       <ThemeProvider>
-        <VintagePortfolio />
+        <Portfolio />
       </ThemeProvider>
     )
   }
