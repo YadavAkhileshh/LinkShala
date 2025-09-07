@@ -8,7 +8,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import LinkDetailPage from './pages/LinkDetailPage'
 import AboutPage from './pages/AboutPage'
 import BookmarksPage from './pages/BookmarksPage'
-import Portfolio from './components/Port'
+
 import ErrorBoundary from './components/ErrorBoundary'
 import GradientBackground from './components/GradientBackground'
 import ParticleSystem from './components/ParticleSystem'
@@ -25,7 +25,7 @@ function AnimatedRoutes() {
         <Route path="/bookmarks" element={<BookmarksPage />} />
         <Route path="/dashboard" element={<AdminDashboard />} />
         <Route path="/link/:id" element={<LinkDetailPage />} />
-        <Route path="/portfolio" element={<Portfolio />} />
+
       </Routes>
     </AnimatePresence>
   )
@@ -33,15 +33,6 @@ function AnimatedRoutes() {
 
 function App() {
   const location = useLocation()
-  const isPortfolio = location.pathname === '/portfolio'
-  
-  if (isPortfolio) {
-    return (
-      <ThemeProvider>
-        <Portfolio />
-      </ThemeProvider>
-    )
-  }
   
   return (
     <ThemeProvider>
