@@ -8,7 +8,6 @@ import AdminDashboard from './pages/AdminDashboard'
 import LinkDetailPage from './pages/LinkDetailPage'
 import AboutPage from './pages/AboutPage'
 import BookmarksPage from './pages/BookmarksPage'
-
 import ErrorBoundary from './components/ErrorBoundary'
 import GradientBackground from './components/GradientBackground'
 import ParticleSystem from './components/ParticleSystem'
@@ -23,7 +22,7 @@ function AnimatedRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/bookmarks" element={<BookmarksPage />} />
-        <Route path="/dashboard" element={<AdminDashboard />} />
+        <Route path="/magic" element={<AdminDashboard />} />
         <Route path="/link/:id" element={<LinkDetailPage />} />
 
       </Routes>

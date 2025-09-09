@@ -607,53 +607,62 @@ const AdminDashboard = () => {
                   <h3 className="text-lg font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
                     {editingLink ? 'Edit Link' : 'Add New Link'}
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input
-                      type="text"
-                      placeholder="Title *"
-                      value={formData.title}
-                      onChange={(e) => setFormData({...formData, title: e.target.value})}
-                      className="p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
-                    />
-                    <div className="space-y-2">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <input
                         type="text"
-                        placeholder="URL * (e.g., example.com or https://example.com)"
-                        value={formData.url}
-                        onChange={(e) => setFormData({...formData, url: e.target.value})}
-                        className="w-full p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
+                        placeholder="Title *"
+                        value={formData.title}
+                        onChange={(e) => setFormData({...formData, title: e.target.value})}
+                        className="p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
                       />
-                      {formData.url && (
-                        <p className="text-xs text-vintage-brown dark:text-dark-muted font-serif">
-                          Will be saved as: <span className="font-medium">{normalizeUrl(formData.url)}</span>
-                        </p>
-                      )}
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          placeholder="URL * (e.g., example.com or https://example.com)"
+                          value={formData.url}
+                          onChange={(e) => setFormData({...formData, url: e.target.value})}
+                          className="w-full p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
+                        />
+                        {formData.url && (
+                          <p className="text-xs text-vintage-brown dark:text-dark-muted font-serif">
+                            Will be saved as: <span className="font-medium">{normalizeUrl(formData.url)}</span>
+                          </p>
+                        )}
+                      </div>
+                      <select
+                        value={formData.category}
+                        onChange={(e) => setFormData({...formData, category: e.target.value})}
+                        className="p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
+                      >
+                        <option value="">Select Category</option>
+                        {availableCategories.map(category => (
+                          <option key={category._id} value={category.slug}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="date"
+                        value={formData.publishedDate}
+                        onChange={(e) => setFormData({...formData, publishedDate: e.target.value})}
+                        className="p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
+                        title="Published Date"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Tags (comma separated)"
+                        value={formData.tags}
+                        onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                        className="p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
+                      />
                     </div>
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({...formData, category: e.target.value})}
-                      className="p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
-                    >
-                      <option value="">Select Category</option>
-                      {availableCategories.map(category => (
-                        <option key={category._id} value={category.slug}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      type="date"
-                      value={formData.publishedDate}
-                      onChange={(e) => setFormData({...formData, publishedDate: e.target.value})}
-                      className="p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
-                      title="Published Date"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Tags (comma separated)"
-                      value={formData.tags}
-                      onChange={(e) => setFormData({...formData, tags: e.target.value})}
-                      className="p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
+                    <textarea
+                      placeholder="Description (optional - AI will generate if empty)"
+                      value={formData.description}
+                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                      rows="3"
+                      className="w-full p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text resize-none"
                     />
                   </div>
 

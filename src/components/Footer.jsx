@@ -17,7 +17,7 @@ const Footer = () => {
           </div>
           
           <div>
-            website by <Link to="/portfolio" className="text-vintage-black dark:text-dark-text font-medium hover:text-vintage-gold transition-colors cursor-pointer">Akhilesh Yadav</Link>
+            website by <Link to="/port" className="text-vintage-black dark:text-dark-text font-medium hover:text-vintage-gold transition-colors cursor-pointer">Akhilesh Yadav</Link>
           </div>
           
           <div>

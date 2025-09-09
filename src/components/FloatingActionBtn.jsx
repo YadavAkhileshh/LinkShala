@@ -11,7 +11,7 @@ const FloatingActionButton = () => {
     {
       icon: Upload,
       label: 'Suggest Link',
-      color: 'from-blue-500 to-cyan-500',
+      color: 'from-yellow-300 to-cyan-600',
       onClick: () => {
         window.location.href = 'mailto:your-email@example.com?subject=Link Suggestion&body=Hi,%0D%0A%0D%0AI would like to suggest a link:%0D%0A%0D%0ALink URL: %0D%0ALink Title: %0D%0ACategory: %0D%0A%0D%0AMy Email: %0D%0A%0D%0AThank you!'
         setIsOpen(false)
@@ -20,14 +20,14 @@ const FloatingActionButton = () => {
   ]
 
   return (
-    <div className="fixed bottom-8 right-8 z-50">
+    <div className="fixed bottom-8 left-8 z-50">
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className="absolute bottom-16 right-0 space-y-3"
+            className="absolute bottom-16 left-0 space-y-3"
           >
             {actions.map((action, index) => {
               const Icon = action.icon

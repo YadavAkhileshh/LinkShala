@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { Bookmark } from 'lucide-react'
+import { Bookmark, MessageCircle } from 'lucide-react'
 import apiService from '../lib/api'
 import bookmarkService from '../lib/bookmarkService'
 import { trackLinkClick } from '../lib/analytics'
@@ -104,6 +104,17 @@ const LinkCard = ({ link, index }) => {
       })
       window.dispatchEvent(event)
     }
+  }
+
+  const handleChatbot = (e) => {
+    e.stopPropagation()
+    window.chatbaseConfig = {
+      chatbotId: "YOUR_CHATBOT_ID"
+    }
+    const script = document.createElement('script')
+    script.src = "https://www.chatbase.co/embed.min.js"
+    script.defer = true
+    document.body.appendChild(script)
   }
 
   return (
@@ -263,7 +274,7 @@ const LinkCard = ({ link, index }) => {
                 onClick={handleBookmark}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`action-button flex items-center space-x-1 px-3 py-1 rounded-lg text-xs font-serif transition-all duration-300 ${
+                className={`action-button flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-serif transition-all duration-300 ${
                   isBookmarked 
                     ? 'bg-vintage-gold text-white shadow-glow' 
                     : 'bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent hover:bg-vintage-gold hover:text-white'
@@ -274,29 +285,25 @@ const LinkCard = ({ link, index }) => {
               </motion.button>
               
               <motion.button
+                onClick={handleChatbot}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="action-button flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-serif bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white transition-all duration-300"
+              >
+                <MessageCircle className="w-3 h-3" />
+                <span>AI Chat</span>
+              </motion.button>
+              
+              {/* <motion.button
                 onClick={handleVisitLink}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="action-button bg-vintage-gold text-white px-3 py-1 rounded-lg hover:bg-vintage-brass transition-colors text-xs font-serif"
               >
                 Visit
-              </motion.button>
+              </motion.button> */}
               
-              <motion.button
-                onClick={handleShare}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`action-button flex items-center space-x-1 px-3 py-1 rounded-lg text-xs font-serif transition-all duration-300 ${
-                  isSharing 
-                    ? 'bg-vintage-green text-white shadow-glow' 
-                    : 'bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent hover:bg-vintage-gold hover:text-white'
-                }`}
-              >
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
-                </svg>
-                <span>{isSharing ? 'Shared!' : 'Share'}</span>
-              </motion.button>
+
             </div>
           </div>
         </div>
