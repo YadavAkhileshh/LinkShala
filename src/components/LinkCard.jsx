@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { Bookmark, MessageCircle } from 'lucide-react'
+import { Bookmark } from 'lucide-react'
 import apiService from '../lib/api'
 import bookmarkService from '../lib/bookmarkService'
 import { trackLinkClick } from '../lib/analytics'
@@ -106,16 +106,7 @@ const LinkCard = ({ link, index }) => {
     }
   }
 
-  const handleChatbot = (e) => {
-    e.stopPropagation()
-    window.chatbaseConfig = {
-      chatbotId: "YOUR_CHATBOT_ID"
-    }
-    const script = document.createElement('script')
-    script.src = "https://www.chatbase.co/embed.min.js"
-    script.defer = true
-    document.body.appendChild(script)
-  }
+
 
   return (
     <motion.div
@@ -284,15 +275,7 @@ const LinkCard = ({ link, index }) => {
                 <span>{isBookmarked ? 'Saved' : 'Save'}</span>
               </motion.button>
               
-              <motion.button
-                onClick={handleChatbot}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="action-button flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-serif bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white transition-all duration-300"
-              >
-                <MessageCircle className="w-3 h-3" />
-                <span>AI Chat</span>
-              </motion.button>
+
               
               {/* <motion.button
                 onClick={handleVisitLink}

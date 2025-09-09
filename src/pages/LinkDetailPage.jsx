@@ -15,23 +15,24 @@ const LinkDetailPage = () => {
     loadLinkDetails()
     
     // Load Chatbase only on this page
-    if (!window.chatbase || window.chatbase("getState") !== "initialized") {
-      window.chatbase = (...args) => {
-        if (!window.chatbase.q) { window.chatbase.q = [] }
-        window.chatbase.q.push(args)
-      }
-      window.chatbase = new Proxy(window.chatbase, {
-        get(target, prop) {
-          if (prop === "q") { return target.q }
-          return (...args) => target(prop, ...args)
-        }
-      })
+    const loadChatbot = () => {
+      const script = document.createElement('script')
+      script.innerHTML = `
+        (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="u3EUI6O2hCNxZuSrAv9Ij";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
+      `
+      document.head.appendChild(script)
+    }
+    
+    loadChatbot()
+    
+    // Cleanup when component unmounts
+    return () => {
+      const chatbotElements = document.querySelectorAll('[id*="chatbase"], [class*="chatbase"], iframe[src*="chatbase"]')
+      chatbotElements.forEach(el => el.remove())
       
-      const script = document.createElement("script")
-      script.src = "https://www.chatbase.co/embed.min.js"
-      script.id = "u3EUI6O2hCNxZuSrAv9Ij"
-      script.domain = "www.chatbase.co"
-      document.body.appendChild(script)
+      if (window.chatbase) {
+        delete window.chatbase
+      }
     }
   }, [id])
 
