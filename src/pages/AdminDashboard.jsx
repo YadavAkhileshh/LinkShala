@@ -55,10 +55,25 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     if (isAuthenticated && activeTab === 'links') {
-      loadLinks()
+      // Reset to page 1 when search term changes
+      if (searchTerm && currentPage !== 1) {
+        setCurrentPage(1)
+      } else {
+        loadLinks()
+      }
       loadCategories()
     }
   }, [currentPage, searchTerm, isAuthenticated, activeTab])
+
+  // Separate effect to handle search term changes
+  useEffect(() => {
+    if (isAuthenticated && activeTab === 'links' && searchTerm) {
+      setCurrentPage(1)
+      loadLinks()
+    } else if (isAuthenticated && activeTab === 'links' && !searchTerm) {
+      loadLinks()
+    }
+  }, [searchTerm])
 
   useEffect(() => {
     // Listen for category updates
