@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Share2, ExternalLink, Calendar } from 'lucide-react'
+import { ArrowLeft, Share2, ExternalLink, Calendar, Bookmark, BookmarkCheck } from 'lucide-react'
 import apiService from '../lib/api'
+import bookmarkService from '../lib/bookmarkService'
 
 const LinkDetailPage = () => {
   const { id } = useParams()
@@ -10,6 +11,7 @@ const LinkDetailPage = () => {
   const [link, setLink] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const [isBookmarked, setIsBookmarked] = useState(false)
   const shareMenuRef = useRef(null)
 
   useEffect(() => {
@@ -59,7 +61,7 @@ const LinkDetailPage = () => {
       setLoading(true)
       const data = await apiService.getLink(id)
       setLink(data)
-
+      setIsBookmarked(bookmarkService.isBookmarked(data._id))
     } catch (error) {
       console.error('Error loading link details:', error)
     } finally {
@@ -117,7 +119,31 @@ const LinkDetailPage = () => {
     }
   }
 
-
+  const handleBookmark = () => {
+    try {
+      if (isBookmarked) {
+        bookmarkService.removeBookmark(link._id)
+        setIsBookmarked(false)
+        const event = new CustomEvent('showToast', {
+          detail: { message: 'Removed from bookmarks', type: 'success' }
+        })
+        window.dispatchEvent(event)
+      } else {
+        bookmarkService.addBookmark(link)
+        setIsBookmarked(true)
+        const event = new CustomEvent('showToast', {
+          detail: { message: 'Added to bookmarks', type: 'success' }
+        })
+        window.dispatchEvent(event)
+      }
+    } catch (error) {
+      console.error('Error handling bookmark:', error)
+      const event = new CustomEvent('showToast', {
+        detail: { message: 'Failed to update bookmark', type: 'error' }
+      })
+      window.dispatchEvent(event)
+    }
+  }
 
   if (loading) {
     return (
@@ -166,16 +192,35 @@ const LinkDetailPage = () => {
             <span className="font-serif">Back</span>
           </button>
           
-          <div className="relative" ref={shareMenuRef}>
+          <div className="flex items-center space-x-3">
+            {/* Bookmark Button */}
             <motion.button
-              onClick={() => setShowShareMenu(!showShareMenu)}
+              onClick={handleBookmark}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-6 py-3 rounded-lg hover:from-vintage-brass hover:to-vintage-gold transition-all duration-300 flex items-center space-x-2 shadow-lg"
+              className={`px-4 py-3 rounded-lg transition-all duration-300 flex items-center space-x-2 shadow-lg ${
+                isBookmarked 
+                  ? 'bg-vintage-gold text-white hover:bg-vintage-brass' 
+                  : 'bg-vintage-paper dark:bg-dark-card border border-vintage-gold/30 dark:border-dark-border text-vintage-brown dark:text-dark-muted hover:bg-vintage-gold/10 dark:hover:bg-vintage-gold/20'
+              }`}
             >
-              <Share2 size={18} />
-              <span className="font-serif font-medium">Share Link</span>
+              {isBookmarked ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
+              <span className="font-serif font-medium hidden sm:inline">
+                {isBookmarked ? 'Saved' : 'Save'}
+              </span>
             </motion.button>
+            
+            {/* Share Button */}
+            <div className="relative" ref={shareMenuRef}>
+              <motion.button
+                onClick={() => setShowShareMenu(!showShareMenu)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-6 py-3 rounded-lg hover:from-vintage-brass hover:to-vintage-gold transition-all duration-300 flex items-center space-x-2 shadow-lg"
+              >
+                <Share2 size={18} />
+                <span className="font-serif font-medium">Share Link</span>
+              </motion.button>
             
             <AnimatePresence>
               {showShareMenu && (
@@ -233,6 +278,7 @@ const LinkDetailPage = () => {
                 </motion.div>
               )}
             </AnimatePresence>
+            </div>
           </div>
         </motion.div>
 
