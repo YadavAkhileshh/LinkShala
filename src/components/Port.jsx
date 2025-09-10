@@ -74,7 +74,7 @@ const Portfolio = () => {
                 <tr>
                   <td className="font-vintage font-semibold py-1 pr-2 text-vintage-black">Website</td>
                   <td className="py-1">
-                    <a href="mailto:yadavakhil2501@gmail.com" className="text-vintage-gold underline hover:text-vintage-brass">
+                    <a href="mailto:infinityy2501@gmail.com" className="text-vintage-gold underline hover:text-vintage-brass">
                      
                     </a>
                   </td>

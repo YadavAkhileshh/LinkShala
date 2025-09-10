@@ -35,11 +35,6 @@ npm install
 
 ### 2. Environment Setup
 
-Copy `.env.example` to `.env` and update values:
-
-```bash
-cp .env.example .env
-```
 
 **Required Environment Variables:**
 ```env

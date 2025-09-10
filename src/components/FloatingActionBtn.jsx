@@ -13,7 +13,7 @@ const FloatingActionButton = () => {
       label: 'Suggest Link',
       color: 'from-yellow-300 to-cyan-600',
       onClick: () => {
-        window.location.href = 'mailto:your-email@example.com?subject=Link Suggestion&body=Hi,%0D%0A%0D%0AI would like to suggest a link:%0D%0A%0D%0ALink URL: %0D%0ALink Title: %0D%0ACategory: %0D%0A%0D%0AMy Email: %0D%0A%0D%0AThank you!'
+        window.location.href = 'mailto:infinityy2501@gmail.com?subject=Link Suggestion&body=Hi,%0D%0A%0D%0AI would like to suggest a link:%0D%0A%0D%0ALink URL: %0D%0ALink Title: %0D%0ACategory: %0D%0A%0D%0AMy Email: %0D%0A%0D%0AThank you!'
         setIsOpen(false)
       }
     }

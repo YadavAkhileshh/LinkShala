@@ -19,12 +19,7 @@ npm install
 ```
 
 3. **Environment setup**
-```bash
-# Copy environment template
-cp .env.example .env
 
-# Edit .env with your values
-```
 
 4. **Database setup**
 ```bash

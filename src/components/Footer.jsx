@@ -13,11 +13,12 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-vintage-coffee dark:text-dark-muted space-y-2 md:space-y-0">
           <div>
-            linkshala.tools – {currentYear}
+            linkshala – {currentYear}
           </div>
           
           <div>
-            website by <Link to="/port" className="text-vintage-black dark:text-dark-text font-medium hover:text-vintage-gold transition-colors cursor-pointer">Akhilesh Yadav</Link>
+            website by <a href="https://github.com/YadavAkhileshh" target="_blank" rel="noopener noreferrer" className="text-vintage-black dark:text-dark-text font-medium hover:text-vintage-gold transition-colors cursor-pointer">Akhilesh</a>
+
           </div>
           
           <div>

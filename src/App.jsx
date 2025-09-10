@@ -8,6 +8,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import LinkDetailPage from './pages/LinkDetailPage'
 import AboutPage from './pages/AboutPage'
 import BookmarksPage from './pages/BookmarksPage'
+import NotFoundPage from './pages/NotFoundPage'
 import ErrorBoundary from './components/ErrorBoundary'
 import GradientBackground from './components/GradientBackground'
 import ParticleSystem from './components/ParticleSystem'
@@ -22,8 +23,9 @@ function AnimatedRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/bookmarks" element={<BookmarksPage />} />
-        <Route path="/magic" element={<AdminDashboard />} />
+        <Route path="/admin-secure-panel-2025" element={<AdminDashboard />} />
         <Route path="/link/:id" element={<LinkDetailPage />} />
+        <Route path="*" element={<NotFoundPage />} />
 
       </Routes>
     </AnimatePresence>
