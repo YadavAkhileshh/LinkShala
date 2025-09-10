@@ -253,28 +253,54 @@ const AdminDashboard = () => {
 
   const handleBulkUpload = async () => {
     if (!bulkData.trim()) {
-      alert('Please enter link data')
+      const event = new CustomEvent('showToast', {
+        detail: { message: 'Please enter link data', type: 'error' }
+      })
+      window.dispatchEvent(event)
       return
     }
 
     try {
       setIsLoading(true)
-      const linksData = JSON.parse(bulkData)
+      let linksData
+      
+      try {
+        linksData = JSON.parse(bulkData)
+      } catch (parseError) {
+        throw new Error('Invalid JSON format. Please check your data.')
+      }
       
       if (!Array.isArray(linksData)) {
         throw new Error('Data must be an array of links')
       }
+      
+      if (linksData.length === 0) {
+        throw new Error('No links found in the data')
+      }
 
-      await apiService.bulkCreateLinks(linksData)
+      const response = await apiService.bulkCreateLinks(linksData)
       
       setShowBulkUpload(false)
       setBulkData('')
       loadLinks()
       loadDashboardData()
-      alert('Links uploaded successfully!')
+      
+      const event = new CustomEvent('showToast', {
+        detail: { 
+          message: `Successfully uploaded ${response.created || linksData.length} links!`, 
+          type: 'success' 
+        }
+      })
+      window.dispatchEvent(event)
     } catch (error) {
       console.error('Error uploading links:', error)
-      alert('Error uploading links. Please check your data format.')
+      const event = new CustomEvent('showToast', {
+        detail: { 
+          message: error.message || 'Error uploading links. Please check your data format.', 
+          type: 'error' 
+        }
+      })
+      window.dispatchEvent(event)
     } finally {
       setIsLoading(false)
     }
@@ -574,8 +600,23 @@ const AdminDashboard = () => {
                   <textarea
                     value={bulkData}
                     onChange={(e) => setBulkData(e.target.value)}
-                    placeholder='[{"title": "Example", "url": "https://example.com", "category": "tools", "tags": ["tag1", "tag2"]}]'
-                    rows="8"
+                    placeholder='[
+  {
+    "title": "React Documentation",
+    "url": "https://react.dev",
+    "description": "Official React documentation",
+    "category": "learning",
+    "tags": ["react", "documentation"]
+  },
+  {
+    "title": "Tailwind CSS",
+    "url": "https://tailwindcss.com",
+    "description": "Utility-first CSS framework",
+    "category": "ui-libraries",
+    "tags": ["css", "framework"]
+  }
+]'
+                    rows="12"
                     className="w-full p-4 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text font-mono text-sm"
                   />
                   <div className="flex space-x-3 mt-4">

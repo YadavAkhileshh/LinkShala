@@ -81,16 +81,33 @@ const normalizeUrl = (url) => {
 // Create new link
 router.post('/links', authenticateAdmin, async (req, res) => {
   try {
+    // Validate required fields
+    if (!req.body.title || !req.body.url) {
+      return res.status(400).json({ error: 'Title and URL are required' });
+    }
+    
+    // Set default category if not provided
+    const category = req.body.category || 'tools';
+    
     const linkData = {
-      ...req.body,
+      title: req.body.title.trim(),
       url: normalizeUrl(req.body.url),
-      description: req.body.description || ''
+      description: req.body.description || '',
+      category: category.trim(),
+      tags: Array.isArray(req.body.tags) ? req.body.tags : (req.body.tags ? req.body.tags.split(',').map(t => t.trim()) : []),
+      publishedDate: req.body.publishedDate ? new Date(req.body.publishedDate) : new Date(),
+      isActive: req.body.isActive !== undefined ? req.body.isActive : true
     };
+    
     const link = new Link(linkData);
     await link.save();
     res.status(201).json(link);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error('Link creation error:', error);
+    res.status(400).json({ 
+      error: 'Failed to create link',
+      details: error.message 
+    });
   }
 });
 
@@ -142,19 +159,63 @@ router.post('/links/bulk', authenticateAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Links must be an array' });
     }
     
-    const processedLinks = links.map(link => ({
-      ...link,
-      url: normalizeUrl(link.url),
-      description: link.description || ''
-    }));
+    if (links.length === 0) {
+      return res.status(400).json({ error: 'No links provided' });
+    }
     
-    const createdLinks = await Link.insertMany(processedLinks);
+    // Validate and process each link
+    const processedLinks = [];
+    const errors = [];
+    
+    for (let i = 0; i < links.length; i++) {
+      const link = links[i];
+      
+      // Validate required fields
+      if (!link.title || !link.url) {
+        errors.push(`Link ${i + 1}: Title and URL are required`);
+        continue;
+      }
+      
+      // Set default category if not provided
+      if (!link.category) {
+        link.category = 'tools'; // Default category
+      }
+      
+      processedLinks.push({
+        title: link.title.trim(),
+        url: normalizeUrl(link.url),
+        description: link.description || '',
+        category: link.category.trim(),
+        tags: Array.isArray(link.tags) ? link.tags : (link.tags ? link.tags.split(',').map(t => t.trim()) : []),
+        publishedDate: link.publishedDate ? new Date(link.publishedDate) : new Date(),
+        isActive: link.isActive !== undefined ? link.isActive : true
+      });
+    }
+    
+    if (errors.length > 0) {
+      return res.status(400).json({ 
+        error: 'Validation errors found',
+        details: errors,
+        processed: processedLinks.length,
+        total: links.length
+      });
+    }
+    
+    const createdLinks = await Link.insertMany(processedLinks, { ordered: false });
+    
     res.status(201).json({
       message: `${createdLinks.length} links created successfully`,
+      created: createdLinks.length,
+      total: links.length,
       links: createdLinks
     });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error('Bulk upload error:', error);
+    res.status(400).json({ 
+      error: 'Failed to create links',
+      details: error.message,
+      code: error.code
+    });
   }
 });
 

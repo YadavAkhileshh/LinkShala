@@ -27,7 +27,7 @@ const linkSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['tools', 'ui-libraries', 'backgrounds', 'icons', 'learning']
+    trim: true
   },
   tags: [{
     type: String,
