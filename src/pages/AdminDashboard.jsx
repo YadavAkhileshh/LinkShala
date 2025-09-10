@@ -55,23 +55,20 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     if (isAuthenticated && activeTab === 'links') {
-      // Reset to page 1 when search term changes
-      if (searchTerm && currentPage !== 1) {
-        setCurrentPage(1)
-      } else {
-        loadLinks()
-      }
+      loadLinks()
       loadCategories()
     }
-  }, [currentPage, searchTerm, isAuthenticated, activeTab])
+  }, [currentPage, isAuthenticated, activeTab])
 
-  // Separate effect to handle search term changes
+  // Handle search with debounce
   useEffect(() => {
-    if (isAuthenticated && activeTab === 'links' && searchTerm) {
-      setCurrentPage(1)
-      loadLinks()
-    } else if (isAuthenticated && activeTab === 'links' && !searchTerm) {
-      loadLinks()
+    if (isAuthenticated && activeTab === 'links') {
+      const timeoutId = setTimeout(() => {
+        setCurrentPage(1)
+        loadLinks()
+      }, 300)
+      
+      return () => clearTimeout(timeoutId)
     }
   }, [searchTerm])
 
