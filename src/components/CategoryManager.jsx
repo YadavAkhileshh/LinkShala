@@ -144,13 +144,6 @@ const CategoryManager = () => {
             
               <div className="flex items-center space-x-2">
                 <button 
-                  onClick={() => handleEditCategory(category)}
-                  disabled={isLoading}
-                  className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors disabled:opacity-50"
-                >
-                  <Edit size={16} />
-                </button>
-                <button 
                   onClick={() => handleDeleteCategory(category._id, category.name)}
                   disabled={isLoading}
                   className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50"
