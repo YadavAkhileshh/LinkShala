@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Share2, ExternalLink, Calendar } from 'lucide-react'
@@ -10,6 +10,7 @@ const LinkDetailPage = () => {
   const [link, setLink] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const shareMenuRef = useRef(null)
 
   useEffect(() => {
     loadLinkDetails()
@@ -35,6 +36,23 @@ const LinkDetailPage = () => {
       }
     }
   }, [id])
+
+  // Close share menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (shareMenuRef.current && !shareMenuRef.current.contains(event.target)) {
+        setShowShareMenu(false)
+      }
+    }
+
+    if (showShareMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showShareMenu])
 
   const loadLinkDetails = async () => {
     try {
@@ -148,7 +166,7 @@ const LinkDetailPage = () => {
             <span className="font-serif">Back</span>
           </button>
           
-          <div className="relative">
+          <div className="relative" ref={shareMenuRef}>
             <motion.button
               onClick={() => setShowShareMenu(!showShareMenu)}
               whileHover={{ scale: 1.05 }}
