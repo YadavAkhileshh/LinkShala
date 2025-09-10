@@ -23,7 +23,7 @@ function AnimatedRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/bookmarks" element={<BookmarksPage />} />
-        <Route path="/admin-secure-panel-2025" element={<AdminDashboard />} />
+        <Route path="/magic" element={<AdminDashboard />} />
         <Route path="/link/:id" element={<LinkDetailPage />} />
         <Route path="*" element={<NotFoundPage />} />
 
