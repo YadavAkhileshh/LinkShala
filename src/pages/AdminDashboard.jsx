@@ -13,6 +13,7 @@ const AdminDashboard = () => {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [links, setLinks] = useState([])
+  const [allLinks, setAllLinks] = useState([])
   const [stats, setStats] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -60,17 +61,18 @@ const AdminDashboard = () => {
     }
   }, [currentPage, isAuthenticated, activeTab])
 
-  // Handle search with debounce
+  // Instant search filter
   useEffect(() => {
-    if (isAuthenticated && activeTab === 'links') {
-      const timeoutId = setTimeout(() => {
-        setCurrentPage(1)
-        loadLinks()
-      }, 300)
-      
-      return () => clearTimeout(timeoutId)
+    if (searchTerm.trim()) {
+      const filtered = allLinks.filter(link => 
+        link.title.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      setLinks(filtered)
+      setCurrentPage(1)
+    } else {
+      setLinks(allLinks)
     }
-  }, [searchTerm])
+  }, [searchTerm, allLinks])
 
   useEffect(() => {
     // Listen for category updates
@@ -156,10 +158,10 @@ const AdminDashboard = () => {
   const loadLinks = async () => {
     try {
       setIsLoading(true)
-      const params = { page: currentPage, limit: 20 }
-      if (searchTerm) params.search = searchTerm
+      const params = { page: currentPage, limit: 100 }
       
       const data = await apiService.getAdminLinks(params)
+      setAllLinks(data.links)
       setLinks(data.links)
       setTotalPages(data.totalPages)
     } catch (error) {
