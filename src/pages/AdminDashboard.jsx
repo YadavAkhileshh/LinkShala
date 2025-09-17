@@ -21,6 +21,8 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState('overview')
   const [availableCategories, setAvailableCategories] = useState([])
+  const [selectedLinks, setSelectedLinks] = useState([])
+  const [selectAll, setSelectAll] = useState(false)
   
   // Form states
   const [isEditing, setIsEditing] = useState(false)
@@ -103,10 +105,9 @@ const AdminDashboard = () => {
   const handleLogin = async (e) => {
     e.preventDefault()
     
-    // Password validation
-    if (password.length < 8) {
+    if (!password.trim()) {
       const event = new CustomEvent('showToast', {
-        detail: { message: 'Password must be at least 8 characters', type: 'error' }
+        detail: { message: 'Please enter password', type: 'error' }
       })
       window.dispatchEvent(event)
       return
@@ -117,7 +118,9 @@ const AdminDashboard = () => {
       await apiService.adminLogin(password)
       setIsAuthenticated(true)
       setPassword('')
-      loadDashboardData()
+      
+      // Load data in background for faster UX
+      setTimeout(() => loadDashboardData(), 100)
       
       const event = new CustomEvent('showToast', {
         detail: { message: 'Welcome to admin dashboard!', type: 'success' }
@@ -125,7 +128,7 @@ const AdminDashboard = () => {
       window.dispatchEvent(event)
     } catch (error) {
       const event = new CustomEvent('showToast', {
-        detail: { message: 'Invalid password. Please try again.', type: 'error' }
+        detail: { message: error.message || 'Invalid password. Please try again.', type: 'error' }
       })
       window.dispatchEvent(event)
     } finally {
@@ -142,16 +145,22 @@ const AdminDashboard = () => {
 
   const loadDashboardData = async () => {
     try {
-      const [statsData, linksData] = await Promise.all([
-        apiService.getAdminStats(),
-        apiService.getAdminLinks({ page: 1, limit: 20 })
-      ])
-      
+      // Load stats first for immediate feedback
+      const statsData = await apiService.getAdminStats()
       setStats(statsData)
-      setLinks(linksData.links)
-      setTotalPages(linksData.totalPages)
+      
+      // Then load links if on links tab
+      if (activeTab === 'links') {
+        const linksData = await apiService.getAdminLinks({ page: 1, limit: 20 })
+        setLinks(linksData.links)
+        setTotalPages(linksData.totalPages)
+      }
     } catch (error) {
       console.error('Error loading dashboard data:', error)
+      const event = new CustomEvent('showToast', {
+        detail: { message: 'Error loading dashboard data', type: 'error' }
+      })
+      window.dispatchEvent(event)
     }
   }
 
@@ -262,6 +271,56 @@ const AdminDashboard = () => {
       } finally {
         setIsLoading(false)
       }
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedLinks.length === 0) {
+      const event = new CustomEvent('showToast', {
+        detail: { message: 'No links selected', type: 'error' }
+      })
+      window.dispatchEvent(event)
+      return
+    }
+
+    if (confirm(`Are you sure you want to delete ${selectedLinks.length} selected links?`)) {
+      try {
+        setIsLoading(true)
+        await apiService.bulkDeleteLinks(selectedLinks)
+        const event = new CustomEvent('showToast', {
+          detail: { message: `${selectedLinks.length} links deleted successfully!`, type: 'success' }
+        })
+        window.dispatchEvent(event)
+        setSelectedLinks([])
+        setSelectAll(false)
+        loadLinks()
+        loadDashboardData()
+      } catch (error) {
+        console.error('Error deleting links:', error)
+        const event = new CustomEvent('showToast', {
+          detail: { message: 'Error deleting links', type: 'error' }
+        })
+        window.dispatchEvent(event)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedLinks([])
+    } else {
+      setSelectedLinks(links.map(link => link._id))
+    }
+    setSelectAll(!selectAll)
+  }
+
+  const handleSelectLink = (linkId) => {
+    if (selectedLinks.includes(linkId)) {
+      setSelectedLinks(selectedLinks.filter(id => id !== linkId))
+    } else {
+      setSelectedLinks([...selectedLinks, linkId])
     }
   }
 
@@ -584,7 +643,7 @@ const AdminDashboard = () => {
                       onClick={() => setShowBulkUpload(!showBulkUpload)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 font-serif"
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 font-serif shadow-md"
                     >
                       <Upload size={18} />
                       <span>Bulk Upload</span>
@@ -593,7 +652,7 @@ const AdminDashboard = () => {
                       onClick={() => setIsEditing(true)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-vintage-gold text-white px-4 py-2 rounded-lg hover:bg-vintage-brass transition-colors flex items-center space-x-2 font-serif"
+                      className="bg-vintage-gold text-white px-4 py-2 rounded-lg hover:bg-vintage-brass transition-colors flex items-center space-x-2 font-serif shadow-md"
                     >
                       <Plus size={18} />
                       <span>Add Link</span>
@@ -741,17 +800,53 @@ const AdminDashboard = () => {
                 </motion.div>
               )}
 
-              {/* Search */}
+              {/* Search and Bulk Actions */}
               <div className="bg-vintage-paper dark:bg-dark-card rounded-2xl p-6 mb-8 shadow-vault border border-vintage-gold/20 dark:border-dark-border">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-vintage-brown dark:text-dark-muted" size={20} />
-                  <input
-                    type="text"
-                    placeholder="Search links..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
-                  />
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-vintage-brown dark:text-dark-muted" size={20} />
+                      <input
+                        type="text"
+                        placeholder="Search links..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
+                      />
+                    </div>
+                  </div>
+                  
+                  {selectedLinks.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="flex items-center justify-between p-4 bg-vintage-gold/10 dark:bg-dark-accent/10 rounded-lg border border-vintage-gold/20 dark:border-dark-accent/20"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <span className="text-sm font-serif text-vintage-brown dark:text-dark-muted">
+                          {selectedLinks.length} link{selectedLinks.length > 1 ? 's' : ''} selected
+                        </span>
+                        <button
+                          onClick={() => {
+                            setSelectedLinks([])
+                            setSelectAll(false)
+                          }}
+                          className="text-xs text-vintage-gold hover:text-vintage-brass transition-colors font-serif underline"
+                        >
+                          Clear selection
+                        </button>
+                      </div>
+                      <motion.button
+                        onClick={handleBulkDelete}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 font-serif text-sm"
+                      >
+                        <Trash2 size={16} />
+                        <span>Delete Selected</span>
+                      </motion.button>
+                    </motion.div>
+                  )}
                 </div>
               </div>
 
@@ -761,6 +856,14 @@ const AdminDashboard = () => {
                   <table className="w-full">
                     <thead className="bg-vintage-gold/10 dark:bg-dark-accent/10">
                       <tr>
+                        <th className="px-6 py-4 text-left text-sm font-serif font-medium text-vintage-brown dark:text-dark-muted">
+                          <input
+                            type="checkbox"
+                            checked={selectAll}
+                            onChange={handleSelectAll}
+                            className="rounded border-vintage-gold/30 text-vintage-gold focus:ring-vintage-gold"
+                          />
+                        </th>
                         <th className="px-6 py-4 text-left text-sm font-serif font-medium text-vintage-brown dark:text-dark-muted">Title</th>
                         <th className="px-6 py-4 text-left text-sm font-serif font-medium text-vintage-brown dark:text-dark-muted">Category</th>
                         <th className="px-6 py-4 text-left text-sm font-serif font-medium text-vintage-brown dark:text-dark-muted">Stats</th>
@@ -769,7 +872,17 @@ const AdminDashboard = () => {
                     </thead>
                     <tbody className="divide-y divide-vintage-gold/10 dark:divide-dark-border">
                       {links.map((link) => (
-                        <tr key={link._id} className="hover:bg-vintage-cream/50 dark:hover:bg-dark-bg/50 transition-colors">
+                        <tr key={link._id} className={`hover:bg-vintage-cream/50 dark:hover:bg-dark-bg/50 transition-colors ${
+                          selectedLinks.includes(link._id) ? 'bg-vintage-gold/10 dark:bg-dark-accent/10' : ''
+                        }`}>
+                          <td className="px-6 py-4">
+                            <input
+                              type="checkbox"
+                              checked={selectedLinks.includes(link._id)}
+                              onChange={() => handleSelectLink(link._id)}
+                              className="rounded border-vintage-gold/30 text-vintage-gold focus:ring-vintage-gold"
+                            />
+                          </td>
                           <td className="px-6 py-4">
                             <div>
                               <div className="font-serif font-medium text-vintage-black dark:text-dark-text">{link.title}</div>
@@ -793,18 +906,24 @@ const AdminDashboard = () => {
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex space-x-2">
-                              <button
+                              <motion.button
                                 onClick={() => handleEdit(link)}
-                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                                title="Edit link"
                               >
                                 <Edit size={16} />
-                              </button>
-                              <button
+                              </motion.button>
+                              <motion.button
                                 onClick={() => handleDelete(link._id)}
-                                className="text-red-600 hover:text-red-800 transition-colors"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                title="Delete link"
                               >
                                 <Trash2 size={16} />
-                              </button>
+                              </motion.button>
                             </div>
                           </td>
                         </tr>

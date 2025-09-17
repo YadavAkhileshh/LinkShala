@@ -24,17 +24,18 @@ const authenticateAdmin = (req, res, next) => {
   }
 };
 
-// Admin login
-router.post('/login', async (req, res) => {
+// Admin login - optimized for speed
+router.post('/login', (req, res) => {
   try {
     const { password } = req.body;
     
+    // Direct comparison for speed
     if (password !== process.env.ADMIN_PASSWORD) {
       return res.status(401).json({ error: 'Invalid password' });
     }
     
     const token = jwt.sign(
-      { role: 'admin' },
+      { role: 'admin', timestamp: Date.now() },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
@@ -135,6 +136,26 @@ router.put('/links/:id', authenticateAdmin, async (req, res) => {
   }
 });
 
+// Bulk delete links
+router.post('/links/delete-bulk', authenticateAdmin, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'No link IDs provided' });
+    }
+    
+    const result = await Link.deleteMany({ _id: { $in: ids } });
+    
+    res.json({ 
+      message: `${result.deletedCount} links deleted successfully`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Delete link
 router.delete('/links/:id', authenticateAdmin, async (req, res) => {
   try {
@@ -151,7 +172,7 @@ router.delete('/links/:id', authenticateAdmin, async (req, res) => {
 });
 
 // Bulk create links
-router.post('/links/bulk', authenticateAdmin, async (req, res) => {
+router.post('/links/create-bulk', authenticateAdmin, async (req, res) => {
   try {
     const { links } = req.body;
     

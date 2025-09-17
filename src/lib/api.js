@@ -27,14 +27,28 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
+      
+      // Handle empty responses
+      if (response.status === 204) {
+        return {};
+      }
+      
+      const text = await response.text();
+      let data;
+      
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (parseError) {
+        console.error('JSON Parse Error:', parseError, 'Response text:', text);
+        throw new Error('Invalid server response');
+      }
 
       if (!response.ok) {
         if (response.status === 401 && data.error === 'Invalid token.') {
           this.adminLogout();
           window.location.reload();
         }
-        throw new Error(data.error || 'Request failed');
+        throw new Error(data.error || `Request failed with status ${response.status}`);
       }
 
       return data;
@@ -111,8 +125,15 @@ class ApiService {
     });
   }
 
+  async bulkDeleteLinks(ids) {
+    return this.request('/admin/links/delete-bulk', {
+      method: 'POST',
+      body: JSON.stringify({ ids })
+    });
+  }
+
   async bulkCreateLinks(links) {
-    return this.request('/admin/links/bulk', {
+    return this.request('/admin/links/create-bulk', {
       method: 'POST',
       body: JSON.stringify({ links })
     });
