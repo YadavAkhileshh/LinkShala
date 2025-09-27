@@ -40,13 +40,17 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      if (apiService.isAuthenticated()) {
+      const token = localStorage.getItem('admin_token')
+      if (token) {
         try {
+          // Refresh token in service
+          apiService.refreshToken()
           // Test the token by making a simple API call
           await apiService.getAdminStats()
           setIsAuthenticated(true)
           loadDashboardData()
         } catch (error) {
+          console.error('Auth check failed:', error)
           // Token is invalid, clear it
           apiService.adminLogout()
           setIsAuthenticated(false)
@@ -175,6 +179,10 @@ const AdminDashboard = () => {
       setTotalPages(data.totalPages)
     } catch (error) {
       console.error('Error loading links:', error)
+      if (error.message.includes('Invalid token')) {
+        apiService.adminLogout()
+        setIsAuthenticated(false)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -678,14 +686,14 @@ const AdminDashboard = () => {
     "title": "React Documentation",
     "url": "https://react.dev",
     "description": "Official React documentation",
-    "category": "learning",
+    "category": "tools",
     "tags": ["react", "documentation"]
   },
   {
     "title": "Tailwind CSS",
     "url": "https://tailwindcss.com",
     "description": "Utility-first CSS framework",
-    "category": "ui-libraries",
+    "category": "tools",
     "tags": ["css", "framework"]
   }
 ]'

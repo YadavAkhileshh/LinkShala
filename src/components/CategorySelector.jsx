@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Palette, Code, Image, BookOpen, Wrench, Grid } from 'lucide-react'
+import { 
+  Palette, Code, Image, BookOpen, Wrench, Grid, 
+  Smartphone, Monitor, Database, Cloud, Shield, 
+  Zap, Cpu, Globe, Layers, Package, Briefcase,
+  Camera, Music, Video, Gamepad2, Heart, Star,
+  Rocket, Target, Trophy, Gift, Coffee, Lightbulb
+} from 'lucide-react'
 import apiService from '../lib/api'
 
 const CategorySelector = ({ selectedCategory, onCategoryChange }) => {
@@ -13,10 +19,46 @@ const CategorySelector = ({ selectedCategory, onCategoryChange }) => {
     'icons': Palette,
     'learning': BookOpen,
     'tools': Wrench,
-    'design': Palette,
-    'development': Code,
+    'design': Lightbulb,
+    'development': Cpu,
     'resources': Grid,
+    'frameworks': Layers,
+    'mobile': Smartphone,
+    'web': Globe,
+    'database': Database,
+    'cloud': Cloud,
+    'security': Shield,
+    'performance': Zap,
+    'productivity': Briefcase,
+    'media': Camera,
+    'music': Music,
+    'video': Video,
+    'games': Gamepad2,
+    'health': Heart,
+    'favorites': Star,
+    'startup': Rocket,
+    'marketing': Target,
+    'awards': Trophy,
+    'freebies': Gift,
+    'lifestyle': Coffee,
     'default': Grid
+  }
+
+  // Random icon pool for new categories
+  const randomIcons = [
+    Monitor, Package, Camera, Music, Video, Gamepad2, 
+    Heart, Star, Rocket, Target, Trophy, Gift, Coffee, 
+    Lightbulb, Smartphone, Database, Cloud, Shield, Zap, 
+    Cpu, Globe, Layers, Briefcase
+  ]
+
+  // Function to get random icon for unknown categories
+  const getRandomIcon = (slug) => {
+    const hash = slug.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0)
+      return a & a
+    }, 0)
+    return randomIcons[Math.abs(hash) % randomIcons.length]
   }
 
   const colorMap = {
@@ -25,10 +67,52 @@ const CategorySelector = ({ selectedCategory, onCategoryChange }) => {
     'icons': 'from-yellow-500 to-orange-500',
     'learning': 'from-red-500 to-rose-500',
     'tools': 'from-indigo-500 to-purple-500',
-    'design': 'from-pink-500 to-rose-500',
+    'design': 'from-pink-500 to-fuchsia-500',
     'development': 'from-teal-500 to-cyan-500',
     'resources': 'from-orange-500 to-amber-500',
+    'frameworks': 'from-violet-500 to-purple-500',
+    'mobile': 'from-emerald-500 to-teal-500',
+    'web': 'from-sky-500 to-blue-500',
+    'database': 'from-slate-500 to-gray-600',
+    'cloud': 'from-blue-400 to-sky-500',
+    'security': 'from-red-600 to-rose-600',
+    'performance': 'from-yellow-400 to-orange-500',
+    'productivity': 'from-green-600 to-emerald-600',
+    'media': 'from-purple-500 to-violet-500',
+    'music': 'from-pink-400 to-rose-500',
+    'video': 'from-red-400 to-pink-500',
+    'games': 'from-indigo-400 to-blue-500',
+    'health': 'from-green-400 to-emerald-500',
+    'favorites': 'from-yellow-400 to-amber-500',
+    'startup': 'from-orange-400 to-red-500',
+    'marketing': 'from-blue-400 to-indigo-500',
+    'awards': 'from-yellow-500 to-orange-600',
+    'freebies': 'from-green-400 to-teal-500',
+    'lifestyle': 'from-amber-400 to-orange-500',
     'default': 'from-gray-500 to-gray-600'
+  }
+
+  // Random color pool for new categories
+  const randomColors = [
+    'from-emerald-400 to-teal-500',
+    'from-blue-400 to-indigo-500',
+    'from-purple-400 to-violet-500',
+    'from-pink-400 to-rose-500',
+    'from-orange-400 to-red-500',
+    'from-yellow-400 to-amber-500',
+    'from-cyan-400 to-blue-500',
+    'from-lime-400 to-green-500',
+    'from-fuchsia-400 to-pink-500',
+    'from-rose-400 to-red-500'
+  ]
+
+  // Function to get random color for unknown categories
+  const getRandomColor = (slug) => {
+    const hash = slug.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0)
+      return a & a
+    }, 0)
+    return randomColors[Math.abs(hash) % randomColors.length]
   }
 
   useEffect(() => {
@@ -49,7 +133,7 @@ const CategorySelector = ({ selectedCategory, onCategoryChange }) => {
   const loadCategories = async () => {
     try {
       setIsLoading(true)
-      const data = await apiService.getCategories()
+      const data = await apiService.getPublicCategories()
       
       // Add "All Categories" option
       const allCategories = [
@@ -66,8 +150,8 @@ const CategorySelector = ({ selectedCategory, onCategoryChange }) => {
           name: cat.name,
           slug: cat.slug,
           linkCount: cat.linkCount || 0,
-          icon: iconMap[cat.slug] || iconMap.default,
-          color: colorMap[cat.slug] || colorMap.default
+          icon: iconMap[cat.slug] || getRandomIcon(cat.slug),
+          color: colorMap[cat.slug] || getRandomColor(cat.slug)
         }))
       ]
       

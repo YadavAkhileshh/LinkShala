@@ -79,6 +79,10 @@ class ApiService {
     return this.request('/links/stats/categories', { requireAuth: false });
   }
 
+  async getPublicCategories() {
+    return this.request('/links/categories', { requireAuth: false });
+  }
+
   // Admin API methods
   async adminLogin(password) {
     const data = await this.request('/admin/login', {

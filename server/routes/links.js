@@ -1,8 +1,34 @@
 import express from 'express';
 import Link from '../models/Link.js';
+import Category from '../models/Category.js';
 import aiDescriptionService from '../services/aiDescriptionService.js';
 
 const router = express.Router();
+
+// Get categories with counts (public endpoint) - MUST come before /:id route
+router.get('/categories', async (req, res) => {
+  try {
+    const categories = await Category.find().sort({ name: 1 });
+    
+    // Get link count for each category
+    const categoriesWithCount = await Promise.all(
+      categories.map(async (category) => {
+        const linkCount = await Link.countDocuments({ 
+          category: category.slug, 
+          isActive: true 
+        });
+        return {
+          ...category.toObject(),
+          linkCount
+        };
+      })
+    );
+    
+    res.json(categoriesWithCount);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get all links with filtering and search
 router.get('/', async (req, res) => {
@@ -85,7 +111,9 @@ router.post('/:id/share', async (req, res) => {
   }
 });
 
-// Get categories with counts
+
+
+// Get categories with counts (legacy endpoint)
 router.get('/stats/categories', async (req, res) => {
   try {
     const stats = await Link.aggregate([
