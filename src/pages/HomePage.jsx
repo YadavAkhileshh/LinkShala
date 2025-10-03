@@ -13,20 +13,41 @@ const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [links, setLinks] = useState([])
+  const [allLinks, setAllLinks] = useState([])
   const [recentLinks, setRecentLinks] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [showBackToTop, setShowBackToTop] = useState(false)
   const scrollContainerRef = useRef(null)
+  const searchTimeoutRef = useRef(null)
   
   useEffect(() => {
     loadInitialData()
   }, [])
 
   useEffect(() => {
-    loadLinks(true)
-  }, [searchTerm, selectedCategory])
+    if (selectedCategory !== 'all') {
+      loadLinks(true)
+    }
+  }, [selectedCategory])
+
+  // Instant search with client-side filtering
+  useEffect(() => {
+    if (searchTerm.trim()) {
+      const filtered = allLinks.filter(link => 
+        link.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        link.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        link.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+      setLinks(filtered)
+      if (searchTerm.length > 2) {
+        trackSearch(searchTerm)
+      }
+    } else {
+      setLinks(allLinks)
+    }
+  }, [searchTerm, allLinks])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,8 +60,9 @@ const HomePage = () => {
   const loadInitialData = async () => {
     try {
       setIsLoading(true)
-      const data = await apiService.getLinks({ page: 1, limit: 24 })
+      const data = await apiService.getLinks({ page: 1, limit: 100 })
       
+      setAllLinks(data.links)
       setLinks(data.links)
       setRecentLinks(data.links.slice(0, 6))
       setHasMore(data.currentPage < data.totalPages)
@@ -57,16 +79,17 @@ const HomePage = () => {
       setIsLoading(true)
       const page = reset ? 1 : currentPage + 1
       
-      const params = { page, limit: 24 }
-      if (searchTerm) params.search = searchTerm
+      const params = { page, limit: 100 }
       if (selectedCategory !== 'all') params.category = selectedCategory
       
       const data = await apiService.getLinks(params)
       
       if (reset) {
+        setAllLinks(data.links)
         setLinks(data.links)
         setCurrentPage(1)
       } else {
+        setAllLinks(prev => [...prev, ...data.links])
         setLinks(prev => [...prev, ...data.links])
         setCurrentPage(page)
       }
@@ -86,14 +109,11 @@ const HomePage = () => {
   const handleSearch = (e) => {
     const term = e.target.value
     setSearchTerm(term)
-    setCurrentPage(1)
-    if (term.length > 2) {
-      trackSearch(term)
-    }
   }
   
   const handleCategoryChange = (category) => {
     setSelectedCategory(category)
+    setSearchTerm('')
     setCurrentPage(1)
     trackCategorySelect(category)
   }
@@ -310,24 +330,27 @@ const HomePage = () => {
         </div>
       </section>
       
-      {/* Category Selection */}
-      <section className="py-12 px-6 lg:px-8 bg-vintage-paper dark:bg-dark-card border-b border-vintage-gold/20 dark:border-dark-border">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <h2 className="text-2xl font-vintage font-bold text-vintage-black dark:text-dark-text text-center mb-8">
-              Browse by Category
-            </h2>
-            <CategorySelector 
-              selectedCategory={selectedCategory}
-              onCategoryChange={handleCategoryChange}
-            />
-          </motion.div>
-        </div>
-      </section>
+      {/* Category Selection - Hidden during search */}
+      {!searchTerm && (
+        <section className="py-12 px-6 lg:px-8 bg-vintage-paper dark:bg-dark-card border-b border-vintage-gold/20 dark:border-dark-border">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <h2 className="text-2xl font-vintage font-bold text-vintage-black dark:text-dark-text text-center mb-8">
+                Browse by Category
+              </h2>
+              <CategorySelector 
+                selectedCategory={selectedCategory}
+                onCategoryChange={handleCategoryChange}
+              />
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* Main Content */}
       <section className="py-16 px-6 lg:px-8">
