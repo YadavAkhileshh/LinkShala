@@ -56,7 +56,7 @@ GEMINI_API_KEY=your-gemini-api-key
 GROQ_API_KEY=your-groq-api-key
 ```
 
-**📖 See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for detailed Supabase configuration**
+
 
 ### 3. Database Setup
 ```bash
@@ -113,7 +113,6 @@ npm run dev
 - `GET /api/links` - Get all links with filtering
 - `GET /api/links/:id` - Get single link (increments click count)
 - `POST /api/links/:id/share` - Increment share count
-
 
 
 ## 🛠 Tech Stack
