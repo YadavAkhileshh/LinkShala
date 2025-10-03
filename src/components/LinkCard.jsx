@@ -152,13 +152,16 @@ const LinkCard = ({ link, index }) => {
           {/* Title Section */}
           <div className="mb-4">
             <motion.h3 
-              className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-2 leading-tight"
+              className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-2 leading-tight flex items-center space-x-2"
               animate={{
                 color: isHovered ? '#daa520' : undefined
               }}
               transition={{ duration: 0.3 }}
             >
-              {link.title || link.name}
+              <span>{link.title || link.name}</span>
+              {link.isFeatured && (
+                <span className="text-sm">🔥</span>
+              )}
             </motion.h3>
             
             {/* Stats Bar */}

@@ -97,7 +97,9 @@ router.post('/links', authenticateAdmin, async (req, res) => {
       category: category.trim(),
       tags: Array.isArray(req.body.tags) ? req.body.tags : (req.body.tags ? req.body.tags.split(',').map(t => t.trim()) : []),
       publishedDate: req.body.publishedDate ? new Date(req.body.publishedDate) : new Date(),
-      isActive: req.body.isActive !== undefined ? req.body.isActive : true
+      isActive: req.body.isActive !== undefined ? req.body.isActive : true,
+      isFeatured: req.body.isFeatured !== undefined ? req.body.isFeatured : false,
+      isPromoted: req.body.isPromoted !== undefined ? req.body.isPromoted : false
     };
     
     const link = new Link(linkData);
@@ -209,7 +211,9 @@ router.post('/links/create-bulk', authenticateAdmin, async (req, res) => {
         category: link.category.trim(),
         tags: Array.isArray(link.tags) ? link.tags : (link.tags ? link.tags.split(',').map(t => t.trim()) : []),
         publishedDate: link.publishedDate ? new Date(link.publishedDate) : new Date(),
-        isActive: link.isActive !== undefined ? link.isActive : true
+        isActive: link.isActive !== undefined ? link.isActive : true,
+        isFeatured: link.isFeatured !== undefined ? link.isFeatured : false,
+        isPromoted: link.isPromoted !== undefined ? link.isPromoted : false
       });
     }
     

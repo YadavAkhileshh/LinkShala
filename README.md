@@ -4,6 +4,7 @@ A professional SaaS application for sharing and managing curated links. Built wi
 
 ## ✨ Features
 
+- **🔐 Authentication**: Secure user authentication with Supabase
 - **🎨 Professional UI**: Modern, responsive design with smooth animations
 - **🔍 Smart Search**: Advanced search and filtering capabilities
 - **🤖 AI Descriptions**: Auto-generated descriptions using Groq/Gemini APIs
@@ -18,6 +19,7 @@ A professional SaaS application for sharing and managing curated links. Built wi
 ### Prerequisites
 - Node.js 18+
 - MongoDB (local or cloud)
+- Supabase account (free tier works)
 - npm 
 
 ### 1. Clone and Install
@@ -35,8 +37,14 @@ npm install
 
 ### 2. Environment Setup
 
+**Frontend (.env in FinalLSSS folder):**
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_API_URL=http://localhost:5002/api
+```
 
-**Required Environment Variables:**
+**Backend (.env in server folder):**
 ```env
 MONGODB_URI=mongodb://localhost:27017/linkshala
 ADMIN_PASSWORD=your-secure-admin-password
@@ -47,6 +55,8 @@ NODE_ENV=development
 GEMINI_API_KEY=your-gemini-api-key
 GROQ_API_KEY=your-groq-api-key
 ```
+
+**📖 See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for detailed Supabase configuration**
 
 ### 3. Database Setup
 ```bash
@@ -72,13 +82,15 @@ npm run dev
 ```
 
 ### 5. Access the Application
-- **Frontend**: http://localhost:5173
+- **Landing Page**: http://localhost:5173
+- **App (after login)**: http://localhost:5173/home
 - **API**: http://localhost:5002/api
 
 ## 🏗️ Architecture
 
 ### Frontend (React + Vite)
 - Modern React 18 with hooks
+- Supabase authentication
 - TailwindCSS for styling
 - Framer Motion for animations
 - Responsive design system
@@ -107,7 +119,7 @@ npm run dev
 ## 🛠 Tech Stack
 
 ### Frontend
-- React 18, Vite, TailwindCSS, Framer Motion, Lucide React
+- React 18, Vite, Supabase, TailwindCSS, Framer Motion, Lucide React
 
 ### Backend
 - Node.js, Express.js, MongoDB, Mongoose, JWT, Axios
@@ -124,6 +136,14 @@ Fully responsive and optimized for all devices (320px+).
 ### Environment Variables
 Update your production environment variables:
 
+**Frontend:**
+```env
+VITE_SUPABASE_URL=your_production_supabase_url
+VITE_SUPABASE_ANON_KEY=your_production_supabase_key
+VITE_API_URL=https://your-api-domain.com/api
+```
+
+**Backend:**
 ```env
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/linkshala
 JWT_SECRET=your-production-secret-key

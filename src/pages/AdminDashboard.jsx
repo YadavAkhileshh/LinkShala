@@ -19,6 +19,7 @@ const AdminDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('all')
   const [activeTab, setActiveTab] = useState('overview')
   const [availableCategories, setAvailableCategories] = useState([])
   const [selectedLinks, setSelectedLinks] = useState([])
@@ -35,7 +36,9 @@ const AdminDashboard = () => {
     description: '',
     category: '',
     tags: '',
-    publishedDate: new Date().toISOString().split('T')[0]
+    publishedDate: new Date().toISOString().split('T')[0],
+    isFeatured: false,
+    isPromoted: false
   })
 
   useEffect(() => {
@@ -67,18 +70,25 @@ const AdminDashboard = () => {
     }
   }, [currentPage, isAuthenticated, activeTab])
 
-  // Instant search filter
+  // Instant search and category filter
   useEffect(() => {
+    let filtered = allLinks
+    
+    // Apply category filter
+    if (categoryFilter !== 'all') {
+      filtered = filtered.filter(link => link.category === categoryFilter)
+    }
+    
+    // Apply search filter
     if (searchTerm.trim()) {
-      const filtered = allLinks.filter(link => 
+      filtered = filtered.filter(link => 
         link.title.toLowerCase().includes(searchTerm.toLowerCase())
       )
-      setLinks(filtered)
-      setCurrentPage(1)
-    } else {
-      setLinks(allLinks)
     }
-  }, [searchTerm, allLinks])
+    
+    setLinks(filtered)
+    setCurrentPage(1)
+  }, [searchTerm, categoryFilter, allLinks])
 
   useEffect(() => {
     // Listen for category updates
@@ -196,7 +206,9 @@ const AdminDashboard = () => {
       description: link.description || '',
       category: link.category,
       tags: Array.isArray(link.tags) ? link.tags.join(', ') : link.tags || '',
-      publishedDate: link.publishedDate ? new Date(link.publishedDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+      publishedDate: link.publishedDate ? new Date(link.publishedDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      isFeatured: link.isFeatured || false,
+      isPromoted: link.isPromoted || false
     })
     setIsEditing(true)
   }
@@ -222,11 +234,14 @@ const AdminDashboard = () => {
     try {
       setIsLoading(true)
       const linkData = {
-        ...formData,
+        title: formData.title,
         url: normalizeUrl(formData.url),
         description: formData.description || '',
+        category: formData.category,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
-        publishedDate: formData.publishedDate ? new Date(formData.publishedDate) : new Date()
+        publishedDate: formData.publishedDate ? new Date(formData.publishedDate) : new Date(),
+        isFeatured: formData.isFeatured,
+        isPromoted: formData.isPromoted
       }
       
       if (editingLink) {
@@ -394,7 +409,9 @@ const AdminDashboard = () => {
       description: '',
       category: availableCategories.length > 0 ? availableCategories[0].slug : '',
       tags: '',
-      publishedDate: new Date().toISOString().split('T')[0]
+      publishedDate: new Date().toISOString().split('T')[0],
+      isFeatured: false,
+      isPromoted: false
     })
   }
 
@@ -786,6 +803,34 @@ const AdminDashboard = () => {
                       rows="3"
                       className="w-full p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text resize-none"
                     />
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3 p-4 bg-vintage-gold/5 dark:bg-dark-accent/5 rounded-lg border border-vintage-gold/20 dark:border-dark-accent/20">
+                        <input
+                          type="checkbox"
+                          id="isFeatured"
+                          checked={formData.isFeatured}
+                          onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
+                          className="w-5 h-5 rounded border-vintage-gold/30 text-vintage-gold focus:ring-vintage-gold cursor-pointer"
+                        />
+                        <label htmlFor="isFeatured" className="flex items-center space-x-2 cursor-pointer text-vintage-black dark:text-dark-text font-serif">
+                          <span className="text-2xl">🔥</span>
+                          <span className="font-medium">Mark as Featured (Fire Badge)</span>
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <input
+                          type="checkbox"
+                          id="isPromoted"
+                          checked={formData.isPromoted}
+                          onChange={(e) => setFormData({...formData, isPromoted: e.target.checked})}
+                          className="w-5 h-5 rounded border-blue-300 text-blue-600 focus:ring-blue-600 cursor-pointer"
+                        />
+                        <label htmlFor="isPromoted" className="flex items-center space-x-2 cursor-pointer text-vintage-black dark:text-dark-text font-serif">
+                          <span className="text-2xl">📢</span>
+                          <span className="font-medium">Promote in Hero Section (Only 1 link will show)</span>
+                        </label>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex space-x-3 mt-4">
@@ -821,6 +866,21 @@ const AdminDashboard = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-10 pr-4 py-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
                       />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Filter size={18} className="text-vintage-brown dark:text-dark-muted" />
+                      <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="px-4 py-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text font-serif"
+                      >
+                        <option value="all">All Categories</option>
+                        {availableCategories.map(category => (
+                          <option key={category._id} value={category.slug}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                   
@@ -893,7 +953,10 @@ const AdminDashboard = () => {
                           </td>
                           <td className="px-6 py-4">
                             <div>
-                              <div className="font-serif font-medium text-vintage-black dark:text-dark-text">{link.title}</div>
+                              <div className="font-serif font-medium text-vintage-black dark:text-dark-text flex items-center space-x-2">
+                                <span>{link.title}</span>
+                                {link.isFeatured && <span className="text-xl">🔥</span>}
+                              </div>
                               <div className="text-sm text-vintage-brown dark:text-dark-muted truncate max-w-xs">{link.url}</div>
                               <div className="text-xs text-vintage-brown/60 dark:text-dark-muted/60 mt-1 flex items-center space-x-1">
                                 <Calendar size={12} />

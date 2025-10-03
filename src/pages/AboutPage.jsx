@@ -225,7 +225,7 @@ const AboutPage = () => {
                 <Twitter size={24} />
               </motion.a>
               <motion.a
-                href="mailto:yadavakhil2501@gmail.com"
+                href="mailto:linkshala.world@gmail.com"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className="w-12 h-12 bg-vintage-paper dark:bg-dark-card border border-vintage-gold/20 dark:border-dark-border rounded-full flex items-center justify-center text-vintage-brown dark:text-dark-muted hover:text-vintage-gold dark:hover:text-dark-accent transition-colors shadow-md"
@@ -251,10 +251,17 @@ const AboutPage = () => {
             <h2 className="text-3xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
               Ready to Explore?
             </h2>
-            <p className="text-vintage-brown dark:text-dark-muted font-serif text-lg mb-8 max-w-2xl mx-auto">
+            <p className="text-vintage-brown dark:text-dark-muted font-serif text-lg mb-6 max-w-2xl mx-auto">
               Join thousands of developers who have already discovered their next favorite tool. 
               Start exploring our curated collection today.
             </p>
+            <div className="mb-8">
+              <p className="text-vintage-brown dark:text-dark-muted font-serif text-sm mb-2">Need help or have suggestions?</p>
+              <a href="mailto:linkshala.world@gmail.com" className="text-vintage-gold hover:text-vintage-brass transition-colors font-serif font-medium flex items-center justify-center space-x-2">
+                <Mail size={18} />
+                <span>linkshala.world@gmail.com</span>
+              </a>
+            </div>
             <motion.a
               href="/"
               whileHover={{ scale: 1.05 }}

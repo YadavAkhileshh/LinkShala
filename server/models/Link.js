@@ -37,6 +37,14 @@ const linkSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  isFeatured: {
+    type: Boolean,
+    default: false
+  },
+  isPromoted: {
+    type: Boolean,
+    default: false
+  },
   clickCount: {
     type: Number,
     default: 0

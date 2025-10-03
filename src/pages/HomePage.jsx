@@ -12,6 +12,7 @@ import { trackSearch, trackCategorySelect } from '../lib/analytics'
 const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [filterType, setFilterType] = useState('all')
   const [links, setLinks] = useState([])
   const [allLinks, setAllLinks] = useState([])
   const [recentLinks, setRecentLinks] = useState([])
@@ -34,20 +35,27 @@ const HomePage = () => {
 
   // Instant search with client-side filtering
   useEffect(() => {
+    let filtered = allLinks
+    
+    // Apply filter type
+    if (filterType === 'featured') {
+      filtered = filtered.filter(link => link.isFeatured)
+    }
+    
+    // Apply search term
     if (searchTerm.trim()) {
-      const filtered = allLinks.filter(link => 
+      filtered = filtered.filter(link => 
         link.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         link.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         link.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
       )
-      setLinks(filtered)
       if (searchTerm.length > 2) {
         trackSearch(searchTerm)
       }
-    } else {
-      setLinks(allLinks)
     }
-  }, [searchTerm, allLinks])
+    
+    setLinks(filtered)
+  }, [searchTerm, allLinks, filterType])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -60,11 +68,12 @@ const HomePage = () => {
   const loadInitialData = async () => {
     try {
       setIsLoading(true)
-      const data = await apiService.getLinks({ page: 1, limit: 100 })
+      const data = await apiService.getLinks({ page: 1, limit: 16 })
       
       setAllLinks(data.links)
       setLinks(data.links)
       setRecentLinks(data.links.slice(0, 6))
+      
       setHasMore(data.currentPage < data.totalPages)
       setCurrentPage(1)
     } catch (error) {
@@ -79,7 +88,7 @@ const HomePage = () => {
       setIsLoading(true)
       const page = reset ? 1 : currentPage + 1
       
-      const params = { page, limit: 100 }
+      const params = { page, limit: 15 }
       if (selectedCategory !== 'all') params.category = selectedCategory
       
       const data = await apiService.getLinks(params)
@@ -308,30 +317,63 @@ const HomePage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="relative max-w-2xl mx-auto"
+            className="space-y-4"
           >
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-vintage-gold/20 to-vintage-brass/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative bg-vintage-paper/90 dark:bg-dark-card/90 backdrop-blur-sm rounded-2xl p-2 border border-vintage-gold/30 dark:border-dark-border shadow-vault">
-                <div className="relative">
-                  <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-vintage-gold group-hover:text-vintage-brass transition-colors" size={22} />
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                    placeholder="Discover amazing links..."
-                    className="w-full pl-16 pr-6 py-4 bg-transparent text-vintage-black dark:text-dark-text placeholder-vintage-brown/60 dark:placeholder-dark-muted/60 text-lg font-serif focus:outline-none"
-                  />
-                  <div className="absolute inset-x-2 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-vintage-gold to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300"></div>
+            {/* Search Bar */}
+            <div className="relative max-w-2xl mx-auto">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-vintage-gold/20 to-vintage-brass/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                <div className="relative bg-vintage-paper/90 dark:bg-dark-card/90 backdrop-blur-sm rounded-2xl p-2 border border-vintage-gold/30 dark:border-dark-border shadow-vault">
+                  <div className="relative">
+                    <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-vintage-gold group-hover:text-vintage-brass transition-colors" size={22} />
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={handleSearch}
+                      placeholder="Discover amazing links..."
+                      className="w-full pl-16 pr-6 py-4 bg-transparent text-vintage-black dark:text-dark-text placeholder-vintage-brown/60 dark:placeholder-dark-muted/60 text-lg font-serif focus:outline-none"
+                    />
+                    <div className="absolute inset-x-2 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-vintage-gold to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300"></div>
+                  </div>
                 </div>
               </div>
+            </div>
+            
+            {/* Fire Filter Button */}
+            <div className="flex justify-center">
+              <motion.button
+                onClick={() => setFilterType(filterType === 'all' ? 'featured' : 'all')}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-serif font-medium transition-all duration-300 shadow-md ${
+                  filterType === 'featured'
+                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg'
+                    : 'bg-vintage-paper/90 dark:bg-dark-card/90 border border-vintage-gold/30 dark:border-dark-border text-vintage-black dark:text-dark-text hover:bg-vintage-gold/10 dark:hover:bg-dark-accent/10'
+                }`}
+              >
+                <motion.span 
+                  className="text-2xl"
+                  animate={filterType === 'featured' ? { 
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 10, -10, 0]
+                  } : {}}
+                  transition={{ 
+                    duration: 0.5,
+                    repeat: filterType === 'featured' ? Infinity : 0,
+                    repeatDelay: 0.5
+                  }}
+                >
+                  🔥
+                </motion.span>
+                <span>{filterType === 'featured' ? 'Showing Featured' : 'Show Featured Only'}</span>
+              </motion.button>
             </div>
           </motion.div>
         </div>
       </section>
       
-      {/* Category Selection - Hidden during search */}
-      {!searchTerm && (
+      {/* Category Selection - Hidden during search or featured filter */}
+      {!searchTerm && filterType === 'all' && (
         <section className="py-12 px-6 lg:px-8 bg-vintage-paper dark:bg-dark-card border-b border-vintage-gold/20 dark:border-dark-border">
           <div className="max-w-7xl mx-auto">
             <motion.div
@@ -361,8 +403,9 @@ const HomePage = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="mb-12"
           >
-            <h2 className="text-3xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
-              {searchTerm ? `Search Results for "${searchTerm}"` : 'All Links'}
+            <h2 className="text-3xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4 flex items-center space-x-2">
+              <span>{searchTerm ? `Search Results for "${searchTerm}"` : filterType === 'featured' ? 'Featured Links' : 'All Links'}</span>
+              {filterType === 'featured' && <span className="text-3xl">🔥</span>}
             </h2>
             <p className="text-vintage-coffee dark:text-dark-muted font-serif">
               {links.length} link{links.length !== 1 ? 's' : ''} found
@@ -373,7 +416,7 @@ const HomePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {/* Show skeleton cards only when initially loading */}
             {isLoading && links.length === 0 && (
-              Array.from({ length: 12 }).map((_, index) => (
+              Array.from({ length: 15 }).map((_, index) => (
                 <SkeletonCard key={`skeleton-${index}`} />
               ))
             )}
@@ -389,7 +432,7 @@ const HomePage = () => {
             
             {/* Show additional skeleton cards for pagination */}
             {isLoading && links.length > 0 && (
-              Array.from({ length: 4 }).map((_, index) => (
+              Array.from({ length: 15 }).map((_, index) => (
                 <SkeletonCard key={`skeleton-more-${index}`} />
               ))
             )}

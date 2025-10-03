@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Menu, X, Bookmark } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
 import bookmarkService from '../lib/bookmarkService'
+import ProfileDropdown from './ProfileDropdown'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -34,7 +35,7 @@ const Header = () => {
   }, [])
 
   const navItems = [
-    { name: 'Home', path: '/' },
+    { name: 'Home', path: '/home' },
     { name: 'About', path: '/about' },
     { 
       name: 'Bookmarks', 
@@ -53,7 +54,7 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center group">
+          <Link to="/home" className="flex items-center group">
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -97,6 +98,7 @@ const Header = () => {
               )
             })}
             <ThemeToggle />
+            <ProfileDropdown />
           </nav>
 
           {/* Mobile Actions */}
@@ -144,6 +146,9 @@ const Header = () => {
                 </Link>
               )
             })}
+            <div className="pt-4 border-t border-vintage-gold/20 dark:border-dark-border">
+              <ProfileDropdown />
+            </div>
           </motion.div>
         )}
       </div>
