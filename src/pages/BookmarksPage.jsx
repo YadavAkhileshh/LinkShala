@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Bookmark, Search, Trash2, ExternalLink, Calendar, Heart } from 'lucide-react'
+import { Bookmark, Search, Trash2, ExternalLink, Calendar, Heart, Download, Upload, Filter } from 'lucide-react'
 import bookmarkService from '../lib/bookmarkService'
 import LinkCard from '../components/LinkCard'
 
@@ -8,31 +8,44 @@ const BookmarksPage = () => {
   const [bookmarks, setBookmarks] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [filteredBookmarks, setFilteredBookmarks] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     loadBookmarks()
+    
+    // Listen for bookmark changes
+    const handleBookmarkChange = () => loadBookmarks()
+    window.addEventListener('bookmarkChanged', handleBookmarkChange)
+    
+    return () => window.removeEventListener('bookmarkChanged', handleBookmarkChange)
   }, [])
 
   useEffect(() => {
+    let filtered = bookmarks
+    
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(b => b.category === selectedCategory)
+    }
+    
     if (searchTerm) {
-      const filtered = bookmarks.filter(bookmark =>
+      filtered = filtered.filter(bookmark =>
         bookmark.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         bookmark.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         bookmark.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
       )
-      setFilteredBookmarks(filtered)
-    } else {
-      setFilteredBookmarks(bookmarks)
     }
-  }, [searchTerm, bookmarks])
+    
+    setFilteredBookmarks(filtered)
+  }, [searchTerm, bookmarks, selectedCategory])
 
-  const loadBookmarks = () => {
-    const savedBookmarks = bookmarkService.getBookmarks()
+  const loadBookmarks = async () => {
+    const savedBookmarks = await bookmarkService.getBookmarks()
     setBookmarks(savedBookmarks)
   }
 
-  const handleRemoveBookmark = (linkId) => {
-    bookmarkService.removeBookmark(linkId)
+  const handleRemoveBookmark = async (linkId) => {
+    await bookmarkService.removeBookmark(linkId)
     loadBookmarks()
     
     // Show toast notification
@@ -42,9 +55,9 @@ const BookmarksPage = () => {
     window.dispatchEvent(event)
   }
 
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
     if (confirm('Are you sure you want to clear all bookmarks?')) {
-      bookmarkService.clearBookmarks()
+      await bookmarkService.clearBookmarks()
       loadBookmarks()
       
       const event = new CustomEvent('showToast', {
@@ -53,6 +66,36 @@ const BookmarksPage = () => {
       window.dispatchEvent(event)
     }
   }
+
+  const handleExport = async () => {
+    await bookmarkService.exportBookmarks()
+    const event = new CustomEvent('showToast', {
+      detail: { message: 'Bookmarks exported!', type: 'success' }
+    })
+    window.dispatchEvent(event)
+  }
+
+  const handleImport = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    const result = await bookmarkService.importBookmarks(file)
+    if (result.success) {
+      loadBookmarks()
+      const event = new CustomEvent('showToast', {
+        detail: { message: `Imported ${result.imported} of ${result.total} bookmarks!`, type: 'success' }
+      })
+      window.dispatchEvent(event)
+    } else {
+      const event = new CustomEvent('showToast', {
+        detail: { message: `Import failed: ${result.error}`, type: 'error' }
+      })
+      window.dispatchEvent(event)
+    }
+    e.target.value = ''
+  }
+
+  const categories = ['all', ...new Set(bookmarks.map(b => b.category).filter(Boolean))]
 
   return (
     <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg py-8">
@@ -77,27 +120,50 @@ const BookmarksPage = () => {
           
           <div className="flex items-center justify-center space-x-4 mt-6">
             <div className="flex items-center space-x-2 text-vintage-brown dark:text-dark-muted">
-              <Heart className="w-5 h-5 text-vintage-gold" />
-              <span className="font-serif">{bookmarks.length} saved</span>
+              <Heart className="w-5 h-5 text-vintage-gold fill-vintage-gold" />
+              <span className="font-serif font-medium">{bookmarks.length} bookmark{bookmarks.length !== 1 ? 's' : ''}</span>
             </div>
             {bookmarks.length > 0 && (
-              <button
-                onClick={handleClearAll}
-                className="flex items-center space-x-2 text-vintage-red hover:text-red-600 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span className="font-serif text-sm">Clear All</span>
-              </button>
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={handleExport}
+                  className="flex items-center space-x-2 text-vintage-gold hover:text-vintage-brass transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span className="font-serif text-sm">Export</span>
+                </button>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span className="font-serif text-sm">Import</span>
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json"
+                  onChange={handleImport}
+                  className="hidden"
+                />
+                <button
+                  onClick={handleClearAll}
+                  className="flex items-center space-x-2 text-vintage-red hover:text-red-600 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span className="font-serif text-sm">Clear All</span>
+                </button>
+              </div>
             )}
           </div>
         </motion.div>
 
-        {/* Search */}
+        {/* Search and Filter */}
         {bookmarks.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-2xl mx-auto mb-12"
+            className="max-w-4xl mx-auto mb-12 space-y-4"
           >
             <div className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-vintage-brown dark:text-dark-muted" size={20} />
@@ -109,6 +175,26 @@ const BookmarksPage = () => {
                 className="w-full pl-12 pr-4 py-4 bg-vintage-paper dark:bg-dark-card border border-vintage-gold/30 dark:border-dark-border rounded-2xl focus:ring-2 focus:ring-vintage-gold focus:border-transparent text-vintage-black dark:text-dark-text placeholder-vintage-brown/60 dark:placeholder-dark-muted/60 font-serif shadow-vault"
               />
             </div>
+            
+            {/* Category Filter */}
+            {categories.length > 1 && (
+              <div className="flex items-center space-x-2 overflow-x-auto pb-2">
+                <Filter className="w-4 h-4 text-vintage-brown dark:text-dark-muted flex-shrink-0" />
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-4 py-2 rounded-lg font-serif text-sm whitespace-nowrap transition-colors ${
+                      selectedCategory === cat
+                        ? 'bg-vintage-gold text-white'
+                        : 'bg-vintage-paper dark:bg-dark-card text-vintage-brown dark:text-dark-muted hover:bg-vintage-gold/10'
+                    }`}
+                  >
+                    {cat === 'all' ? 'All' : cat}
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -159,14 +245,16 @@ const BookmarksPage = () => {
                   </div>
                   
                   {/* Bookmark Date */}
-                  <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-vintage-black/80 text-white px-2 py-1 rounded-lg text-xs font-serif flex items-center space-x-1">
-                      <Calendar size={12} />
-                      <span>
-                        {new Date(bookmark.bookmarkedAt).toLocaleDateString()}
-                      </span>
+                  {bookmark.bookmarkedAt && (
+                    <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="bg-vintage-black/80 text-white px-2 py-1 rounded-lg text-xs font-serif flex items-center space-x-1">
+                        <Calendar size={12} />
+                        <span>
+                          Saved {new Date(bookmark.bookmarkedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </motion.div>
             ))}

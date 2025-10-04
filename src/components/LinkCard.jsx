@@ -17,7 +17,11 @@ const LinkCard = ({ link, index }) => {
   const [isBookmarked, setIsBookmarked] = useState(false)
 
   useEffect(() => {
-    setIsBookmarked(bookmarkService.isBookmarked(link._id || link.id))
+    const checkBookmark = async () => {
+      const bookmarked = await bookmarkService.isBookmarked(link._id || link.id)
+      setIsBookmarked(bookmarked)
+    }
+    checkBookmark()
   }, [link._id, link.id])
 
   const handleCardClick = async (e) => {
@@ -86,24 +90,27 @@ const LinkCard = ({ link, index }) => {
     setTimeout(() => setIsSharing(false), 1000)
   }
 
-  const handleBookmark = (e) => {
+  const handleBookmark = async (e) => {
     e.stopPropagation()
     
     if (isBookmarked) {
-      bookmarkService.removeBookmark(link._id || link.id)
+      await bookmarkService.removeBookmark(link._id || link.id)
       setIsBookmarked(false)
       const event = new CustomEvent('showToast', {
         detail: { message: 'Bookmark removed!', type: 'success' }
       })
       window.dispatchEvent(event)
     } else {
-      bookmarkService.addBookmark(link)
+      await bookmarkService.addBookmark(link)
       setIsBookmarked(true)
       const event = new CustomEvent('showToast', {
         detail: { message: 'Bookmarked!', type: 'success' }
       })
       window.dispatchEvent(event)
     }
+    
+    // Notify other components
+    window.dispatchEvent(new CustomEvent('bookmarkChanged'))
   }
 
 

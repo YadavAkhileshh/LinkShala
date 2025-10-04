@@ -40,7 +40,8 @@ export const AuthProvider = ({ children }) => {
       email,
       password,
       options: {
-        data: { full_name: fullName }
+        data: { full_name: fullName },
+        emailRedirectTo: `${window.location.origin}/home`
       }
     })
     return { data, error }
@@ -59,11 +60,22 @@ export const AuthProvider = ({ children }) => {
     return { error }
   }
 
+  const signInWithGoogle = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/home`
+      }
+    })
+    return { data, error }
+  }
+
   const value = {
     user,
     signUp,
     signIn,
     signOut,
+    signInWithGoogle,
     loading
   }
 

@@ -27,8 +27,3 @@ dist-ssr
 .env
 .env.local
 .env.production
-
-# Sensitive documentation
-SUPABASE_SETUP.md
-AUTHENTICATION_FEATURES.md
-DEPLOYMENT.md

@@ -1,31 +1,31 @@
 # LinkShala 🚀
 
-A professional SaaS application for sharing and managing curated links. Built with React, Node.js, Express, and MongoDB with AI-powered descriptions.
+A professional platform for discovering and sharing curated developer resources. Built with React, Node.js, Express, and MongoDB.
 
 ## ✨ Features
 
-- **🔐 Authentication**: Secure user authentication with Supabase
-- **🎨 Professional UI**: Modern, responsive design with smooth animations
-- **🔍 Smart Search**: Advanced search and filtering capabilities
-- **🤖 AI Descriptions**: Auto-generated descriptions using Groq/Gemini APIs
-- **📊 Analytics**: Track clicks and shares
-- **🔐 Admin Dashboard**: Secure admin panel 
+- **🔐 Secure Authentication**: Google OAuth and email/password login with Supabase
+- **🎨 Modern UI**: Beautiful, responsive design with smooth animations
+- **🔍 Smart Search**: Advanced search and filtering by categories and tags
+- **🤖 AI-Powered**: Auto-generated descriptions using Groq/Gemini APIs
+- **📊 Analytics**: Track link clicks and shares
+- **🔖 Bookmarks**: Save your favorite links with database sync
 - **📱 Mobile-First**: Fully responsive across all devices
-- **⚡ Fast Performance**: Optimized with Vite + React frontend
-- **🗄️ MongoDB Integration**: Scalable database with full CRUD operations
+- **⚡ Fast Performance**: Optimized with Vite + React
+- **🗄️ Scalable**: MongoDB database with full-text search
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+
-- MongoDB (local or cloud)
-- Supabase account (free tier works)
-- npm 
+- MongoDB (local or Atlas)
+- Supabase account (free tier)
+- Gmail account (for authentication) 
 
 ### 1. Clone and Install
 ```bash
-git clone <your-repo>
-cd LinkShala
+git clone https://github.com/yourusername/linkshala.git
+cd linkshala
 
 # Install frontend dependencies
 npm install
@@ -47,25 +47,27 @@ VITE_API_URL=http://localhost:5002/api
 **Backend (.env in server folder):**
 ```env
 MONGODB_URI=mongodb://localhost:27017/linkshala
-ADMIN_PASSWORD=your-secure-admin-password
 PORT=5002
 NODE_ENV=development
 
-# Optional - for AI descriptions
+# Optional - for AI-powered descriptions
 GEMINI_API_KEY=your-gemini-api-key
 GROQ_API_KEY=your-groq-api-key
 ```
 
-**📖 See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for detailed Supabase configuration**
+**Supabase Setup:**
+1. Create a project at [supabase.com](https://supabase.com)
+2. Go to Settings → API to get your URL and anon key
+3. Enable Google OAuth in Authentication → Providers
+4. Configure email settings in Authentication → Email Templates
+5. Add redirect URL: `http://localhost:5173/**`
 
 ### 3. Database Setup
 ```bash
 # Start MongoDB (if local)
 mongod
 
-# Populate database with sample data
-cd server
-npm run migrate
+# The database will be populated automatically on first run
 ```
 
 ### 4. Start Development Servers
@@ -83,53 +85,56 @@ npm run dev
 
 ### 5. Access the Application
 - **Landing Page**: http://localhost:5173
-- **App (after login)**: http://localhost:5173/home
-- **API**: http://localhost:5002/api
+- **Home (after login)**: http://localhost:5173/home
+- **Bookmarks**: http://localhost:5173/bookmarks
 
 ## 🏗️ Architecture
 
-### Frontend (React + Vite)
-- Modern React 18 with hooks
-- Supabase authentication
+### Frontend
+- React 18 with hooks and context API
+- Supabase authentication (Google OAuth + Email)
 - TailwindCSS for styling
 - Framer Motion for animations
 - Responsive design system
 
-### Backend (Node.js + Express)
-- RESTful API architecture
-- JWT authentication
-- MongoDB integration
-- AI description generation
+### Backend
+- RESTful API with Express.js
+- MongoDB with Mongoose ODM
+- AI-powered description generation
+- Click and share analytics
 
-### Database (MongoDB)
-- Flexible document structure
+### Database
+- MongoDB for links and categories
+- Supabase for user bookmarks
 - Full-text search indexing
-- Analytics tracking
-- Scalable data model
+- Real-time analytics tracking
 
 ## 📋 API Endpoints
 
-### Public API
-- `GET /api/links` - Get all links with filtering
-- `GET /api/links/:id` - Get single link (increments click count)
+### Links
+- `GET /api/links` - Get all links with pagination and filters
+- `GET /api/links/:id` - Get single link details
 - `POST /api/links/:id/share` - Increment share count
+
+### Categories
+- `GET /api/links/categories` - Get all categories with link counts
 
 
 
 ## 🛠 Tech Stack
 
-### Frontend
-- React 18, Vite, Supabase, TailwindCSS, Framer Motion, Lucide React
+- **Frontend**: React 18, Vite, Supabase, TailwindCSS, Framer Motion, Lucide React
+- **Backend**: Node.js, Express.js, MongoDB, Mongoose, Axios
+- **AI**: Groq API, Gemini API
+- **Authentication**: Supabase Auth (Google OAuth + Email/Password)
+- **Database**: MongoDB Atlas, Supabase PostgreSQL
 
-### Backend
-- Node.js, Express.js, MongoDB, Mongoose, JWT, Axios
+## 🎨 Design Features
 
-### AI Integration
-- Groq API, Gemini API
-
-## 📱 Responsive Design
-
-Fully responsive and optimized for all devices (320px+).
+- Vintage-inspired color palette with dark mode support
+- Smooth animations and transitions
+- Fully responsive (320px to 4K displays)
+- Accessible and keyboard-friendly
 
 ## 🚀 Production Deployment
 
@@ -146,7 +151,6 @@ VITE_API_URL=https://your-api-domain.com/api
 **Backend:**
 ```env
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/linkshala
-JWT_SECRET=your-production-secret-key
 PORT=5002
 NODE_ENV=production
 GEMINI_API_KEY=your-production-gemini-key
@@ -163,13 +167,16 @@ cd server
 npm start
 ```
 
+## 🔒 Security
+
+- Gmail-only authentication for verified users
+- Secure password hashing with Supabase
+- Environment variables for sensitive data
+- CORS protection on API endpoints
+
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
@@ -177,4 +184,4 @@ MIT License - feel free to use for your own projects!
 
 ---
 
-**Built with ❤️ for the developer community**
+**Built with ❤️ for developers, by developers**

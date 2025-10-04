@@ -27,7 +27,7 @@ const AboutPage = () => {
 
   const stats = [
     { number: "500+", label: "Curated Links" },
-    { number: "5K+", label: "Monthly Visits" },
+    { number: "1K+", label: "Monthly Visits" },
     { number: "10+", label: "Categories" },
     { number: "99.9%", label: "Uptime" }
   ]
