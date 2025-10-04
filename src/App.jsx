@@ -13,7 +13,7 @@ import AboutPage from './pages/AboutPage'
 import BookmarksPage from './pages/BookmarksPage'
 import NotFoundPage from './pages/NotFoundPage'
 import AuthCallback from './pages/AuthCallback'
-import TestEmailPage from './pages/TestEmailPage'
+
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 import GradientBackground from './components/GradientBackground'
@@ -38,7 +38,7 @@ function AnimatedRoutes() {
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/test-email" element={<TestEmailPage />} />
+
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/about" element={<ProtectedRoute><AboutPage /></ProtectedRoute>} />
