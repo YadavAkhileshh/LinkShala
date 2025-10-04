@@ -120,7 +120,6 @@ npm run dev
 - `GET /api/links/categories` - Get all categories with link counts
 
 
-
 ## 🛠 Tech Stack
 
 - **Frontend**: React 18, Vite, Supabase, TailwindCSS, Framer Motion, Lucide React
