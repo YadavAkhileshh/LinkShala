@@ -39,7 +39,10 @@ class ApiService {
       try {
         data = text ? JSON.parse(text) : {};
       } catch (parseError) {
-        console.error('JSON Parse Error:', parseError, 'Response text:', text);
+        // Handle non-JSON responses (like rate limiting)
+        if (!response.ok) {
+          throw new Error(text || `Request failed with status ${response.status}`);
+        }
         throw new Error('Invalid server response');
       }
 
