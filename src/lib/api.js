@@ -172,6 +172,19 @@ class ApiService {
     });
   }
 
+  async moveLinkCategory(linkIds, targetCategory) {
+    return this.request('/admin/links/move-category', {
+      method: 'POST',
+      body: JSON.stringify({ linkIds, targetCategory })
+    });
+  }
+
+  async removeDuplicateLinks() {
+    return this.request('/admin/links/remove-duplicates', {
+      method: 'POST'
+    });
+  }
+
   isAuthenticated() {
     return !!this.token;
   }

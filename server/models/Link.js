@@ -10,6 +10,7 @@ const linkSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
+    unique: true,
     validate: {
       validator: function(v) {
         // Allow any non-empty string - we'll normalize it in the application

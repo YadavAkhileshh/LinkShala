@@ -24,6 +24,7 @@ const AdminDashboard = () => {
   const [availableCategories, setAvailableCategories] = useState([])
   const [selectedLinks, setSelectedLinks] = useState([])
   const [selectAll, setSelectAll] = useState(false)
+  const [confirmDialog, setConfirmDialog] = useState({ show: false, title: '', message: '', onConfirm: null })
   
   // Form states
   const [isEditing, setIsEditing] = useState(false)
@@ -275,26 +276,32 @@ const AdminDashboard = () => {
   }
 
   const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this link?')) {
-      try {
-        setIsLoading(true)
-        await apiService.deleteLink(id)
-        const event = new CustomEvent('showToast', {
-          detail: { message: 'Link deleted successfully!', type: 'success' }
-        })
-        window.dispatchEvent(event)
-        loadLinks()
-        loadDashboardData()
-      } catch (error) {
-        console.error('Error deleting link:', error)
-        const event = new CustomEvent('showToast', {
-          detail: { message: 'Error deleting link', type: 'error' }
-        })
-        window.dispatchEvent(event)
-      } finally {
-        setIsLoading(false)
+    setConfirmDialog({
+      show: true,
+      title: 'Delete Link',
+      message: 'Are you sure you want to delete this link? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          setIsLoading(true)
+          await apiService.deleteLink(id)
+          const event = new CustomEvent('showToast', {
+            detail: { message: 'Link deleted successfully!', type: 'success' }
+          })
+          window.dispatchEvent(event)
+          loadLinks()
+          loadDashboardData()
+        } catch (error) {
+          console.error('Error deleting link:', error)
+          const event = new CustomEvent('showToast', {
+            detail: { message: 'Error deleting link', type: 'error' }
+          })
+          window.dispatchEvent(event)
+        } finally {
+          setIsLoading(false)
+          setConfirmDialog({ show: false, title: '', message: '', onConfirm: null })
+        }
       }
-    }
+    })
   }
 
   const handleBulkDelete = async () => {
@@ -306,28 +313,101 @@ const AdminDashboard = () => {
       return
     }
 
-    if (confirm(`Are you sure you want to delete ${selectedLinks.length} selected links?`)) {
-      try {
-        setIsLoading(true)
-        await apiService.bulkDeleteLinks(selectedLinks)
-        const event = new CustomEvent('showToast', {
-          detail: { message: `${selectedLinks.length} links deleted successfully!`, type: 'success' }
-        })
-        window.dispatchEvent(event)
-        setSelectedLinks([])
-        setSelectAll(false)
-        loadLinks()
-        loadDashboardData()
-      } catch (error) {
-        console.error('Error deleting links:', error)
-        const event = new CustomEvent('showToast', {
-          detail: { message: 'Error deleting links', type: 'error' }
-        })
-        window.dispatchEvent(event)
-      } finally {
-        setIsLoading(false)
+    setConfirmDialog({
+      show: true,
+      title: 'Delete Multiple Links',
+      message: `Are you sure you want to delete ${selectedLinks.length} selected link${selectedLinks.length > 1 ? 's' : ''}? This action cannot be undone.`,
+      onConfirm: async () => {
+        try {
+          setIsLoading(true)
+          await apiService.bulkDeleteLinks(selectedLinks)
+          const event = new CustomEvent('showToast', {
+            detail: { message: `${selectedLinks.length} links deleted successfully!`, type: 'success' }
+          })
+          window.dispatchEvent(event)
+          setSelectedLinks([])
+          setSelectAll(false)
+          loadLinks()
+          loadDashboardData()
+        } catch (error) {
+          console.error('Error deleting links:', error)
+          const event = new CustomEvent('showToast', {
+            detail: { message: 'Error deleting links', type: 'error' }
+          })
+          window.dispatchEvent(event)
+        } finally {
+          setIsLoading(false)
+          setConfirmDialog({ show: false, title: '', message: '', onConfirm: null })
+        }
       }
+    })
+  }
+
+  const handleBulkMoveCategory = async (targetCategory) => {
+    if (selectedLinks.length === 0) {
+      const event = new CustomEvent('showToast', {
+        detail: { message: 'No links selected', type: 'error' }
+      })
+      window.dispatchEvent(event)
+      return
     }
+
+    const categoryName = availableCategories.find(c => c.slug === targetCategory)?.name
+    
+    try {
+      setIsLoading(true)
+      await apiService.moveLinkCategory(selectedLinks, targetCategory)
+      const event = new CustomEvent('showToast', {
+        detail: { message: `${selectedLinks.length} links moved to ${categoryName}!`, type: 'success' }
+      })
+      window.dispatchEvent(event)
+      setSelectedLinks([])
+      setSelectAll(false)
+      loadLinks()
+      loadDashboardData()
+    } catch (error) {
+      console.error('Error moving links:', error)
+      const event = new CustomEvent('showToast', {
+        detail: { message: 'Error moving links', type: 'error' }
+      })
+      window.dispatchEvent(event)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleRemoveDuplicates = async () => {
+    setConfirmDialog({
+      show: true,
+      title: 'Remove Duplicate Links',
+      message: 'This will scan your database and remove all duplicate links, keeping only the oldest version of each. This action cannot be undone. Continue?',
+      onConfirm: async () => {
+        try {
+          setIsLoading(true)
+          const result = await apiService.removeDuplicateLinks()
+          const event = new CustomEvent('showToast', {
+            detail: { 
+              message: result.removedCount > 0 
+                ? `Removed ${result.removedCount} duplicate links!` 
+                : 'No duplicates found',
+              type: 'success' 
+            }
+          })
+          window.dispatchEvent(event)
+          loadLinks()
+          loadDashboardData()
+        } catch (error) {
+          console.error('Error removing duplicates:', error)
+          const event = new CustomEvent('showToast', {
+            detail: { message: 'Error removing duplicates', type: 'error' }
+          })
+          window.dispatchEvent(event)
+        } finally {
+          setIsLoading(false)
+          setConfirmDialog({ show: false, title: '', message: '', onConfirm: null })
+        }
+      }
+    })
   }
 
   const handleSelectAll = () => {
@@ -665,6 +745,15 @@ const AdminDashboard = () => {
                   </div>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <motion.button
+                      onClick={handleRemoveDuplicates}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2 font-serif shadow-md"
+                    >
+                      <Trash2 size={18} />
+                      <span>Remove Duplicates</span>
+                    </motion.button>
+                    <motion.button
                       onClick={() => setShowBulkUpload(!showBulkUpload)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -769,18 +858,23 @@ const AdminDashboard = () => {
                           </p>
                         )}
                       </div>
-                      <select
-                        value={formData.category}
-                        onChange={(e) => setFormData({...formData, category: e.target.value})}
-                        className="p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
-                      >
-                        <option value="">Select Category</option>
-                        {availableCategories.map(category => (
-                          <option key={category._id} value={category.slug}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          list="categories"
+                          placeholder="Category * (type or select)"
+                          value={formData.category}
+                          onChange={(e) => setFormData({...formData, category: e.target.value})}
+                          className="w-full p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
+                        />
+                        <datalist id="categories">
+                          {availableCategories.map(category => (
+                            <option key={category._id} value={category.slug}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </datalist>
+                      </div>
                       <input
                         type="date"
                         value={formData.publishedDate}
@@ -888,31 +982,52 @@ const AdminDashboard = () => {
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
-                      className="flex items-center justify-between p-4 bg-vintage-gold/10 dark:bg-dark-accent/10 rounded-lg border border-vintage-gold/20 dark:border-dark-accent/20"
+                      className="p-4 bg-vintage-gold/10 dark:bg-dark-accent/10 rounded-lg border border-vintage-gold/20 dark:border-dark-accent/20 space-y-3"
                     >
-                      <div className="flex items-center space-x-4">
-                        <span className="text-sm font-serif text-vintage-brown dark:text-dark-muted">
-                          {selectedLinks.length} link{selectedLinks.length > 1 ? 's' : ''} selected
-                        </span>
-                        <button
-                          onClick={() => {
-                            setSelectedLinks([])
-                            setSelectAll(false)
-                          }}
-                          className="text-xs text-vintage-gold hover:text-vintage-brass transition-colors font-serif underline"
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <span className="text-sm font-serif text-vintage-brown dark:text-dark-muted">
+                            {selectedLinks.length} link{selectedLinks.length > 1 ? 's' : ''} selected
+                          </span>
+                          <button
+                            onClick={() => {
+                              setSelectedLinks([])
+                              setSelectAll(false)
+                            }}
+                            className="text-xs text-vintage-gold hover:text-vintage-brass transition-colors font-serif underline"
+                          >
+                            Clear selection
+                          </button>
+                        </div>
+                        <motion.button
+                          onClick={handleBulkDelete}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 font-serif text-sm"
                         >
-                          Clear selection
-                        </button>
+                          <Trash2 size={16} />
+                          <span>Delete Selected</span>
+                        </motion.button>
                       </div>
-                      <motion.button
-                        onClick={handleBulkDelete}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 font-serif text-sm"
-                      >
-                        <Trash2 size={16} />
-                        <span>Delete Selected</span>
-                      </motion.button>
+                      <div className="flex items-center space-x-3">
+                        <span className="text-sm font-serif text-vintage-brown dark:text-dark-muted">Move to:</span>
+                        <select
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              handleBulkMoveCategory(e.target.value)
+                              e.target.value = ''
+                            }
+                          }}
+                          className="px-4 py-2 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text font-serif text-sm"
+                        >
+                          <option value="">Select category...</option>
+                          {availableCategories.map(category => (
+                            <option key={category._id} value={category.slug}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </motion.div>
                   )}
                 </div>
@@ -1046,6 +1161,59 @@ const AdminDashboard = () => {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Confirmation Modal */}
+      <AnimatePresence>
+        {confirmDialog.show && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setConfirmDialog({ show: false, title: '', message: '', onConfirm: null })}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-vintage-paper dark:bg-dark-card rounded-2xl p-6 max-w-md w-full shadow-2xl border border-vintage-gold/20 dark:border-dark-border"
+            >
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+                  <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-2">
+                    {confirmDialog.title}
+                  </h3>
+                  <p className="text-vintage-brown dark:text-dark-muted font-serif">
+                    {confirmDialog.message}
+                  </p>
+                </div>
+              </div>
+              <div className="flex space-x-3 mt-6">
+                <motion.button
+                  onClick={() => setConfirmDialog({ show: false, title: '', message: '', onConfirm: null })}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 bg-gray-200 dark:bg-gray-700 text-vintage-black dark:text-dark-text px-4 py-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-serif font-medium"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  onClick={confirmDialog.onConfirm}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors font-serif font-medium shadow-md"
+                >
+                  Delete
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

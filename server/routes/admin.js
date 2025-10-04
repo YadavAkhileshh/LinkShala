@@ -82,19 +82,38 @@ const normalizeUrl = (url) => {
 // Create new link
 router.post('/links', authenticateAdmin, async (req, res) => {
   try {
-    // Validate required fields
     if (!req.body.title || !req.body.url) {
       return res.status(400).json({ error: 'Title and URL are required' });
     }
     
-    // Set default category if not provided
-    const category = req.body.category || 'tools';
+    const normalizedUrl = normalizeUrl(req.body.url);
+    
+    const existingLink = await Link.findOne({ url: normalizedUrl });
+    if (existingLink) {
+      return res.status(400).json({ error: 'A link with this URL already exists' });
+    }
+    
+    let categorySlug = 'tools';
+    
+    if (req.body.category) {
+      const categoryName = req.body.category.trim();
+      const categorySlugTemp = categoryName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      
+      let category = await Category.findOne({ slug: categorySlugTemp });
+      
+      if (!category) {
+        category = new Category({ name: categoryName });
+        await category.save();
+      }
+      
+      categorySlug = category.slug;
+    }
     
     const linkData = {
       title: req.body.title.trim(),
-      url: normalizeUrl(req.body.url),
+      url: normalizedUrl,
       description: req.body.description || '',
-      category: category.trim(),
+      category: categorySlug,
       tags: Array.isArray(req.body.tags) ? req.body.tags : (req.body.tags ? req.body.tags.split(',').map(t => t.trim()) : []),
       publishedDate: req.body.publishedDate ? new Date(req.body.publishedDate) : new Date(),
       isActive: req.body.isActive !== undefined ? req.body.isActive : true,
@@ -107,6 +126,9 @@ router.post('/links', authenticateAdmin, async (req, res) => {
     res.status(201).json(link);
   } catch (error) {
     console.error('Link creation error:', error);
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'A link with this URL already exists' });
+    }
     res.status(400).json({ 
       error: 'Failed to create link',
       details: error.message 
@@ -117,10 +139,23 @@ router.post('/links', authenticateAdmin, async (req, res) => {
 // Update link
 router.put('/links/:id', authenticateAdmin, async (req, res) => {
   try {
-    const updateData = {
-      ...req.body,
-      url: req.body.url ? normalizeUrl(req.body.url) : undefined
-    };
+    const updateData = { ...req.body };
+    
+    if (req.body.url) {
+      const normalizedUrl = normalizeUrl(req.body.url);
+      
+      // Check if URL is being changed and if new URL already exists
+      const existingLink = await Link.findOne({ 
+        url: normalizedUrl,
+        _id: { $ne: req.params.id }
+      });
+      
+      if (existingLink) {
+        return res.status(400).json({ error: 'A link with this URL already exists' });
+      }
+      
+      updateData.url = normalizedUrl;
+    }
     
     const link = await Link.findByIdAndUpdate(
       req.params.id,
@@ -134,6 +169,9 @@ router.put('/links/:id', authenticateAdmin, async (req, res) => {
     
     res.json(link);
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'A link with this URL already exists' });
+    }
     res.status(400).json({ error: error.message });
   }
 });
@@ -186,29 +224,51 @@ router.post('/links/create-bulk', authenticateAdmin, async (req, res) => {
       return res.status(400).json({ error: 'No links provided' });
     }
     
-    // Validate and process each link
     const processedLinks = [];
     const errors = [];
+    const skipped = [];
+    const createdCategories = [];
     
     for (let i = 0; i < links.length; i++) {
       const link = links[i];
       
-      // Validate required fields
       if (!link.title || !link.url) {
         errors.push(`Link ${i + 1}: Title and URL are required`);
         continue;
       }
       
-      // Set default category if not provided
-      if (!link.category) {
-        link.category = 'tools'; // Default category
+      const normalizedUrl = normalizeUrl(link.url);
+      
+      const existingLink = await Link.findOne({ url: normalizedUrl });
+      if (existingLink) {
+        skipped.push(`Link ${i + 1} (${link.title}): URL already exists`);
+        continue;
+      }
+      
+      let categorySlug = 'tools';
+      
+      if (link.category) {
+        const categoryName = link.category.trim();
+        const categorySlugTemp = categoryName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        
+        // Check if category exists (case-insensitive)
+        let category = await Category.findOne({ slug: categorySlugTemp });
+        
+        if (!category) {
+          // Create new category
+          category = new Category({ name: categoryName });
+          await category.save();
+          createdCategories.push(categoryName);
+        }
+        
+        categorySlug = category.slug;
       }
       
       processedLinks.push({
         title: link.title.trim(),
-        url: normalizeUrl(link.url),
+        url: normalizedUrl,
         description: link.description || '',
-        category: link.category.trim(),
+        category: categorySlug,
         tags: Array.isArray(link.tags) ? link.tags : (link.tags ? link.tags.split(',').map(t => t.trim()) : []),
         publishedDate: link.publishedDate ? new Date(link.publishedDate) : new Date(),
         isActive: link.isActive !== undefined ? link.isActive : true,
@@ -217,23 +277,38 @@ router.post('/links/create-bulk', authenticateAdmin, async (req, res) => {
       });
     }
     
-    if (errors.length > 0) {
+    if (processedLinks.length === 0) {
       return res.status(400).json({ 
-        error: 'Validation errors found',
-        details: errors,
-        processed: processedLinks.length,
+        error: 'No valid links to create',
+        details: [...errors, ...skipped],
+        processed: 0,
         total: links.length
       });
     }
     
     const createdLinks = await Link.insertMany(processedLinks, { ordered: false });
     
-    res.status(201).json({
+    const response = {
       message: `${createdLinks.length} links created successfully`,
       created: createdLinks.length,
       total: links.length,
       links: createdLinks
-    });
+    };
+    
+    if (createdCategories.length > 0) {
+      response.newCategories = createdCategories;
+    }
+    
+    if (skipped.length > 0) {
+      response.skipped = skipped.length;
+      response.skippedDetails = skipped;
+    }
+    
+    if (errors.length > 0) {
+      response.errors = errors;
+    }
+    
+    res.status(201).json(response);
   } catch (error) {
     console.error('Bulk upload error:', error);
     res.status(400).json({ 
@@ -350,14 +425,25 @@ router.put('/categories/:id', authenticateAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Category name is required' });
     }
     
+    const oldCategory = await Category.findById(req.params.id);
+    if (!oldCategory) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+    
+    const oldSlug = oldCategory.slug;
+    
     const category = await Category.findByIdAndUpdate(
       req.params.id,
       { name },
       { new: true, runValidators: true }
     );
     
-    if (!category) {
-      return res.status(404).json({ error: 'Category not found' });
+    // Update all links with the old slug to use the new slug
+    if (oldSlug !== category.slug) {
+      await Link.updateMany(
+        { category: oldSlug },
+        { category: category.slug }
+      );
     }
     
     res.json(category);
@@ -367,6 +453,39 @@ router.put('/categories/:id', authenticateAdmin, async (req, res) => {
     } else {
       res.status(400).json({ error: error.message });
     }
+  }
+});
+
+// Move links to different category
+router.post('/links/move-category', authenticateAdmin, async (req, res) => {
+  try {
+    const { linkIds, targetCategory } = req.body;
+    
+    if (!Array.isArray(linkIds) || linkIds.length === 0) {
+      return res.status(400).json({ error: 'No link IDs provided' });
+    }
+    
+    if (!targetCategory) {
+      return res.status(400).json({ error: 'Target category is required' });
+    }
+    
+    // Verify target category exists
+    const category = await Category.findOne({ slug: targetCategory });
+    if (!category) {
+      return res.status(404).json({ error: 'Target category not found' });
+    }
+    
+    const result = await Link.updateMany(
+      { _id: { $in: linkIds } },
+      { category: targetCategory }
+    );
+    
+    res.json({ 
+      message: `${result.modifiedCount} links moved to ${category.name}`,
+      movedCount: result.modifiedCount
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -390,6 +509,41 @@ router.delete('/categories/:id', authenticateAdmin, async (req, res) => {
     
     await Category.findByIdAndDelete(req.params.id);
     res.json({ message: 'Category deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Find and remove duplicate links
+router.post('/links/remove-duplicates', authenticateAdmin, async (req, res) => {
+  try {
+    // Find duplicate URLs
+    const duplicateUrls = await Link.aggregate([
+      { $group: { _id: '$url', count: { $sum: 1 }, ids: { $push: '$_id' } } },
+      { $match: { count: { $gt: 1 } } }
+    ]);
+    
+    let removedCount = 0;
+    const removedLinks = [];
+    
+    // For each duplicate URL, keep the oldest one and remove others
+    for (const dup of duplicateUrls) {
+      const links = await Link.find({ _id: { $in: dup.ids } }).sort({ createdAt: 1 });
+      
+      // Keep first (oldest), remove rest
+      for (let i = 1; i < links.length; i++) {
+        removedLinks.push({ title: links[i].title, url: links[i].url });
+        await Link.findByIdAndDelete(links[i]._id);
+        removedCount++;
+      }
+    }
+    
+    res.json({
+      message: `Removed ${removedCount} duplicate links`,
+      removedCount,
+      duplicatesFound: duplicateUrls.length,
+      removedLinks
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

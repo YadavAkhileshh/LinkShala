@@ -8,8 +8,8 @@ const CategoryManager = () => {
   const [isEditing, setIsEditing] = useState(false)
   const [editingCategory, setEditingCategory] = useState(null)
   const [newCategoryName, setNewCategoryName] = useState('')
-
   const [isLoading, setIsLoading] = useState(false)
+  const [confirmDialog, setConfirmDialog] = useState({ show: false, title: '', message: '', onConfirm: null })
 
   useEffect(() => {
     loadCategories()
@@ -59,21 +59,27 @@ const CategoryManager = () => {
   }
 
   const handleDeleteCategory = async (categoryId, categoryName) => {
-    if (confirm(`Are you sure you want to delete the "${categoryName}" category?`)) {
-      try {
-        setIsLoading(true)
-        await apiService.deleteCategory(categoryId)
-        showToast(`Category "${categoryName}" deleted successfully!`, 'success')
-        loadCategories()
-        
-        // Trigger category refresh for other components
-        window.dispatchEvent(new CustomEvent('categoriesUpdated'))
-      } catch (error) {
-        showToast(error.message || 'Error deleting category', 'error')
-      } finally {
-        setIsLoading(false)
+    setConfirmDialog({
+      show: true,
+      title: 'Delete Category',
+      message: `Are you sure you want to delete the "${categoryName}" category? This action cannot be undone.`,
+      onConfirm: async () => {
+        try {
+          setIsLoading(true)
+          await apiService.deleteCategory(categoryId)
+          showToast(`Category "${categoryName}" deleted successfully!`, 'success')
+          loadCategories()
+          
+          // Trigger category refresh for other components
+          window.dispatchEvent(new CustomEvent('categoriesUpdated'))
+        } catch (error) {
+          showToast(error.message || 'Error deleting category', 'error')
+        } finally {
+          setIsLoading(false)
+          setConfirmDialog({ show: false, title: '', message: '', onConfirm: null })
+        }
       }
-    }
+    })
   }
 
   const handleEditCategory = (category) => {
@@ -114,6 +120,7 @@ const CategoryManager = () => {
   }
 
   return (
+    <>
     <div className="bg-vintage-paper dark:bg-dark-card rounded-2xl p-6 shadow-vault border border-vintage-gold/20 dark:border-dark-border">
       <h3 className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-6">
         Category Management
@@ -143,6 +150,13 @@ const CategoryManager = () => {
               </div>
             
               <div className="flex items-center space-x-2">
+                <button 
+                  onClick={() => handleEditCategory(category)}
+                  disabled={isLoading}
+                  className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors disabled:opacity-50"
+                >
+                  <Edit size={16} />
+                </button>
                 <button 
                   onClick={() => handleDeleteCategory(category._id, category.name)}
                   disabled={isLoading}
@@ -210,6 +224,58 @@ const CategoryManager = () => {
         </motion.button>
       )}
     </div>
+
+    {/* Confirmation Modal */}
+    {confirmDialog.show && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        onClick={() => setConfirmDialog({ show: false, title: '', message: '', onConfirm: null })}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          onClick={(e) => e.stopPropagation()}
+          className="bg-vintage-paper dark:bg-dark-card rounded-2xl p-6 max-w-md w-full shadow-2xl border border-vintage-gold/20 dark:border-dark-border"
+        >
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0 w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+              <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-2">
+                {confirmDialog.title}
+              </h3>
+              <p className="text-vintage-brown dark:text-dark-muted font-serif">
+                {confirmDialog.message}
+              </p>
+            </div>
+          </div>
+          <div className="flex space-x-3 mt-6">
+            <motion.button
+              onClick={() => setConfirmDialog({ show: false, title: '', message: '', onConfirm: null })}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 bg-gray-200 dark:bg-gray-700 text-vintage-black dark:text-dark-text px-4 py-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-serif font-medium"
+            >
+              Cancel
+            </motion.button>
+            <motion.button
+              onClick={confirmDialog.onConfirm}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors font-serif font-medium shadow-md"
+            >
+              Delete
+            </motion.button>
+          </div>
+        </motion.div>
+      </motion.div>
+    )}
+    </>
   )
 }
 
