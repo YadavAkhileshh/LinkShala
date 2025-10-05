@@ -28,6 +28,15 @@ const HomePage = () => {
   
   useEffect(() => {
     loadInitialData()
+    
+    // Restore scroll position
+    const savedScrollPos = sessionStorage.getItem('homeScrollPos')
+    if (savedScrollPos) {
+      setTimeout(() => {
+        window.scrollTo(0, parseInt(savedScrollPos))
+        sessionStorage.removeItem('homeScrollPos')
+      }, 100)
+    }
   }, [])
 
   // Instant filtering with client-side logic

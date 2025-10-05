@@ -185,7 +185,10 @@ const LinkDetailPage = () => {
           className="flex items-center justify-between mb-8"
         >
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              sessionStorage.setItem('homeScrollPos', window.scrollY || 0)
+              navigate(-1)
+            }}
             className="flex items-center space-x-2 text-vintage-brown dark:text-dark-muted hover:text-vintage-gold transition-colors"
           >
             <ArrowLeft size={20} />
@@ -332,7 +335,7 @@ const LinkDetailPage = () => {
               className="inline-flex items-center space-x-2 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-8 py-4 rounded-lg font-serif font-medium hover:from-vintage-brass hover:to-vintage-gold transition-all duration-300 shadow-glow"
             >
               <ExternalLink size={20} />
-              <span>Open in New Tab</span>
+              <span>Explore Now →</span>
             </motion.a>
           </div>
         </motion.div>

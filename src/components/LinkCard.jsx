@@ -30,6 +30,9 @@ const LinkCard = ({ link, index }) => {
       return
     }
     
+    // Save scroll position before navigating
+    sessionStorage.setItem('homeScrollPos', window.scrollY || 0)
+    
     // Navigate to detail page
     if (link._id) {
       navigate(`/link/${link._id}`)
