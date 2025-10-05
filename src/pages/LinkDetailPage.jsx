@@ -61,7 +61,8 @@ const LinkDetailPage = () => {
       setLoading(true)
       const data = await apiService.getLink(id)
       setLink(data)
-      setIsBookmarked(bookmarkService.isBookmarked(data._id))
+      const bookmarked = await bookmarkService.isBookmarked(data._id)
+      setIsBookmarked(bookmarked)
     } catch (error) {
       console.error('Error loading link details:', error)
     } finally {

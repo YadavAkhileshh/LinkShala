@@ -23,14 +23,6 @@ import ToastContainer from './components/ToastContainer'
 function AnimatedRoutes() {
   const location = useLocation()
   const isLandingPage = location.pathname === '/'
-  const { user, loading } = useAuth()
-  
-  // Redirect to landing if trying to access protected routes without auth
-  useEffect(() => {
-    if (!loading && !user && location.pathname !== '/') {
-      window.location.href = '/'
-    }
-  }, [user, loading, location.pathname])
   
   return (
     <>

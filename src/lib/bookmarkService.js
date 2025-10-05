@@ -108,7 +108,7 @@ class BookmarkService {
         .select('id')
         .eq('user_id', user.id)
         .eq('link_id', linkId)
-        .single()
+        .maybeSingle()
 
       return !error && !!data
     } catch (error) {
