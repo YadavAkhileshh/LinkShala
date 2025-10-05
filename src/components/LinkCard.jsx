@@ -278,14 +278,10 @@ const LinkCard = ({ link, index }) => {
                 onClick={handleBookmark}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`action-button flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-serif transition-all duration-300 ${
-                  isBookmarked 
-                    ? 'bg-vintage-gold text-white shadow-glow' 
-                    : 'bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent hover:bg-vintage-gold hover:text-white'
-                }`}
+                className="action-button flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-serif transition-all duration-300 bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent hover:bg-vintage-gold hover:text-white"
               >
-                <Bookmark className={`w-3 h-3 ${isBookmarked ? 'fill-current' : ''}`} />
-                <span>{isBookmarked ? 'Saved' : 'Save'}</span>
+                <Bookmark className="w-3 h-3" />
+                <span>Save</span>
               </motion.button>
               
 
