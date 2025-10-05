@@ -15,11 +15,14 @@ const HomePage = () => {
   const [filterType, setFilterType] = useState('all')
   const [links, setLinks] = useState([])
   const [allLinks, setAllLinks] = useState([])
+  const [displayedLinks, setDisplayedLinks] = useState([])
+  const [displayCount, setDisplayCount] = useState(20)
   const [recentLinks, setRecentLinks] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [showBackToTop, setShowBackToTop] = useState(false)
+  const [isSearchFocused, setIsSearchFocused] = useState(false)
   const scrollContainerRef = useRef(null)
   const searchTimeoutRef = useRef(null)
   
@@ -27,15 +30,14 @@ const HomePage = () => {
     loadInitialData()
   }, [])
 
-  useEffect(() => {
-    if (selectedCategory !== 'all') {
-      loadLinks(true)
-    }
-  }, [selectedCategory])
-
-  // Instant search with client-side filtering
+  // Instant filtering with client-side logic
   useEffect(() => {
     let filtered = allLinks
+    
+    // Apply category filter
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(link => link.category === selectedCategory)
+    }
     
     // Apply filter type
     if (filterType === 'featured') {
@@ -55,7 +57,13 @@ const HomePage = () => {
     }
     
     setLinks(filtered)
-  }, [searchTerm, allLinks, filterType])
+    setDisplayCount(20) // Reset display count when filters change
+  }, [searchTerm, allLinks, filterType, selectedCategory])
+
+  // Lazy loading - display limited links
+  useEffect(() => {
+    setDisplayedLinks(links.slice(0, displayCount))
+  }, [links, displayCount])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,7 +76,7 @@ const HomePage = () => {
   const loadInitialData = async () => {
     try {
       setIsLoading(true)
-      const data = await apiService.getLinks({ page: 1, limit: 16 })
+      const data = await apiService.getLinks({ page: 1, limit: 1000 })
       
       setAllLinks(data.links)
       setLinks(data.links)
@@ -88,7 +96,7 @@ const HomePage = () => {
       setIsLoading(true)
       const page = reset ? 1 : currentPage + 1
       
-      const params = { page, limit: 15 }
+      const params = { page, limit: 20}
       if (selectedCategory !== 'all') params.category = selectedCategory
       
       const data = await apiService.getLinks(params)
@@ -112,7 +120,7 @@ const HomePage = () => {
   }
 
   const handleViewMore = () => {
-    loadLinks(false)
+    setDisplayCount(prev => prev + 20)
   }
   
   const handleSearch = (e) => {
@@ -330,6 +338,8 @@ const HomePage = () => {
                       type="text"
                       value={searchTerm}
                       onChange={handleSearch}
+                      onFocus={() => setIsSearchFocused(true)}
+                      onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                       placeholder="Discover amazing links..."
                       className="w-full pl-16 pr-6 py-4 bg-transparent text-vintage-black dark:text-dark-text placeholder-vintage-brown/60 dark:placeholder-dark-muted/60 text-lg font-serif focus:outline-none"
                     />
@@ -338,6 +348,31 @@ const HomePage = () => {
                 </div>
               </div>
             </div>
+            
+            {/* Show Categories Button - appears when search is focused but empty */}
+            {isSearchFocused && !searchTerm && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex justify-center"
+              >
+                <button
+                  onClick={() => {
+                    setIsSearchFocused(false)
+                    setTimeout(() => {
+                      const categoriesSection = document.querySelector('[data-categories-section]')
+                      if (categoriesSection) {
+                        categoriesSection.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                      }
+                    }, 100)
+                  }}
+                  className="text-sm px-4 py-2 bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-gold dark:text-dark-accent rounded-lg hover:bg-vintage-gold/20 dark:hover:bg-dark-accent/20 transition-colors font-serif"
+                >
+                  📂 Show Categories
+                </button>
+              </motion.div>
+            )}
             
             {/* Fire Filter Button */}
             <div className="flex justify-center">
@@ -372,9 +407,9 @@ const HomePage = () => {
         </div>
       </section>
       
-      {/* Category Selection - Hidden during search or featured filter */}
-      {!searchTerm && filterType === 'all' && (
-        <section className="py-12 px-6 lg:px-8 bg-vintage-paper dark:bg-dark-card border-b border-vintage-gold/20 dark:border-dark-border">
+      {/* Category Selection - Hidden during search, featured filter, or when search is focused */}
+      {!searchTerm && filterType === 'all' && !isSearchFocused && (
+        <section data-categories-section className="py-12 px-6 lg:px-8 bg-vintage-paper dark:bg-dark-card border-b border-vintage-gold/20 dark:border-dark-border">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -415,31 +450,24 @@ const HomePage = () => {
           {/* Links Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {/* Show skeleton cards only when initially loading */}
-            {isLoading && links.length === 0 && (
+            {isLoading && displayedLinks.length === 0 && (
               Array.from({ length: 15 }).map((_, index) => (
                 <SkeletonCard key={`skeleton-${index}`} />
               ))
             )}
             
             {/* Show actual links */}
-            {links.map((link, index) => (
+            {displayedLinks.map((link, index) => (
               <LinkCard 
                 key={link._id || link.id} 
                 link={link} 
                 index={index}
               />
             ))}
-            
-            {/* Show additional skeleton cards for pagination */}
-            {isLoading && links.length > 0 && (
-              Array.from({ length: 15 }).map((_, index) => (
-                <SkeletonCard key={`skeleton-more-${index}`} />
-              ))
-            )}
           </div>
 
           {/* View More Button */}
-          {!isLoading && hasMore && links.length > 0 && (
+          {!isLoading && displayCount < links.length && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -455,7 +483,7 @@ const HomePage = () => {
           )}
 
           {/* Empty State */}
-          {!isLoading && links.length === 0 && (
+          {!isLoading && displayedLinks.length === 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

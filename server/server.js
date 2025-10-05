@@ -17,15 +17,44 @@ const PORT = process.env.PORT || 5002;
 app.use(helmet());
 app.use(cors());
 
-// Rate limiting
+// Anti-scraping middleware
+app.use((req, res, next) => {
+  const userAgent = req.get('user-agent') || '';
+  const blockedAgents = [
+    'scrapy', 'crawler', 'spider', 'bot', 'scraper',
+    'curl', 'wget', 'python-requests', 'axios', 'postman'
+  ];
+  
+  const isBlocked = blockedAgents.some(agent => 
+    userAgent.toLowerCase().includes(agent.toLowerCase())
+  );
+  
+  if (isBlocked && !userAgent.toLowerCase().includes('googlebot') && !userAgent.toLowerCase().includes('bingbot')) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  
+  next();
+});
+
+// Rate limiting - stricter for public endpoints
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 500, // limit each IP to 500 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use(limiter);
+app.use('/api/links', limiter);
+
+// Admin rate limiting
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 500,
+  message: { error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/admin', adminLimiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));

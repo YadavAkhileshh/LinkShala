@@ -135,17 +135,21 @@ const CategorySelector = ({ selectedCategory, onCategoryChange }) => {
       setIsLoading(true)
       const data = await apiService.getPublicCategories()
       
+      // Handle both old and new API response formats
+      const categoriesData = data.categories || data
+      const totalCount = data.totalActiveLinks || categoriesData.reduce((sum, cat) => sum + (cat.linkCount || 0), 0)
+      
       // Add "All Categories" option
       const allCategories = [
         { 
           id: 'all', 
           name: 'All Categories', 
           slug: 'all',
-          linkCount: data.reduce((sum, cat) => sum + (cat.linkCount || 0), 0),
+          linkCount: totalCount,
           icon: Palette,
           color: 'from-purple-500 to-pink-500'
         },
-        ...data.map(cat => ({
+        ...categoriesData.map(cat => ({
           id: cat._id,
           name: cat.name,
           slug: cat.slug,
@@ -176,10 +180,10 @@ const CategorySelector = ({ selectedCategory, onCategoryChange }) => {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {[...Array(6)].map((_, index) => (
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10 gap-3">
+        {[...Array(10)].map((_, index) => (
           <div key={index} className="animate-pulse">
-            <div className="bg-vintage-gold/20 dark:bg-dark-accent/20 rounded-2xl p-6 h-32"></div>
+            <div className="bg-vintage-gold/20 dark:bg-dark-accent/20 rounded-xl p-3 h-24"></div>
           </div>
         ))}
       </div>
@@ -187,7 +191,7 @@ const CategorySelector = ({ selectedCategory, onCategoryChange }) => {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10 gap-3">
       {categories.map((category, index) => {
         const Icon = category.icon
         const isSelected = selectedCategory === category.slug
@@ -198,53 +202,65 @@ const CategorySelector = ({ selectedCategory, onCategoryChange }) => {
             onClick={() => onCategoryChange(category.slug)}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            whileHover={{ y: -5, scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className={`relative group p-6 rounded-2xl border transition-all duration-300 ${
+            transition={{ delay: index * 0.03 }}
+            whileHover={{ y: -4, scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`relative overflow-hidden group p-3 rounded-xl transition-all duration-300 ${
               isSelected
-                ? 'bg-vintage-gold text-white border-vintage-gold shadow-glow'
-                : 'bg-vintage-paper dark:bg-dark-card border-vintage-gold/20 dark:border-dark-border hover:border-vintage-gold/40 dark:hover:border-dark-accent/40'
+                ? 'shadow-xl'
+                : 'shadow-md hover:shadow-lg'
             }`}
+            style={{
+              background: isSelected 
+                ? `linear-gradient(135deg, ${category.color.replace('from-', '#').replace(' to-', ', #')})` 
+                : undefined
+            }}
           >
-            {/* Background Gradient */}
-            <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+            {/* Animated Background Gradient */}
+            {!isSelected && (
+              <>
+                <div className="absolute inset-0 bg-vintage-paper dark:bg-dark-card" />
+                <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-20 transition-all duration-500`} />
+                <div className="absolute inset-0 border border-vintage-gold/20 dark:border-dark-border group-hover:border-vintage-gold/40 dark:group-hover:border-dark-accent/40 rounded-xl transition-colors duration-300" />
+              </>
+            )}
+            
+            {/* Shine Effect on Hover */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            </div>
             
             {/* Icon */}
-            <div className={`w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center transition-all duration-300 ${
+            <div className={`relative w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center transition-all duration-300 ${
               isSelected 
-                ? 'bg-white/20' 
-                : `bg-gradient-to-br ${category.color} text-white group-hover:scale-110`
+                ? 'bg-white/20 shadow-lg' 
+                : `bg-gradient-to-br ${category.color} text-white group-hover:scale-110 group-hover:rotate-6`
             }`}>
-              <Icon size={24} className={isSelected ? 'text-white' : ''} />
+              <Icon size={18} className={isSelected ? 'text-white' : ''} />
             </div>
             
             {/* Content */}
-            <div className="text-center">
-              <h3 className={`font-serif font-semibold mb-1 transition-colors ${
+            <div className="relative text-center">
+              <h3 className={`font-serif font-bold text-xs transition-colors line-clamp-1 ${
                 isSelected 
                   ? 'text-white' 
                   : 'text-vintage-black dark:text-dark-text group-hover:text-vintage-gold dark:group-hover:text-dark-accent'
               }`}>
                 {category.name}
               </h3>
-              <p className={`text-sm transition-colors ${
-                isSelected 
-                  ? 'text-white/80' 
-                  : 'text-vintage-brown dark:text-dark-muted'
-              }`}>
-                {category.linkCount} links
-              </p>
             </div>
             
-            {/* Selection Indicator */}
+            {/* Selection Glow */}
             {isSelected && (
               <motion.div
-                className="absolute inset-0 rounded-2xl border-2 border-vintage-gold"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                className="absolute inset-0 rounded-xl"
+                initial={{ opacity: 0, boxShadow: '0 0 0 0 rgba(218, 165, 32, 0)' }}
+                animate={{ 
+                  opacity: 1,
+                  boxShadow: '0 0 20px 2px rgba(218, 165, 32, 0.5)'
+                }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.3 }}
               />
             )}
           </motion.button>

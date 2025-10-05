@@ -10,21 +10,26 @@ router.get('/categories', async (req, res) => {
   try {
     const categories = await Category.find().sort({ name: 1 });
     
-    // Get link count for each category
-    const categoriesWithCount = await Promise.all(
-      categories.map(async (category) => {
-        const linkCount = await Link.countDocuments({ 
-          category: category.slug, 
-          isActive: true 
-        });
-        return {
-          ...category.toObject(),
-          linkCount
-        };
-      })
-    );
+    // Get total active links count
+    const totalActiveLinks = await Link.countDocuments({ isActive: true });
     
-    res.json(categoriesWithCount);
+    // Get all active links grouped by category
+    const linkCounts = await Link.aggregate([
+      { $match: { isActive: true } },
+      { $group: { _id: '$category', count: { $sum: 1 } } }
+    ]);
+    
+    const countMap = {};
+    linkCounts.forEach(item => {
+      countMap[item._id] = item.count;
+    });
+    
+    const categoriesWithCount = categories.map(category => ({
+      ...category.toObject(),
+      linkCount: countMap[category.slug] || 0
+    }));
+    
+    res.json({ categories: categoriesWithCount, totalActiveLinks });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -33,7 +38,7 @@ router.get('/categories', async (req, res) => {
 // Get all links with filtering and search
 router.get('/', async (req, res) => {
   try {
-    const { category, search, page = 1, limit = 50 } = req.query;
+    const { category, search, page = 1, limit = 500 } = req.query;
     const query = { isActive: true };
     
     if (category && category !== 'all') {

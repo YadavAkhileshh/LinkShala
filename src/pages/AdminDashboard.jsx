@@ -25,6 +25,7 @@ const AdminDashboard = () => {
   const [selectedLinks, setSelectedLinks] = useState([])
   const [selectAll, setSelectAll] = useState(false)
   const [confirmDialog, setConfirmDialog] = useState({ show: false, title: '', message: '', onConfirm: null })
+  const [viewMode, setViewMode] = useState('list') // 'list' or 'category'
   
   // Form states
   const [isEditing, setIsEditing] = useState(false)
@@ -961,20 +962,44 @@ const AdminDashboard = () => {
                         className="w-full pl-10 pr-4 py-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
                       />
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Filter size={18} className="text-vintage-brown dark:text-dark-muted" />
-                      <select
-                        value={categoryFilter}
-                        onChange={(e) => setCategoryFilter(e.target.value)}
-                        className="px-4 py-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text font-serif"
-                      >
-                        <option value="all">All Categories</option>
-                        {availableCategories.map(category => (
-                          <option key={category._id} value={category.slug}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-2 bg-vintage-cream dark:bg-dark-bg rounded-lg p-1">
+                        <button
+                          onClick={() => setViewMode('list')}
+                          className={`px-3 py-2 rounded-md font-serif text-sm transition-colors ${
+                            viewMode === 'list'
+                              ? 'bg-vintage-gold text-white'
+                              : 'text-vintage-brown dark:text-dark-muted hover:bg-vintage-gold/10'
+                          }`}
+                        >
+                          List View
+                        </button>
+                        <button
+                          onClick={() => setViewMode('category')}
+                          className={`px-3 py-2 rounded-md font-serif text-sm transition-colors ${
+                            viewMode === 'category'
+                              ? 'bg-vintage-gold text-white'
+                              : 'text-vintage-brown dark:text-dark-muted hover:bg-vintage-gold/10'
+                          }`}
+                        >
+                          By Category
+                        </button>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Filter size={18} className="text-vintage-brown dark:text-dark-muted" />
+                        <select
+                          value={categoryFilter}
+                          onChange={(e) => setCategoryFilter(e.target.value)}
+                          className="px-4 py-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text font-serif"
+                        >
+                          <option value="all">All Categories</option>
+                          {availableCategories.map(category => (
+                            <option key={category._id} value={category.slug}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                   </div>
                   
@@ -1033,7 +1058,109 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* Links Table */}
+              {/* Links Display */}
+              {viewMode === 'category' ? (
+                <div className="space-y-6">
+                  {availableCategories
+                    .filter(cat => categoryFilter === 'all' || cat.slug === categoryFilter)
+                    .map(category => {
+                      const categoryLinks = links.filter(link => link.category === category.slug)
+                      if (categoryLinks.length === 0) return null
+                      
+                      return (
+                        <div key={category._id} className="bg-vintage-paper dark:bg-dark-card rounded-2xl shadow-vault border border-vintage-gold/20 dark:border-dark-border overflow-hidden">
+                          <div className="bg-vintage-gold/10 dark:bg-dark-accent/10 px-6 py-4 border-b border-vintage-gold/20 dark:border-dark-border">
+                            <h3 className="text-lg font-vintage font-bold text-vintage-black dark:text-dark-text capitalize">
+                              {category.name} <span className="text-sm font-normal text-vintage-brown dark:text-dark-muted">({categoryLinks.length} links)</span>
+                            </h3>
+                          </div>
+                          <div className="overflow-x-auto">
+                            <table className="w-full">
+                              <thead className="bg-vintage-cream/50 dark:bg-dark-bg/50">
+                                <tr>
+                                  <th className="px-6 py-3 text-left text-sm font-serif font-medium text-vintage-brown dark:text-dark-muted">
+                                    <input
+                                      type="checkbox"
+                                      checked={categoryLinks.every(link => selectedLinks.includes(link._id))}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setSelectedLinks([...new Set([...selectedLinks, ...categoryLinks.map(l => l._id)])])
+                                        } else {
+                                          setSelectedLinks(selectedLinks.filter(id => !categoryLinks.map(l => l._id).includes(id)))
+                                        }
+                                      }}
+                                      className="rounded border-vintage-gold/30 text-vintage-gold focus:ring-vintage-gold"
+                                    />
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-sm font-serif font-medium text-vintage-brown dark:text-dark-muted">Title</th>
+                                  <th className="px-6 py-3 text-left text-sm font-serif font-medium text-vintage-brown dark:text-dark-muted">Stats</th>
+                                  <th className="px-6 py-3 text-left text-sm font-serif font-medium text-vintage-brown dark:text-dark-muted">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-vintage-gold/10 dark:divide-dark-border">
+                                {categoryLinks.map((link) => (
+                                  <tr key={link._id} className={`hover:bg-vintage-cream/50 dark:hover:bg-dark-bg/50 transition-colors ${
+                                    selectedLinks.includes(link._id) ? 'bg-vintage-gold/10 dark:bg-dark-accent/10' : ''
+                                  }`}>
+                                    <td className="px-6 py-4">
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedLinks.includes(link._id)}
+                                        onChange={() => handleSelectLink(link._id)}
+                                        className="rounded border-vintage-gold/30 text-vintage-gold focus:ring-vintage-gold"
+                                      />
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <div>
+                                        <div className="font-serif font-medium text-vintage-black dark:text-dark-text flex items-center space-x-2">
+                                          <span>{link.title}</span>
+                                          {link.isFeatured && <span className="text-xl">🔥</span>}
+                                        </div>
+                                        <div className="text-sm text-vintage-brown dark:text-dark-muted truncate max-w-xs">{link.url}</div>
+                                        <div className="text-xs text-vintage-brown/60 dark:text-dark-muted/60 mt-1 flex items-center space-x-1">
+                                          <Calendar size={12} />
+                                          <span>{new Date(link.publishedDate || link.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-vintage-brown dark:text-dark-muted">
+                                      <div className="flex space-x-4">
+                                        <span>👁 {link.clickCount || 0}</span>
+                                        <span>📤 {link.shareCount || 0}</span>
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <div className="flex space-x-2">
+                                        <motion.button
+                                          onClick={() => handleEdit(link)}
+                                          whileHover={{ scale: 1.1 }}
+                                          whileTap={{ scale: 0.9 }}
+                                          className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                                          title="Edit link"
+                                        >
+                                          <Edit size={16} />
+                                        </motion.button>
+                                        <motion.button
+                                          onClick={() => handleDelete(link._id)}
+                                          whileHover={{ scale: 1.1 }}
+                                          whileTap={{ scale: 0.9 }}
+                                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                          title="Delete link"
+                                        >
+                                          <Trash2 size={16} />
+                                        </motion.button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )
+                    })}
+                </div>
+              ) : (
               <div className="bg-vintage-paper dark:bg-dark-card rounded-2xl shadow-vault border border-vintage-gold/20 dark:border-dark-border overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -1145,6 +1272,7 @@ const AdminDashboard = () => {
                   </div>
                 )}
               </div>
+              )}
             </motion.div>
           )}
 
