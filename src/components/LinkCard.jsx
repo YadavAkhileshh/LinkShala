@@ -30,13 +30,18 @@ const LinkCard = ({ link, index }) => {
       return
     }
     
-    // Save scroll position before navigating
-    sessionStorage.setItem('homeScrollPos', window.scrollY || 0)
-    
-    // Navigate to detail page
-    if (link._id) {
-      navigate(`/link/${link._id}`)
+    // Open link in new tab
+    try {
+      if (link._id) {
+        await apiService.getLink(link._id)
+        setStats(prev => ({ ...prev, clickCount: prev.clickCount + 1 }))
+      }
+      trackLinkClick(link.title || link.name, link.url)
+    } catch (err) {
+      console.log('Error updating click count:', err)
     }
+    
+    window.open(link.url, '_naya', 'noopener,noreferrer')
   }
   
   const handleVisitLink = async (e) => {
