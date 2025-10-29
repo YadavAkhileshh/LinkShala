@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Link2, Zap, Shield, TrendingUp, Users, Star, Check, X, Sparkles, Rocket, Lock, Code, Palette, Brain } from 'lucide-react'
+import { Link2, Zap, Shield, TrendingUp, Users, Star, Check, X, Sparkles, Rocket, Lock, Code, Palette, Brain, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import apiService from '../lib/api'
@@ -13,6 +13,7 @@ const LandingPage = () => {
   const [fullName, setFullName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [promotedLink, setPromotedLink] = useState(null)
   const { signIn, signUp, signInWithGoogle } = useAuth()
   const navigate = useNavigate()
@@ -448,7 +449,7 @@ const LandingPage = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-vintage-paper dark:bg-dark-card rounded-3xl p-6 max-w-md w-full border-2 border-vintage-gold/30 dark:border-dark-border shadow-2xl relative max-h-[90vh] overflow-y-auto"
+              className="bg-vintage-paper dark:bg-dark-card rounded-3xl p-6 max-w-md w-full border-2 border-vintage-gold/30 dark:border-dark-border shadow-2xl relative"
             >
               <button
                 onClick={() => setShowAuth(false)}
@@ -512,7 +513,7 @@ const LandingPage = () => {
                       onChange={(e) => setFullName(e.target.value)}
                       required={!isLogin}
                       className="w-full px-3 py-2 bg-vintage-cream dark:bg-dark-bg border border-vintage-gold/30 dark:border-dark-border rounded-lg text-vintage-black dark:text-dark-text font-serif text-sm focus:outline-none focus:ring-2 focus:ring-vintage-gold"
-                      placeholder="Akhilesh Yadav"
+                      placeholder="ishowspeed"
                     />
                   </div>
                 )}
@@ -526,11 +527,11 @@ const LandingPage = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-3 bg-vintage-cream dark:bg-dark-bg border border-vintage-gold/30 dark:border-dark-border rounded-xl text-vintage-black dark:text-dark-text font-serif focus:outline-none focus:ring-2 focus:ring-vintage-gold"
+                    className="w-full px-3 py-2 bg-vintage-cream dark:bg-dark-bg border border-vintage-gold/30 dark:border-dark-border rounded-lg text-vintage-black dark:text-dark-text font-serif text-sm focus:outline-none focus:ring-2 focus:ring-vintage-gold"
                     placeholder="yourname@gmail.com"
                   />
                   <p className="text-xs text-vintage-brown dark:text-dark-muted mt-1 font-serif">
-                    Only Gmail are accepted
+                    Only Gmail addresses are accepted
                   </p>
                 </div>
 
@@ -538,14 +539,23 @@ const LandingPage = () => {
                   <label className="block text-sm font-serif font-medium text-vintage-black dark:text-dark-text mb-2">
                     Password
                   </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 bg-vintage-cream dark:bg-dark-bg border border-vintage-gold/30 dark:border-dark-border rounded-xl text-vintage-black dark:text-dark-text font-serif focus:outline-none focus:ring-2 focus:ring-vintage-gold"
-                    placeholder="••••••••"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 pr-10 bg-vintage-cream dark:bg-dark-bg border border-vintage-gold/30 dark:border-dark-border rounded-lg text-vintage-black dark:text-dark-text font-serif text-sm focus:outline-none focus:ring-2 focus:ring-vintage-gold"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-vintage-brown dark:text-dark-muted hover:text-vintage-gold transition-colors z-10"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
 
                 {error && (
