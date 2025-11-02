@@ -203,66 +203,38 @@ const CategorySelector = ({ selectedCategory, onCategoryChange }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.03 }}
-            whileHover={{ y: -4, scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className={`relative overflow-hidden group p-3 rounded-xl transition-all duration-300 ${
+            whileHover={{ y: -2, scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className={`relative overflow-hidden group p-3 rounded-lg transition-all duration-200 ${
               isSelected
-                ? 'shadow-xl'
-                : 'shadow-md hover:shadow-lg'
+                ? 'bg-vintage-gold dark:bg-vintage-brass shadow-lg'
+                : 'bg-vintage-paper dark:bg-dark-card shadow-sm hover:shadow-md border border-vintage-gold/10 dark:border-dark-border'
             }`}
-            style={{
-              background: isSelected 
-                ? `linear-gradient(135deg, ${category.color.replace('from-', '#').replace(' to-', ', #')})` 
-                : undefined
-            }}
           >
-            {/* Animated Background Gradient */}
+            {/* Subtle Hover Effect */}
             {!isSelected && (
-              <>
-                <div className="absolute inset-0 bg-vintage-paper dark:bg-dark-card" />
-                <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-20 transition-all duration-500`} />
-                <div className="absolute inset-0 border border-vintage-gold/20 dark:border-dark-border group-hover:border-vintage-gold/40 dark:group-hover:border-dark-accent/40 rounded-xl transition-colors duration-300" />
-              </>
+              <div className="absolute inset-0 bg-vintage-gold/5 dark:bg-vintage-gold/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
             )}
             
-            {/* Shine Effect on Hover */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-            </div>
-            
             {/* Icon */}
-            <div className={`relative w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center transition-all duration-300 ${
+            <div className={`relative w-9 h-9 mx-auto mb-2 rounded-md flex items-center justify-center transition-all duration-200 ${
               isSelected 
-                ? 'bg-white/20 shadow-lg' 
-                : `bg-gradient-to-br ${category.color} text-white group-hover:scale-110 group-hover:rotate-6`
+                ? 'bg-white/20 text-white' 
+                : 'bg-vintage-gold/10 dark:bg-vintage-gold/5 text-vintage-gold group-hover:bg-vintage-gold/20'
             }`}>
-              <Icon size={18} className={isSelected ? 'text-white' : ''} />
+              <Icon size={16} className="transition-transform group-hover:scale-110" />
             </div>
             
             {/* Content */}
             <div className="relative text-center">
-              <h3 className={`font-serif font-bold text-xs transition-colors line-clamp-1 ${
+              <h3 className={`font-serif font-semibold text-xs transition-colors line-clamp-1 ${
                 isSelected 
                   ? 'text-white' 
-                  : 'text-vintage-black dark:text-dark-text group-hover:text-vintage-gold dark:group-hover:text-dark-accent'
+                  : 'text-vintage-black dark:text-dark-text group-hover:text-vintage-gold'
               }`}>
                 {category.name}
               </h3>
             </div>
-            
-            {/* Selection Glow */}
-            {isSelected && (
-              <motion.div
-                className="absolute inset-0 rounded-xl"
-                initial={{ opacity: 0, boxShadow: '0 0 0 0 rgba(218, 165, 32, 0)' }}
-                animate={{ 
-                  opacity: 1,
-                  boxShadow: '0 0 20px 2px rgba(218, 165, 32, 0.5)'
-                }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              />
-            )}
           </motion.button>
         )
       })}

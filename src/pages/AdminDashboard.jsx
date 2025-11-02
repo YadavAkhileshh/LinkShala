@@ -18,6 +18,8 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [displayPage, setDisplayPage] = useState(1)
+  const [linksPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [activeTab, setActiveTab] = useState('overview')
@@ -70,7 +72,7 @@ const AdminDashboard = () => {
       loadLinks()
       loadCategories()
     }
-  }, [currentPage, isAuthenticated, activeTab])
+  }, [isAuthenticated, activeTab])
 
   // Instant search and category filter
   useEffect(() => {
@@ -83,13 +85,17 @@ const AdminDashboard = () => {
     
     // Apply search filter
     if (searchTerm.trim()) {
+      const search = searchTerm.toLowerCase()
       filtered = filtered.filter(link => 
-        link.title.toLowerCase().includes(searchTerm.toLowerCase())
+        link.title.toLowerCase().includes(search) ||
+        link.url.toLowerCase().includes(search) ||
+        (link.tags && link.tags.some(tag => tag.toLowerCase().includes(search))) ||
+        (link.description && link.description.toLowerCase().includes(search))
       )
     }
     
     setLinks(filtered)
-    setCurrentPage(1)
+    setDisplayPage(1)
   }, [searchTerm, categoryFilter, allLinks])
 
   useEffect(() => {
@@ -183,12 +189,12 @@ const AdminDashboard = () => {
   const loadLinks = async () => {
     try {
       setIsLoading(true)
-      const params = { page: currentPage, limit: 100 }
+      const params = { page: 1, limit: 10000 } // Load all links at once
       
       const data = await apiService.getAdminLinks(params)
       setAllLinks(data.links)
       setLinks(data.links)
-      setTotalPages(data.totalPages)
+      setTotalPages(1)
     } catch (error) {
       console.error('Error loading links:', error)
       if (error.message.includes('Invalid token')) {
@@ -640,12 +646,13 @@ const AdminDashboard = () => {
               exit={{ opacity: 0, y: -20 }}
             >
               {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                 {[
-                  { label: 'Total Links', value: stats.totalLinks || 0, icon: LinkIcon, color: 'from-blue-500 to-blue-600' },
-                  { label: 'Total Clicks', value: stats.totalClicks || 0, icon: Eye, color: 'from-green-500 to-green-600' },
-                  { label: 'Total Shares', value: stats.totalShares || 0, icon: Share2, color: 'from-purple-500 to-purple-600' },
-                  { label: 'Active Links', value: stats.activeLinks || 0, icon: TrendingUp, color: 'from-orange-500 to-orange-600' }
+                  { label: 'Total Links', value: stats.totalLinks || 0, icon: LinkIcon, color: 'from-blue-500 to-blue-600', trend: '+12%' },
+                  { label: 'Total Clicks', value: stats.totalClicks || 0, icon: Eye, color: 'from-green-500 to-green-600', trend: '+24%' },
+                  { label: 'Total Shares', value: stats.totalShares || 0, icon: Share2, color: 'from-purple-500 to-purple-600', trend: '+8%' },
+                  { label: 'Categories', value: stats.totalCategories || 0, icon: Settings, color: 'from-pink-500 to-pink-600', trend: '+3' },
+                  { label: 'Featured', value: stats.featuredLinks || 0, icon: TrendingUp, color: 'from-orange-500 to-orange-600', trend: '🔥' }
                 ].map((stat, index) => {
                   const Icon = stat.icon
                   return (
@@ -664,6 +671,11 @@ const AdminDashboard = () => {
                           <p className="text-3xl font-vintage font-bold text-vintage-black dark:text-dark-text mt-2">
                             {stat.value.toLocaleString()}
                           </p>
+                          {stat.trend && (
+                            <p className="text-xs font-serif text-green-600 dark:text-green-400 mt-1">
+                              {stat.trend}
+                            </p>
+                          )}
                         </div>
                         <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} shadow-md`}>
                           <Icon className="w-6 h-6 text-white" />
@@ -749,7 +761,7 @@ const AdminDashboard = () => {
                       onClick={handleRemoveDuplicates}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2 font-serif shadow-md"
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all flex items-center space-x-2 font-serif shadow-lg"
                     >
                       <Trash2 size={18} />
                       <span>Remove Duplicates</span>
@@ -758,7 +770,7 @@ const AdminDashboard = () => {
                       onClick={() => setShowBulkUpload(!showBulkUpload)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 font-serif shadow-md"
+                      className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all flex items-center space-x-2 font-serif shadow-lg"
                     >
                       <Upload size={18} />
                       <span>Bulk Upload</span>
@@ -767,7 +779,7 @@ const AdminDashboard = () => {
                       onClick={() => setIsEditing(true)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-vintage-gold text-white px-4 py-2 rounded-lg hover:bg-vintage-brass transition-colors flex items-center space-x-2 font-serif shadow-md"
+                      className="bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-4 py-2 rounded-lg hover:from-vintage-brass hover:to-vintage-gold transition-all flex items-center space-x-2 font-serif shadow-lg"
                     >
                       <Plus size={18} />
                       <span>Add Link</span>
@@ -859,22 +871,27 @@ const AdminDashboard = () => {
                           </p>
                         )}
                       </div>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          list="categories"
-                          placeholder="Category * (type or select)"
-                          value={formData.category}
-                          onChange={(e) => setFormData({...formData, category: e.target.value})}
-                          className="w-full p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
-                        />
-                        <datalist id="categories">
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-serif font-medium text-vintage-black dark:text-dark-text mb-2">Category *</label>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 max-h-48 overflow-y-auto p-2 border border-vintage-gold/30 dark:border-dark-border rounded-lg bg-vintage-cream dark:bg-dark-bg">
                           {availableCategories.map(category => (
-                            <option key={category._id} value={category.slug}>
-                              {category.name}
-                            </option>
+                            <motion.button
+                              key={category._id}
+                              type="button"
+                              onClick={() => setFormData({...formData, category: category.slug})}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className={`p-3 rounded-lg text-xs font-serif font-medium transition-all ${
+                                formData.category === category.slug
+                                  ? 'bg-gradient-to-r from-vintage-gold to-vintage-brass text-white shadow-md'
+                                  : 'bg-vintage-paper dark:bg-dark-card text-vintage-brown dark:text-dark-muted hover:bg-vintage-gold/10 border border-vintage-gold/20'
+                              }`}
+                            >
+                              {category.icon && <span className="text-lg mb-1 block">{category.icon}</span>}
+                              <span className="capitalize">{category.name}</span>
+                            </motion.button>
                           ))}
-                        </datalist>
+                        </div>
                       </div>
                       <input
                         type="date"
@@ -948,57 +965,103 @@ const AdminDashboard = () => {
                 </motion.div>
               )}
 
-              {/* Search and Bulk Actions */}
+              {/* Search and Filters */}
               <div className="bg-vintage-paper dark:bg-dark-card rounded-2xl p-6 mb-8 shadow-vault border border-vintage-gold/20 dark:border-dark-border">
-                <div className="space-y-4">
-                  <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-vintage-brown dark:text-dark-muted" size={20} />
+                <div className="space-y-6">
+                  {/* Search Bar */}
+                  <div>
+                    <label className="block text-sm font-serif font-medium text-vintage-black dark:text-dark-text mb-2">
+                      🔍 Search Links
+                    </label>
+                    <div className="relative">
+                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-vintage-gold" size={20} />
                       <input
                         type="text"
-                        placeholder="Search links..."
+                        placeholder="Search by title, URL, or tags..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text"
+                        className="w-full pl-12 pr-4 py-3 border-2 border-vintage-gold/30 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-vintage-gold focus:border-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text font-serif placeholder:text-vintage-brown/50"
                       />
+                      {searchTerm && (
+                        <button
+                          onClick={() => setSearchTerm('')}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-vintage-brown dark:text-dark-muted hover:text-vintage-gold transition-colors"
+                        >
+                          <X size={18} />
+                        </button>
+                      )}
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="flex items-center space-x-2 bg-vintage-cream dark:bg-dark-bg rounded-lg p-1">
-                        <button
+                    {searchTerm && (
+                      <p className="text-xs text-vintage-brown dark:text-dark-muted mt-2 font-serif">
+                        Found {links.length} result{links.length !== 1 ? 's' : ''} for "{searchTerm}"
+                      </p>
+                    )}
+                  </div>
+
+                  {/* View Mode and Filters */}
+                  <div>
+                    <div className="flex flex-col lg:flex-row gap-4 items-start">
+                      <div className="flex items-center space-x-2 bg-vintage-paper dark:bg-dark-card rounded-xl p-1 border border-vintage-gold/20 shadow-md">
+                        <motion.button
                           onClick={() => setViewMode('list')}
-                          className={`px-3 py-2 rounded-md font-serif text-sm transition-colors ${
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className={`px-4 py-2 rounded-lg font-serif text-sm transition-all ${
                             viewMode === 'list'
-                              ? 'bg-vintage-gold text-white'
+                              ? 'bg-gradient-to-r from-vintage-gold to-vintage-brass text-white shadow-md'
                               : 'text-vintage-brown dark:text-dark-muted hover:bg-vintage-gold/10'
                           }`}
                         >
-                          List View
-                        </button>
-                        <button
+                          📋 List View
+                        </motion.button>
+                        <motion.button
                           onClick={() => setViewMode('category')}
-                          className={`px-3 py-2 rounded-md font-serif text-sm transition-colors ${
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className={`px-4 py-2 rounded-lg font-serif text-sm transition-all ${
                             viewMode === 'category'
-                              ? 'bg-vintage-gold text-white'
+                              ? 'bg-gradient-to-r from-vintage-gold to-vintage-brass text-white shadow-md'
                               : 'text-vintage-brown dark:text-dark-muted hover:bg-vintage-gold/10'
                           }`}
                         >
-                          By Category
-                        </button>
+                          📁 By Category
+                        </motion.button>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Filter size={18} className="text-vintage-brown dark:text-dark-muted" />
-                        <select
-                          value={categoryFilter}
-                          onChange={(e) => setCategoryFilter(e.target.value)}
-                          className="px-4 py-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text font-serif"
-                        >
-                          <option value="all">All Categories</option>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Filter size={18} className="text-vintage-gold" />
+                          <span className="text-sm font-serif font-medium text-vintage-black dark:text-dark-text">Filter by Category:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <motion.button
+                            onClick={() => setCategoryFilter('all')}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-serif font-medium transition-all ${
+                              categoryFilter === 'all'
+                                ? 'bg-gradient-to-r from-vintage-gold to-vintage-brass text-white shadow-md'
+                                : 'bg-vintage-paper dark:bg-dark-card text-vintage-brown dark:text-dark-muted hover:bg-vintage-gold/10 border border-vintage-gold/20'
+                            }`}
+                          >
+                            All
+                          </motion.button>
                           {availableCategories.map(category => (
-                            <option key={category._id} value={category.slug}>
-                              {category.name}
-                            </option>
+                            <motion.button
+                              key={category._id}
+                              onClick={() => setCategoryFilter(category.slug)}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-serif font-medium transition-all ${
+                                categoryFilter === category.slug
+                                  ? 'bg-gradient-to-r from-vintage-gold to-vintage-brass text-white shadow-md'
+                                  : 'bg-vintage-paper dark:bg-dark-card text-vintage-brown dark:text-dark-muted hover:bg-vintage-gold/10 border border-vintage-gold/20'
+                              }`}
+                            >
+                              {category.icon && <span className="mr-1">{category.icon}</span>}
+                              <span className="capitalize">{category.name}</span>
+                            </motion.button>
                           ))}
-                        </select>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1160,7 +1223,13 @@ const AdminDashboard = () => {
                       )
                     })}
                 </div>
-              ) : (
+              ) : (() => {
+                const startIndex = (displayPage - 1) * linksPerPage
+                const endIndex = startIndex + linksPerPage
+                const displayedLinks = links.slice(startIndex, endIndex)
+                const totalDisplayPages = Math.ceil(links.length / linksPerPage)
+                
+                return (
               <div className="bg-vintage-paper dark:bg-dark-card rounded-2xl shadow-vault border border-vintage-gold/20 dark:border-dark-border overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -1181,7 +1250,7 @@ const AdminDashboard = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-vintage-gold/10 dark:divide-dark-border">
-                      {links.map((link) => (
+                      {displayedLinks.map((link) => (
                         <tr key={link._id} className={`hover:bg-vintage-cream/50 dark:hover:bg-dark-bg/50 transition-colors ${
                           selectedLinks.includes(link._id) ? 'bg-vintage-gold/10 dark:bg-dark-accent/10' : ''
                         }`}>
@@ -1246,33 +1315,41 @@ const AdminDashboard = () => {
                 </div>
                 
                 {/* Pagination */}
-                {totalPages > 1 && (
+                {totalDisplayPages > 1 && (
                   <div className="px-6 py-4 border-t border-vintage-gold/10 dark:border-dark-border">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-vintage-brown dark:text-dark-muted font-serif">
-                        Page {currentPage} of {totalPages}
+                        Showing {startIndex + 1}-{Math.min(endIndex, links.length)} of {links.length} links
                       </span>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                          disabled={currentPage === 1}
-                          className="px-3 py-1 bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent rounded disabled:opacity-50 font-serif"
+                      <div className="flex items-center space-x-2">
+                        <motion.button
+                          onClick={() => setDisplayPage(prev => Math.max(1, prev - 1))}
+                          disabled={displayPage === 1}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="px-4 py-2 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-serif text-sm shadow-md hover:from-vintage-brass hover:to-vintage-gold transition-all"
                         >
-                          Previous
-                        </button>
-                        <button
-                          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                          disabled={currentPage === totalPages}
-                          className="px-3 py-1 bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent rounded disabled:opacity-50 font-serif"
+                          ← Previous
+                        </motion.button>
+                        <span className="text-sm font-serif text-vintage-brown dark:text-dark-muted px-3">
+                          Page {displayPage} of {totalDisplayPages}
+                        </span>
+                        <motion.button
+                          onClick={() => setDisplayPage(prev => Math.min(totalDisplayPages, prev + 1))}
+                          disabled={displayPage === totalDisplayPages}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="px-4 py-2 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-serif text-sm shadow-md hover:from-vintage-brass hover:to-vintage-gold transition-all"
                         >
-                          Next
-                        </button>
+                          Next →
+                        </motion.button>
                       </div>
                     </div>
                   </div>
                 )}
               </div>
-              )}
+                )
+              })()}
             </motion.div>
           )}
 

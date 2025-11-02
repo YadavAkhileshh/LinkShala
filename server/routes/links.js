@@ -35,7 +35,7 @@ router.get('/categories', async (req, res) => {
   }
 });
 
-// Get all links with filtering and search
+// Get all links with filtering and search (optimized)
 router.get('/', async (req, res) => {
   try {
     const { category, search, page = 1, limit = 500 } = req.query;
@@ -49,12 +49,18 @@ router.get('/', async (req, res) => {
       query.$text = { $search: search };
     }
     
+    // Use lean() for faster queries and select only needed fields
     const links = await Link.find(query)
+      .select('title url description category tags publishedDate clickCount shareCount createdAt')
       .sort(search ? { score: { $meta: 'textScore' } } : { createdAt: -1 })
       .limit(limit * 1)
-      .skip((page - 1) * limit);
+      .skip((page - 1) * limit)
+      .lean();
     
     const total = await Link.countDocuments(query);
+    
+    // Set cache headers
+    res.set('Cache-Control', 'public, max-age=300'); // 5 minutes
     
     res.json({
       links,

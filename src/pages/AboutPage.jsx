@@ -66,7 +66,7 @@ const AboutPage = () => {
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
                 <h2 className="text-3xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-6">
-                  Our Mission
+                 Mission 
                 </h2>
                 <p className="text-vintage-brown dark:text-dark-muted font-serif text-lg leading-relaxed mb-6">
                   I believe that great developers deserve great tools. LinkShala was born from my frustration 
@@ -195,7 +195,7 @@ const AboutPage = () => {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-6">
-              Built with ❤️ by a Developer
+              Socials
             </h2>
             <p className="text-vintage-brown dark:text-dark-muted font-serif text-lg leading-relaxed mb-8">
               LinkShala is crafted by a passionate developer who understands the daily challenges 

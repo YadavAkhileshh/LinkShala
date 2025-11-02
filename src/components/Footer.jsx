@@ -23,8 +23,12 @@ const Footer = () => {
             </a>
           </div>
           
-          <div>
-            website by <a href="https://github.com/YadavAkhileshh" target="_blank" rel="noopener noreferrer" className="text-vintage-black dark:text-dark-text font-medium hover:text-vintage-gold transition-colors cursor-pointer">Akhilesh</a>
+          <div className="font-serif text-center md:text-left">
+            <div className="flex items-center space-x-2">
+              
+              <span className="text-vintage-brown dark:text-dark-muted">Coded with caffeine by</span>
+              <a href="https://github.com/YadavAkhileshh" target="_blank" rel="noopener noreferrer" className="text-vintage-gold font-bold hover:text-vintage-brass transition-colors underline decoration-vintage-gold/30">Akhilesh</a>
+            </div>
           </div>
           
           <div>

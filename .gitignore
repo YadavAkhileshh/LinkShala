@@ -28,3 +28,13 @@ dist-ssr
 .env.local
 .env.production
 
+# Cypress
+cypress/videos
+cypress/screenshots
+cypress/downloads
+
+# Testing
+coverage
+.nyc_output
+
+TOOLS.md

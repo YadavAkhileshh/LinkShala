@@ -187,8 +187,13 @@ const LinkDetailPage = () => {
         >
           <button
             onClick={() => {
-              sessionStorage.setItem('homeScrollPos', window.scrollY || 0)
-              navigate(-1)
+              const scrollPos = sessionStorage.getItem('homeScrollPos')
+              navigate('/home')
+              setTimeout(() => {
+                if (scrollPos) {
+                  window.scrollTo(0, parseInt(scrollPos))
+                }
+              }, 100)
             }}
             className="flex items-center space-x-2 text-vintage-brown dark:text-dark-muted hover:text-vintage-gold transition-colors"
           >
@@ -292,52 +297,120 @@ const LinkDetailPage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-vintage-paper dark:bg-dark-card rounded-2xl p-8 shadow-vault border border-vintage-gold/20 dark:border-dark-border mb-8"
         >
-          {/* Title and Stats */}
-          <div className="mb-6">
-            <h1 className="text-4xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
-              {link.title}
-            </h1>
-            
-            <div className="flex items-center space-x-2 text-vintage-brown dark:text-dark-muted mb-4">
-              <Calendar size={16} />
-              <span className="font-serif">Published {new Date(link.publishedDate || link.createdAt).toLocaleDateString()}</span>
+          {/* Category Badge */}
+          {link.category && (
+            <div className="mb-4">
+              <span className="inline-block px-4 py-2 bg-vintage-gold/20 dark:bg-vintage-gold/10 text-vintage-gold font-serif font-semibold rounded-full text-sm border border-vintage-gold/30">
+                {link.category.charAt(0).toUpperCase() + link.category.slice(1)}
+              </span>
             </div>
-            
-            {/* Description */}
-            {link.description && (
-              <div className="mb-6 p-4 bg-vintage-gold/5 dark:bg-dark-accent/5 rounded-xl border border-vintage-gold/10 dark:border-dark-accent/10">
-                <p className="text-vintage-coffee dark:text-dark-muted font-serif leading-relaxed">
+          )}
+
+          {/* Title - Clickable */}
+          <a 
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-block"
+          >
+            <h1 className="text-4xl md:text-5xl font-vintage font-bold text-vintage-black dark:text-dark-text group-hover:text-vintage-gold mb-6 leading-tight transition-colors duration-300 cursor-pointer">
+              {link.title}
+              {link.isFeatured && <span className="ml-3 text-3xl">🔥</span>}
+              <ExternalLink className="inline-block ml-3 mb-2" size={32} />
+            </h1>
+          </a>
+          
+          {/* Meta Info */}
+          <div className="flex flex-wrap items-center gap-4 text-sm text-vintage-brown dark:text-dark-muted mb-6 pb-6 border-b border-vintage-gold/20 dark:border-dark-border">
+            <div className="flex items-center space-x-2">
+              <Calendar size={16} />
+              <span className="font-serif">Added {new Date(link.publishedDate || link.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <span className="font-serif">Active & Verified</span>
+            </div>
+          </div>
+          
+          {/* Description */}
+          {link.description && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">About This Resource</h2>
+              <div className="p-6 bg-gradient-to-br from-vintage-gold/5 to-vintage-brass/5 dark:from-dark-accent/5 dark:to-dark-accent/10 rounded-xl border border-vintage-gold/20 dark:border-dark-accent/20">
+                <p className="text-lg text-vintage-coffee dark:text-dark-muted font-serif leading-relaxed">
                   {link.description}
                 </p>
               </div>
-            )}
-            
-            {/* Tags */}
-            {link.tags && link.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-6">
+            </div>
+          )}
+          
+          {/* Tags */}
+          {link.tags && link.tags.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-3">Topics</h3>
+              <div className="flex flex-wrap gap-3">
                 {link.tags.map((tag, index) => (
-                  <span
+                  <motion.span
                     key={index}
-                    className="px-3 py-1 bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent text-sm rounded-full border border-vintage-gold/20 dark:border-dark-accent/20"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.05 }}
+                    className="px-4 py-2 bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent text-sm font-serif font-medium rounded-full border border-vintage-gold/30 dark:border-dark-accent/30 cursor-default"
                   >
-                    {tag}
-                  </span>
+                    #{tag}
+                  </motion.span>
                 ))}
               </div>
-            )}
-            
-            {/* Visit Link Button */}
+            </div>
+          )}
+
+          {/* Why This Resource Section */}
+          <div className="mb-8 p-6 bg-vintage-cream dark:bg-dark-bg rounded-xl border border-vintage-gold/20 dark:border-dark-border">
+            <h3 className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4 flex items-center space-x-2">
+              <span>✨</span>
+              <span>Why This Resource?</span>
+            </h3>
+            <ul className="space-y-3 text-vintage-coffee dark:text-dark-muted font-serif">
+              <li className="flex items-start space-x-3">
+                <span className="text-vintage-gold mt-1">✓</span>
+                <span>Handpicked and verified by our team</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <span className="text-vintage-gold mt-1">✓</span>
+                <span>Trusted by thousands of developers worldwide</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <span className="text-vintage-gold mt-1">✓</span>
+                <span>Regularly updated and maintained</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <span className="text-vintage-gold mt-1">✓</span>
+                <span>Part of our curated collection of {link.category || 'premium'} resources</span>
+              </li>
+            </ul>
+          </div>
+          
+          {/* CTA Button */}
+          <div className="flex flex-col sm:flex-row gap-4">
             <motion.a
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center space-x-2 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-8 py-4 rounded-lg font-serif font-medium hover:from-vintage-brass hover:to-vintage-gold transition-all duration-300 shadow-glow"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 flex items-center justify-center space-x-2 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-8 py-4 rounded-xl font-serif font-bold text-lg hover:from-vintage-brass hover:to-vintage-gold transition-all duration-300 shadow-glow"
             >
-              <ExternalLink size={20} />
-              <span>Explore Now →</span>
+              <ExternalLink size={22} />
+              <span>Visit {link.title} →</span>
             </motion.a>
+          </div>
+
+          {/* Additional Info */}
+          <div className="mt-8 pt-6 border-t border-vintage-gold/20 dark:border-dark-border">
+            <p className="text-sm text-vintage-brown/70 dark:text-dark-muted/70 font-serif text-center">
+              💡 Found this helpful? Share it with your developer friends!
+            </p>
           </div>
         </motion.div>
 

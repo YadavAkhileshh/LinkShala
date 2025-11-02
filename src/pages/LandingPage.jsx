@@ -15,20 +15,29 @@ const LandingPage = () => {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [promotedLink, setPromotedLink] = useState(null)
-  const { signIn, signUp, signInWithGoogle } = useAuth()
+  const [previewLinks, setPreviewLinks] = useState([])
+  const { signIn, signUp, signInWithGoogle, user } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    const fetchPromotedLink = async () => {
+    // Redirect if already logged in
+    if (user) {
+      navigate('/home')
+    }
+  }, [user, navigate])
+
+  useEffect(() => {
+    const fetchLinks = async () => {
       try {
         const data = await apiService.getLinks({ page: 1, limit: 100 })
         const promoted = data.links.find(link => link.isPromoted)
         setPromotedLink(promoted)
+        setPreviewLinks(data.links.slice(0, 6))
       } catch (error) {
-        console.error('Error fetching promoted link:', error)
+        console.error('Error fetching links:', error)
       }
     }
-    fetchPromotedLink()
+    fetchLinks()
   }, [])
 
   const handleSubmit = async (e) => {
@@ -70,14 +79,14 @@ const LandingPage = () => {
   }
 
   const features = [
-    { icon: Link2, title: 'Curated Links', desc: 'Hand-picked resources for developers', color: 'from-blue-500 to-blue-600' },
-    { icon: Zap, title: 'Lightning Fast', desc: 'Instant search and filtering', color: 'from-yellow-500 to-orange-500' },
-    { icon: Shield, title: 'Secure Access', desc: 'Protected with authentication', color: 'from-green-500 to-emerald-600' },
-    { icon: TrendingUp, title: 'Always Updated', desc: 'Fresh content added daily', color: 'from-purple-500 to-pink-500' }
+    { icon: Sparkles, title: 'Curated Quality', desc: 'Every link is handpicked and verified', color: 'from-vintage-gold to-vintage-brass' },
+    { icon: Zap, title: 'Find Fast', desc: 'Search and discover in seconds', color: 'from-vintage-gold to-vintage-brass' },
+    { icon: Shield, title: 'Always Secure', desc: 'Your data stays protected', color: 'from-vintage-gold to-vintage-brass' },
+    { icon: Rocket, title: 'Stay Ahead', desc: 'Fresh resources added daily', color: 'from-vintage-gold to-vintage-brass' }
   ]
 
   const categories = [
-    { icon: Code, name: 'React Libraries', count: '150+' },
+    { icon: Code, name: 'React Components', count: '150+' },
     { icon: Brain, name: 'AI Tools', count: '80+' },
     { icon: Palette, name: 'Design Resources', count: '120+' },
     { icon: Rocket, name: 'Dev Platforms', count: '100+' }
@@ -93,36 +102,37 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 py-20 overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 py-16 sm:py-20 overflow-hidden">
         {/* Animated Background */}
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
-            className="absolute top-20 left-10 w-72 h-72 bg-vintage-gold/10 rounded-full blur-3xl"
+            className="absolute top-20 -left-20 w-96 h-96 bg-vintage-gold/10 rounded-full blur-3xl"
             animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
             transition={{ duration: 8, repeat: Infinity }}
           />
           <motion.div
-            className="absolute bottom-20 right-10 w-96 h-96 bg-vintage-brass/10 rounded-full blur-3xl"
+            className="absolute bottom-20 -right-20 w-[500px] h-[500px] bg-vintage-brass/10 rounded-full blur-3xl"
             animate={{ scale: [1.2, 1, 1.2], opacity: [0.5, 0.3, 0.5] }}
             transition={{ duration: 10, repeat: Infinity }}
           />
         </div>
 
-        <div className="relative max-w-7xl mx-auto text-center z-10">
+        <div className="relative max-w-7xl mx-auto text-center z-10 w-full">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
+            className="space-y-6 sm:space-y-8"
           >
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center space-x-2 bg-vintage-gold/20 dark:bg-vintage-gold/10 px-6 py-3 rounded-full mb-8 border border-vintage-gold/30"
+              className="inline-flex items-center space-x-2 bg-vintage-gold/20 dark:bg-vintage-gold/10 px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-vintage-gold/30"
             >
-              <Sparkles className="w-5 h-5 text-vintage-gold" />
-              <span className="text-vintage-brown dark:text-vintage-gold font-serif font-medium">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-vintage-gold" />
+              <span className="text-sm sm:text-base text-vintage-brown dark:text-vintage-gold font-serif font-medium">
                 Your Developer Toolkit Awaits
               </span>
             </motion.div>
@@ -132,51 +142,57 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-5xl md:text-7xl lg:text-8xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-6 leading-tight"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-vintage font-bold text-vintage-black dark:text-dark-text leading-tight px-4"
             >
-              Discover the Best
+              Welcome to the
               <br />
-              <span className="bg-gradient-to-r from-vintage-gold via-vintage-brass to-vintage-gold bg-clip-text text-transparent">
-                Developer Resources
+              <span className="bg-gradient-to-r from-vintage-gold via-vintage-brass to-vintage-gold bg-clip-text text-transparent inline-block mt-2">
+                Dev Multiverse
               </span>
             </motion.h1>
 
-            <motion.p
+            {/* Subtitle */}
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-xl md:text-2xl text-vintage-coffee dark:text-dark-muted font-serif max-w-3xl mx-auto mb-12 leading-relaxed"
+              className="max-w-3xl mx-auto px-4 space-y-3 sm:space-y-4"
             >
-              Access 500+ curated links to libraries, tools, AI platforms, and design resources. 
-              Everything you need to build faster and smarter.
-            </motion.p>
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-vintage-coffee dark:text-dark-muted font-serif leading-relaxed">
+                <span className="font-semibold text-vintage-brass">React's vibing</span> with{' '}
+                <span className="font-semibold text-vintage-brass">AI</span>,{' '}
+                <span className="font-semibold text-vintage-brass">design's coding itself</span>, and your next big thing's already{' '}
+                <span className="font-semibold text-vintage-brass">compiling</span>.
+              </p>
+              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-vintage-black dark:text-dark-text">
+                ⚡ Dive in. Decode. <span className="text-vintage-gold">Dominate.</span>
+              </p>
+            </motion.div>
 
             {/* CTA Buttons */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+              className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4 pt-4"
             >
               <motion.button
                 onClick={() => { setShowAuth(true); setIsLogin(false) }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="relative group px-8 py-4 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white rounded-xl font-serif font-bold text-lg shadow-glow overflow-hidden"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white rounded-xl font-serif font-bold text-base sm:text-lg shadow-glow flex items-center justify-center space-x-2"
               >
-                <span className="relative z-10 flex items-center space-x-2">
-                  <Rocket className="w-5 h-5" />
-                  <span>Get Started Free</span>
-                </span>
+                <Rocket className="w-5 h-5" />
+                <span>Join Free</span>
               </motion.button>
 
               <motion.button
                 onClick={() => { setShowAuth(true); setIsLogin(true) }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-vintage-paper dark:bg-dark-card border-2 border-vintage-gold/30 dark:border-dark-border text-vintage-black dark:text-dark-text rounded-xl font-serif font-bold text-lg hover:bg-vintage-gold/10 transition-colors"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-vintage-paper dark:bg-dark-card border-2 border-vintage-gold/30 dark:border-dark-border text-vintage-black dark:text-dark-text rounded-xl font-serif font-bold text-base sm:text-lg hover:bg-vintage-gold/10 transition-colors"
               >
-                Sign In
+                Login
               </motion.button>
             </motion.div>
 
@@ -185,7 +201,7 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto"
+              className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 max-w-5xl mx-auto px-4 pt-8 sm:pt-12"
             >
               {stats.map((stat, index) => (
                 <motion.div
@@ -193,12 +209,12 @@ const LandingPage = () => {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.7 + index * 0.1 }}
-                  className="bg-vintage-paper/50 dark:bg-dark-card/50 backdrop-blur-sm rounded-2xl p-6 border border-vintage-gold/20 dark:border-dark-border"
+                  className="bg-vintage-paper/50 dark:bg-dark-card/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-vintage-gold/20 dark:border-dark-border hover:border-vintage-gold/40 transition-colors"
                 >
-                  <div className="text-3xl md:text-4xl font-vintage font-bold text-vintage-gold mb-2">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-vintage font-bold text-vintage-gold mb-1 sm:mb-2">
                     {stat.value}
                   </div>
-                  <div className="text-sm text-vintage-coffee dark:text-dark-muted font-serif">
+                  <div className="text-xs sm:text-sm text-vintage-coffee dark:text-dark-muted font-serif">
                     {stat.label}
                   </div>
                 </motion.div>
@@ -301,8 +317,83 @@ const LandingPage = () => {
         </section>
       )}
 
+      {/* Preview Links Section */}
+      {previewLinks.length > 0 && (
+        <section className="py-20 px-6 bg-vintage-cream dark:bg-dark-bg">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl md:text-5xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
+                Featured Resources
+              </h2>
+              <p className="text-xl text-vintage-coffee dark:text-dark-muted font-serif">
+                Your shortcut to the best developer tools, design kits, and open-source projects
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {previewLinks.map((link, index) => (
+                <motion.div
+                  key={link._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ y: -5 }}
+                  className="bg-vintage-paper dark:bg-dark-card rounded-2xl p-6 border border-vintage-gold/20 dark:border-dark-border shadow-md cursor-pointer group"
+                  onClick={() => window.open(link.url, '_blank')}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <h3 className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text group-hover:text-vintage-gold transition-colors">
+                      {link.title}
+                    </h3>
+                    <svg className="w-5 h-5 text-vintage-gold opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </div>
+                  {link.description && (
+                    <p className="text-vintage-coffee dark:text-dark-muted font-serif text-sm mb-4 line-clamp-2">
+                      {link.description}
+                    </p>
+                  )}
+                  {link.tags && link.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {link.tags.slice(0, 3).map((tag, i) => (
+                        <span key={i} className="px-3 py-1 bg-vintage-gold/10 text-vintage-brown dark:text-vintage-gold text-xs rounded-full font-serif">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <motion.button
+                onClick={() => { setShowAuth(true); setIsLogin(false) }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-8 py-4 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white rounded-xl font-serif font-bold text-lg shadow-glow"
+              >
+                View More 
+              </motion.button>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
       {/* Categories Preview */}
-      <section className="py-20 px-6 bg-vintage-cream dark:bg-dark-bg">
+      <section className="py-20 px-6 bg-vintage-paper dark:bg-dark-card border-y border-vintage-gold/20 dark:border-dark-border">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -343,7 +434,7 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-6 bg-vintage-paper dark:bg-dark-card border-y border-vintage-gold/20 dark:border-dark-border">
+      <section className="py-20 px-6 bg-vintage-cream dark:bg-dark-bg">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -355,7 +446,7 @@ const LandingPage = () => {
               Why Choose LinkShala?
             </h2>
             <p className="text-xl text-vintage-coffee dark:text-dark-muted font-serif max-w-2xl mx-auto">
-              Built by developers, for developers. Everything you need in one place.
+              Built by developer, for developers. Everything you need in one place.
             </p>
           </motion.div>
 
@@ -420,7 +511,7 @@ const LandingPage = () => {
               Ready to Level Up?
             </h2>
             <p className="text-xl text-vintage-coffee dark:text-dark-muted font-serif mb-10">
-              Start exploring curated developer resources today. No credit card required.
+              Join thousands of developers. Start free, no credit card needed. Build something amazing today.
             </p>
             <motion.button
               onClick={() => { setShowAuth(true); setIsLogin(false) }}

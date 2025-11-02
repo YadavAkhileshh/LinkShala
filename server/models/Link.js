@@ -62,8 +62,15 @@ const linkSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Text search index
 linkSchema.index({ title: 'text', description: 'text', tags: 'text' });
-linkSchema.index({ category: 1 });
-linkSchema.index({ isActive: 1 });
+
+// Compound indexes for common queries
+linkSchema.index({ isActive: 1, createdAt: -1 });
+linkSchema.index({ isActive: 1, category: 1, createdAt: -1 });
+linkSchema.index({ category: 1, isActive: 1 });
+linkSchema.index({ isFeatured: 1, isActive: 1 });
+linkSchema.index({ clickCount: -1 });
+linkSchema.index({ shareCount: -1 });
 
 export default mongoose.model('Link', linkSchema);
