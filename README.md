@@ -13,9 +13,6 @@ A professional platform for discovering and sharing curated developer resources.
 - **📱 Mobile-First**: Fully responsive across all devices
 - **⚡ Fast Performance**: Optimized with Vite + React
 - **🗄️ Scalable**: MongoDB database with full-text search
-- **👨‍💼 Admin Dashboard**: Professional analytics with visualizations
-
-> 📖 **See [FEATURES.md](./FEATURES.md) for complete feature list and roadmap**
 
 ## 🚀 Quick Start
 
@@ -123,15 +120,6 @@ npm run dev
 ### Categories
 - `GET /api/links/categories` - Get all categories with link counts
 
-### Admin
-- `POST /admin/login` - Admin authentication
-- `GET /admin/stats` - Dashboard statistics
-- `GET /admin/links` - Manage all links
-- `POST /admin/links` - Create new link
-- `PUT /admin/links/:id` - Update link
-- `DELETE /admin/links/:id` - Delete link
-
-
 ## 🛠 Tech Stack
 
 - **Frontend**: React 18, Vite, Supabase, TailwindCSS, Framer Motion, Lucide React
@@ -195,4 +183,4 @@ MIT License - feel free to use for your own projects!
 
 ---
 
-**Built with ❤️ for developers, by developer**
+**Crafted with ❤️, caffeine, and way too many console.logs — for developers, by a developer**
