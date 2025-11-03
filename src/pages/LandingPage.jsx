@@ -14,6 +14,7 @@ const LandingPage = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [recentLinks, setRecentLinks] = useState([])
   const { signIn, signUp, signInWithGoogle, user } = useAuth()
   const navigate = useNavigate()
 
@@ -22,6 +23,18 @@ const LandingPage = () => {
       navigate('/home')
     }
   }, [user, navigate])
+
+  useEffect(() => {
+    const fetchRecentLinks = async () => {
+      try {
+        const data = await apiService.getLinks({ limit: 6 })
+        setRecentLinks(data.links || [])
+      } catch (error) {
+        console.error('Error fetching links:', error)
+      }
+    }
+    fetchRecentLinks()
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -209,8 +222,71 @@ const LandingPage = () => {
 
 
 
-      {/* Categories Preview */}
+      {/* Featured Resources Preview */}
       <section className="py-20 px-6 bg-vintage-paper dark:bg-dark-card border-y border-vintage-gold/20 dark:border-dark-border">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl md:text-5xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
+              Featured Resources
+            </h2>
+            <p className="text-xl text-vintage-coffee dark:text-dark-muted font-serif">
+              Handpicked tools and resources to boost your productivity
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {recentLinks.map((link, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
+                className="bg-vintage-cream dark:bg-dark-bg rounded-2xl p-6 border border-vintage-gold/20 dark:border-dark-border shadow-md hover:shadow-lg transition-all cursor-pointer group"
+                onClick={() => window.open(`${link.url}?ref=linkshala`, '_blank')}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <span className="px-3 py-1 bg-vintage-gold/10 text-vintage-gold text-xs rounded-full font-serif capitalize">
+                    {link.category || 'Resource'}
+                  </span>
+                  <svg className="w-5 h-5 text-vintage-gold group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-2 group-hover:text-vintage-gold transition-colors">
+                  {link.title || link.name}
+                </h3>
+                <p className="text-sm text-vintage-coffee dark:text-dark-muted font-serif line-clamp-2">
+                  {link.description || 'Discover this amazing resource'}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <button
+              onClick={() => { setShowAuth(true); setIsLogin(false) }}
+              className="px-8 py-3 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white rounded-xl font-serif font-bold hover:from-vintage-brass hover:to-vintage-gold transition-all shadow-md"
+            >
+              View More Resources →
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Categories Preview */}
+      <section className="py-20 px-6 bg-vintage-cream dark:bg-dark-bg">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

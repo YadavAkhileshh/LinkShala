@@ -3,11 +3,11 @@ import { Link as LinkIcon, Eye, Share2, TrendingUp, ExternalLink, Calendar, BarC
 
 const AdminOverview = ({ stats }) => {
   const statCards = [
-    { label: 'Total Links', value: stats.totalLinks || 0, icon: LinkIcon, color: 'from-blue-500 to-blue-600', change: '+12%' },
-    { label: 'Total Clicks', value: stats.totalClicks || 0, icon: Eye, color: 'from-green-500 to-green-600', change: '+24%' },
-    { label: 'Total Shares', value: stats.totalShares || 0, icon: Share2, color: 'from-purple-500 to-purple-600', change: '+8%' },
-    { label: 'Referrals', value: stats.totalReferrals || 0, icon: ExternalLink, color: 'from-orange-500 to-orange-600', change: '+15%' },
-    { label: 'Categories', value: stats.totalCategories || 0, icon: BarChart3, color: 'from-pink-500 to-pink-600', change: stats.totalCategories || 0 }
+    { label: 'Total Links', value: stats.totalLinks || 0, icon: LinkIcon, color: 'from-vintage-gold to-vintage-brass', change: '+12%' },
+    { label: 'Total Clicks', value: stats.totalClicks || 0, icon: Eye, color: 'from-vintage-gold to-vintage-brass', change: '+24%' },
+    { label: 'Total Shares', value: stats.totalShares || 0, icon: Share2, color: 'from-vintage-gold to-vintage-brass', change: '+8%' },
+    { label: 'Referrals', value: stats.totalReferrals || 0, icon: ExternalLink, color: 'from-vintage-gold to-vintage-brass', change: '+15%' },
+    { label: 'Categories', value: stats.totalCategories || 0, icon: BarChart3, color: 'from-vintage-gold to-vintage-brass', change: stats.totalCategories || 0 }
   ]
 
   const conversionRate = stats.totalClicks > 0 ? ((stats.totalReferrals / stats.totalClicks) * 100).toFixed(1) : 0
@@ -78,20 +78,20 @@ const AdminOverview = ({ stats }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-2xl p-6 border border-blue-500/30"
+          className="bg-gradient-to-br from-vintage-brass/10 to-vintage-gold/10 rounded-2xl p-6 border border-vintage-brass/30"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-vintage font-bold text-vintage-black dark:text-dark-text">Engagement</h3>
-            <Eye className="w-5 h-5 text-blue-500" />
+            <Eye className="w-5 h-5 text-vintage-brass" />
           </div>
-          <div className="text-4xl font-vintage font-bold text-blue-500 mb-2">{engagementRate}%</div>
+          <div className="text-4xl font-vintage font-bold text-vintage-brass mb-2">{engagementRate}%</div>
           <p className="text-sm text-vintage-brown dark:text-dark-muted font-serif">Average per Link</p>
           <div className="mt-4 bg-vintage-cream dark:bg-dark-bg rounded-full h-2 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(engagementRate, 100)}%` }}
               transition={{ duration: 1, delay: 0.9 }}
-              className="h-full bg-gradient-to-r from-blue-500 to-blue-600"
+              className="h-full bg-gradient-to-r from-vintage-brass to-vintage-gold"
             />
           </div>
         </motion.div>
@@ -100,13 +100,13 @@ const AdminOverview = ({ stats }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 rounded-2xl p-6 border border-purple-500/30"
+          className="bg-gradient-to-br from-vintage-gold/10 to-vintage-brass/10 rounded-2xl p-6 border border-vintage-gold/30"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-vintage font-bold text-vintage-black dark:text-dark-text">Share Rate</h3>
-            <Share2 className="w-5 h-5 text-purple-500" />
+            <Share2 className="w-5 h-5 text-vintage-gold" />
           </div>
-          <div className="text-4xl font-vintage font-bold text-purple-500 mb-2">
+          <div className="text-4xl font-vintage font-bold text-vintage-gold mb-2">
             {stats.totalClicks > 0 ? ((stats.totalShares / stats.totalClicks) * 100).toFixed(1) : 0}%
           </div>
           <p className="text-sm text-vintage-brown dark:text-dark-muted font-serif">Clicks to Shares</p>
@@ -115,7 +115,7 @@ const AdminOverview = ({ stats }) => {
               initial={{ width: 0 }}
               animate={{ width: `${Math.min((stats.totalShares / stats.totalClicks) * 100, 100)}%` }}
               transition={{ duration: 1, delay: 1 }}
-              className="h-full bg-gradient-to-r from-purple-500 to-purple-600"
+              className="h-full bg-gradient-to-r from-vintage-gold to-vintage-brass"
             />
           </div>
         </motion.div>
@@ -163,7 +163,7 @@ const AdminOverview = ({ stats }) => {
                       <span className="font-medium">{link.clickCount.toLocaleString()}</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <ExternalLink size={14} className="text-orange-500" />
+                      <ExternalLink size={14} className="text-vintage-brass" />
                       <span className="font-medium">{link.referralCount || 0}</span>
                     </div>
                   </div>

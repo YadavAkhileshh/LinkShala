@@ -27,7 +27,6 @@ dist-ssr
 .env
 .env.local
 .env.production
-.env.example
 
 # Cypress
 cypress/videos
@@ -40,9 +39,7 @@ coverage
 
 # Documentation (internal)
 TOOLS.md
-TOOLS_GUIDE.md
-TOOLS_SUM*.md
+TOOLS_SUM.md
 REF_TRACKING.md
-REFERRAL_TRACKING.md
 FEATURES.md
 QUICK_REFERENCE.md
