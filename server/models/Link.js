@@ -38,10 +38,6 @@ const linkSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  isFeatured: {
-    type: Boolean,
-    default: false
-  },
   isPromoted: {
     type: Boolean,
     default: false
@@ -51,6 +47,10 @@ const linkSchema = new mongoose.Schema({
     default: 0
   },
   shareCount: {
+    type: Number,
+    default: 0
+  },
+  referralCount: {
     type: Number,
     default: 0
   },
@@ -69,7 +69,6 @@ linkSchema.index({ title: 'text', description: 'text', tags: 'text' });
 linkSchema.index({ isActive: 1, createdAt: -1 });
 linkSchema.index({ isActive: 1, category: 1, createdAt: -1 });
 linkSchema.index({ category: 1, isActive: 1 });
-linkSchema.index({ isFeatured: 1, isActive: 1 });
 linkSchema.index({ clickCount: -1 });
 linkSchema.index({ shareCount: -1 });
 

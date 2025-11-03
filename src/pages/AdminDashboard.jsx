@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import apiService from '../lib/api'
 import CategoryManager from '../components/CategoryManager'
+import AdminOverview from '../components/AdminOverview'
 
 const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -41,7 +42,6 @@ const AdminDashboard = () => {
     category: '',
     tags: '',
     publishedDate: new Date().toISOString().split('T')[0],
-    isFeatured: false,
     isPromoted: false
   })
 
@@ -96,7 +96,7 @@ const AdminDashboard = () => {
     
     setLinks(filtered)
     setDisplayPage(1)
-  }, [searchTerm, categoryFilter, allLinks])
+  }, [searchTerm, categoryFilter, allLinks]) 
 
   useEffect(() => {
     // Listen for category updates
@@ -215,7 +215,6 @@ const AdminDashboard = () => {
       category: link.category,
       tags: Array.isArray(link.tags) ? link.tags.join(', ') : link.tags || '',
       publishedDate: link.publishedDate ? new Date(link.publishedDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      isFeatured: link.isFeatured || false,
       isPromoted: link.isPromoted || false
     })
     setIsEditing(true)
@@ -248,7 +247,6 @@ const AdminDashboard = () => {
         category: formData.category,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
         publishedDate: formData.publishedDate ? new Date(formData.publishedDate) : new Date(),
-        isFeatured: formData.isFeatured,
         isPromoted: formData.isPromoted
       }
       
@@ -497,7 +495,6 @@ const AdminDashboard = () => {
       category: availableCategories.length > 0 ? availableCategories[0].slug : '',
       tags: '',
       publishedDate: new Date().toISOString().split('T')[0],
-      isFeatured: false,
       isPromoted: false
     })
   }
@@ -614,6 +611,7 @@ const AdminDashboard = () => {
               { id: 'overview', name: 'Overview', icon: BarChart3 },
               { id: 'links', name: 'Links', icon: LinkIcon },
               { id: 'categories', name: 'Categories', icon: Settings },
+              { id: 'users', name: 'Users', icon: Users },
             ].map((tab) => {
               const Icon = tab.icon
               return (
@@ -645,95 +643,7 @@ const AdminDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-                {[
-                  { label: 'Total Links', value: stats.totalLinks || 0, icon: LinkIcon, color: 'from-blue-500 to-blue-600', trend: '+12%' },
-                  { label: 'Total Clicks', value: stats.totalClicks || 0, icon: Eye, color: 'from-green-500 to-green-600', trend: '+24%' },
-                  { label: 'Total Shares', value: stats.totalShares || 0, icon: Share2, color: 'from-purple-500 to-purple-600', trend: '+8%' },
-                  { label: 'Categories', value: stats.totalCategories || 0, icon: Settings, color: 'from-pink-500 to-pink-600', trend: '+3' },
-                  { label: 'Featured', value: stats.featuredLinks || 0, icon: TrendingUp, color: 'from-orange-500 to-orange-600', trend: '🔥' }
-                ].map((stat, index) => {
-                  const Icon = stat.icon
-                  return (
-                    <motion.div
-                      key={stat.label}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="bg-vintage-paper dark:bg-dark-card rounded-2xl p-6 shadow-vault border border-vintage-gold/20 dark:border-dark-border"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-serif font-medium text-vintage-brown dark:text-dark-muted">
-                            {stat.label}
-                          </p>
-                          <p className="text-3xl font-vintage font-bold text-vintage-black dark:text-dark-text mt-2">
-                            {stat.value.toLocaleString()}
-                          </p>
-                          {stat.trend && (
-                            <p className="text-xs font-serif text-green-600 dark:text-green-400 mt-1">
-                              {stat.trend}
-                            </p>
-                          )}
-                        </div>
-                        <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} shadow-md`}>
-                          <Icon className="w-6 h-6 text-white" />
-                        </div>
-                      </div>
-                    </motion.div>
-                  )
-                })}
-              </div>
-              
-              {/* Top Links */}
-              <div className="bg-vintage-paper dark:bg-dark-card rounded-2xl p-6 shadow-vault border border-vintage-gold/20 dark:border-dark-border">
-                <h3 className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-6">
-                  Top Performing Links
-                </h3>
-                {stats.topLinks && stats.topLinks.length > 0 ? (
-                  <div className="space-y-4">
-                    {stats.topLinks.map((link, index) => (
-                      <motion.div
-                        key={link._id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="flex items-center justify-between p-4 bg-vintage-cream dark:bg-dark-bg rounded-xl border border-vintage-gold/10 dark:border-dark-border"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 bg-gradient-to-br from-vintage-gold to-vintage-brass text-white rounded-full flex items-center justify-center font-bold">
-                            {index + 1}
-                          </div>
-                          <div>
-                            <h4 className="font-serif font-semibold text-vintage-black dark:text-dark-text">
-                              {link.title}
-                            </h4>
-                            <p className="text-sm text-vintage-brown dark:text-dark-muted truncate max-w-md">
-                              {link.url}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-6 text-sm text-vintage-brown dark:text-dark-muted">
-                          <div className="flex items-center space-x-1">
-                            <svg className="w-4 h-4 text-vintage-gold" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-                            </svg>
-                            <span className="font-medium">{link.clickCount.toLocaleString()}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Share2 size={16} />
-                            <span className="font-medium">{link.shareCount.toLocaleString()}</span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-vintage-brown dark:text-dark-muted font-serif">No data available</p>
-                )}
-              </div>
+              <AdminOverview stats={stats} />
             </motion.div>
           )}
 
@@ -761,7 +671,7 @@ const AdminDashboard = () => {
                       onClick={handleRemoveDuplicates}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all flex items-center space-x-2 font-serif shadow-lg"
+                      className="bg-vintage-paper dark:bg-dark-card border-2 border-vintage-gold/30 dark:border-dark-border text-vintage-brown dark:text-dark-muted px-4 py-2 rounded-lg hover:bg-vintage-gold/10 dark:hover:bg-dark-accent/10 hover:border-vintage-gold transition-all flex items-center space-x-2 font-serif"
                     >
                       <Trash2 size={18} />
                       <span>Remove Duplicates</span>
@@ -770,7 +680,7 @@ const AdminDashboard = () => {
                       onClick={() => setShowBulkUpload(!showBulkUpload)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all flex items-center space-x-2 font-serif shadow-lg"
+                      className="bg-vintage-paper dark:bg-dark-card border-2 border-vintage-gold/30 dark:border-dark-border text-vintage-brown dark:text-dark-muted px-4 py-2 rounded-lg hover:bg-vintage-gold/10 dark:hover:bg-dark-accent/10 hover:border-vintage-gold transition-all flex items-center space-x-2 font-serif"
                     >
                       <Upload size={18} />
                       <span>Bulk Upload</span>
@@ -779,7 +689,7 @@ const AdminDashboard = () => {
                       onClick={() => setIsEditing(true)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-4 py-2 rounded-lg hover:from-vintage-brass hover:to-vintage-gold transition-all flex items-center space-x-2 font-serif shadow-lg"
+                      className="bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-4 py-2 rounded-lg hover:from-vintage-brass hover:to-vintage-gold transition-all flex items-center space-x-2 font-serif shadow-md"
                     >
                       <Plus size={18} />
                       <span>Add Link</span>
@@ -916,19 +826,6 @@ const AdminDashboard = () => {
                       className="w-full p-3 border border-vintage-gold/30 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-vintage-gold bg-vintage-cream dark:bg-dark-bg text-vintage-black dark:text-dark-text resize-none"
                     />
                     <div className="space-y-3">
-                      <div className="flex items-center space-x-3 p-4 bg-vintage-gold/5 dark:bg-dark-accent/5 rounded-lg border border-vintage-gold/20 dark:border-dark-accent/20">
-                        <input
-                          type="checkbox"
-                          id="isFeatured"
-                          checked={formData.isFeatured}
-                          onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
-                          className="w-5 h-5 rounded border-vintage-gold/30 text-vintage-gold focus:ring-vintage-gold cursor-pointer"
-                        />
-                        <label htmlFor="isFeatured" className="flex items-center space-x-2 cursor-pointer text-vintage-black dark:text-dark-text font-serif">
-                          <span className="text-2xl">🔥</span>
-                          <span className="font-medium">Mark as Featured (Fire Badge)</span>
-                        </label>
-                      </div>
                       <div className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                         <input
                           type="checkbox"
@@ -1027,40 +924,42 @@ const AdminDashboard = () => {
                           📁 By Category
                         </motion.button>
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Filter size={18} className="text-vintage-gold" />
-                          <span className="text-sm font-serif font-medium text-vintage-black dark:text-dark-text">Filter by Category:</span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <motion.button
-                            onClick={() => setCategoryFilter('all')}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-serif font-medium transition-all ${
-                              categoryFilter === 'all'
-                                ? 'bg-gradient-to-r from-vintage-gold to-vintage-brass text-white shadow-md'
-                                : 'bg-vintage-paper dark:bg-dark-card text-vintage-brown dark:text-dark-muted hover:bg-vintage-gold/10 border border-vintage-gold/20'
-                            }`}
-                          >
-                            All
-                          </motion.button>
-                          {availableCategories.map(category => (
+                      <div className="flex-1 space-y-3">
+                        <div>
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Filter size={18} className="text-vintage-gold" />
+                            <span className="text-sm font-serif font-medium text-vintage-black dark:text-dark-text">Filter by Category:</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
                             <motion.button
-                              key={category._id}
-                              onClick={() => setCategoryFilter(category.slug)}
+                              onClick={() => setCategoryFilter('all')}
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                               className={`px-3 py-1.5 rounded-lg text-xs font-serif font-medium transition-all ${
-                                categoryFilter === category.slug
+                                categoryFilter === 'all'
                                   ? 'bg-gradient-to-r from-vintage-gold to-vintage-brass text-white shadow-md'
                                   : 'bg-vintage-paper dark:bg-dark-card text-vintage-brown dark:text-dark-muted hover:bg-vintage-gold/10 border border-vintage-gold/20'
                               }`}
                             >
-                              {category.icon && <span className="mr-1">{category.icon}</span>}
-                              <span className="capitalize">{category.name}</span>
+                              All
                             </motion.button>
-                          ))}
+                            {availableCategories.map(category => (
+                              <motion.button
+                                key={category._id}
+                                onClick={() => setCategoryFilter(category.slug)}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-serif font-medium transition-all ${
+                                  categoryFilter === category.slug
+                                    ? 'bg-gradient-to-r from-vintage-gold to-vintage-brass text-white shadow-md'
+                                    : 'bg-vintage-paper dark:bg-dark-card text-vintage-brown dark:text-dark-muted hover:bg-vintage-gold/10 border border-vintage-gold/20'
+                                }`}
+                              >
+                                {category.icon && <span className="mr-1">{category.icon}</span>}
+                                <span className="capitalize">{category.name}</span>
+                              </motion.button>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1177,7 +1076,6 @@ const AdminDashboard = () => {
                                       <div>
                                         <div className="font-serif font-medium text-vintage-black dark:text-dark-text flex items-center space-x-2">
                                           <span>{link.title}</span>
-                                          {link.isFeatured && <span className="text-xl">🔥</span>}
                                         </div>
                                         <div className="text-sm text-vintage-brown dark:text-dark-muted truncate max-w-xs">{link.url}</div>
                                         <div className="text-xs text-vintage-brown/60 dark:text-dark-muted/60 mt-1 flex items-center space-x-1">
@@ -1266,7 +1164,6 @@ const AdminDashboard = () => {
                             <div>
                               <div className="font-serif font-medium text-vintage-black dark:text-dark-text flex items-center space-x-2">
                                 <span>{link.title}</span>
-                                {link.isFeatured && <span className="text-xl">🔥</span>}
                               </div>
                               <div className="text-sm text-vintage-brown dark:text-dark-muted truncate max-w-xs">{link.url}</div>
                               <div className="text-xs text-vintage-brown/60 dark:text-dark-muted/60 mt-1 flex items-center space-x-1">
@@ -1362,6 +1259,38 @@ const AdminDashboard = () => {
               exit={{ opacity: 0, y: -20 }}
             >
               <CategoryManager />
+            </motion.div>
+          )}
+
+          {/* Users Tab */}
+          {activeTab === 'users' && (
+            <motion.div
+              key="users"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-vintage-paper dark:bg-dark-card rounded-2xl p-6 shadow-vault border border-vintage-gold/20 dark:border-dark-border"
+            >
+              <h2 className="text-2xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-6">
+                Registered Users
+              </h2>
+              <div className="bg-vintage-cream dark:bg-dark-bg rounded-xl p-8 text-center">
+                <Users className="w-16 h-16 text-vintage-gold mx-auto mb-4" />
+                <p className="text-vintage-brown dark:text-dark-muted font-serif text-lg">
+                  User management is handled through Supabase Dashboard
+                </p>
+                <p className="text-vintage-brown/70 dark:text-dark-muted/70 font-serif text-sm mt-2">
+                  Visit your Supabase project to view and manage users
+                </p>
+                <a
+                  href="https://supabase.com/dashboard"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mt-6 px-6 py-3 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white rounded-lg font-serif font-medium hover:from-vintage-brass hover:to-vintage-gold transition-all shadow-md"
+                >
+                  Open Supabase Dashboard →
+                </a>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

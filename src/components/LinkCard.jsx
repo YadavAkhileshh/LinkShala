@@ -167,9 +167,6 @@ const LinkCard = ({ link, index }) => {
               transition={{ duration: 0.3 }}
             >
               <span>{link.title || link.name}</span>
-              {link.isFeatured && (
-                <span className="text-sm">🔥</span>
-              )}
             </motion.h3>
             
             {/* Stats Bar */}
@@ -283,10 +280,19 @@ const LinkCard = ({ link, index }) => {
               </motion.button>
               
               <motion.a
-                href={link.url}
+                href={`${link.url}${link.url.includes('?') ? '&' : '?'}ref=linkshala`}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  if (link._id) {
+                    try {
+                      await apiService.trackReferral(link._id)
+                    } catch (err) {
+                      console.log('Error tracking referral:', err)
+                    }
+                  }
+                }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="action-button flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-serif transition-all duration-300 bg-vintage-gold text-white hover:bg-vintage-brass"

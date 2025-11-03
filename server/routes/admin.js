@@ -338,32 +338,38 @@ router.post('/generate-metadata', authenticateAdmin, async (req, res) => {
 // Get dashboard stats
 router.get('/stats', authenticateAdmin, async (req, res) => {
   try {
-    const totalLinks = await Link.countDocuments();
-    const activeLinks = await Link.countDocuments({ isActive: true });
-    const totalClicks = await Link.aggregate([
-      { $group: { _id: null, total: { $sum: '$clickCount' } } }
+    const [totalLinks, activeLinks, totalClicks, totalShares, totalReferrals, categoryStats, topLinks, recentLinks, totalCategories] = await Promise.all([
+      Link.countDocuments(),
+      Link.countDocuments({ isActive: true }),
+      Link.aggregate([{ $group: { _id: null, total: { $sum: '$clickCount' } } }]),
+      Link.aggregate([{ $group: { _id: null, total: { $sum: '$shareCount' } } }]),
+      Link.aggregate([{ $group: { _id: null, total: { $sum: '$referralCount' } } }]),
+      Link.aggregate([
+        { $match: { isActive: true } },
+        { $group: { _id: '$category', count: { $sum: 1 }, clicks: { $sum: '$clickCount' }, referrals: { $sum: '$referralCount' } } },
+        { $sort: { count: -1 } }
+      ]),
+      Link.find({ isActive: true })
+        .sort({ clickCount: -1 })
+        .limit(10)
+        .select('title url clickCount shareCount referralCount category createdAt'),
+      Link.find({ isActive: true })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('title url category createdAt'),
+      Category.countDocuments()
     ]);
-    const totalShares = await Link.aggregate([
-      { $group: { _id: null, total: { $sum: '$shareCount' } } }
-    ]);
-    
-    const categoryStats = await Link.aggregate([
-      { $match: { isActive: true } },
-      { $group: { _id: '$category', count: { $sum: 1 } } }
-    ]);
-    
-    const topLinks = await Link.find({ isActive: true })
-      .sort({ clickCount: -1 })
-      .limit(5)
-      .select('title url clickCount shareCount');
     
     res.json({
       totalLinks,
       activeLinks,
       totalClicks: totalClicks[0]?.total || 0,
       totalShares: totalShares[0]?.total || 0,
+      totalReferrals: totalReferrals[0]?.total || 0,
+      totalCategories,
       categoryStats,
-      topLinks
+      topLinks,
+      recentLinks
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

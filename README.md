@@ -8,11 +8,14 @@ A professional platform for discovering and sharing curated developer resources.
 - **🎨 Modern UI**: Beautiful, responsive design with smooth animations
 - **🔍 Smart Search**: Advanced search and filtering by categories and tags
 - **🤖 AI-Powered**: Auto-generated descriptions using Groq/Gemini APIs
-- **📊 Analytics**: Track link clicks and shares
+- **📊 Analytics**: Track link clicks, shares, and referrals
 - **🔖 Bookmarks**: Save your favorite links with database sync
 - **📱 Mobile-First**: Fully responsive across all devices
 - **⚡ Fast Performance**: Optimized with Vite + React
 - **🗄️ Scalable**: MongoDB database with full-text search
+- **👨‍💼 Admin Dashboard**: Professional analytics with visualizations
+
+> 📖 **See [FEATURES.md](./FEATURES.md) for complete feature list and roadmap**
 
 ## 🚀 Quick Start
 
@@ -115,9 +118,18 @@ npm run dev
 - `GET /api/links` - Get all links with pagination and filters
 - `GET /api/links/:id` - Get single link details
 - `POST /api/links/:id/share` - Increment share count
+- `POST /api/links/:id/referral` - Track referral clicks
 
 ### Categories
 - `GET /api/links/categories` - Get all categories with link counts
+
+### Admin
+- `POST /admin/login` - Admin authentication
+- `GET /admin/stats` - Dashboard statistics
+- `GET /admin/links` - Manage all links
+- `POST /admin/links` - Create new link
+- `PUT /admin/links/:id` - Update link
+- `DELETE /admin/links/:id` - Delete link
 
 
 ## 🛠 Tech Stack
@@ -183,4 +195,4 @@ MIT License - feel free to use for your own projects!
 
 ---
 
-**Built with ❤️ for developers, by developers**
+**Built with ❤️ for developers, by developer**

@@ -12,7 +12,6 @@ import { trackSearch, trackCategorySelect } from '../lib/analytics'
 const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [filterType, setFilterType] = useState('all')
   const [links, setLinks] = useState([])
   const [allLinks, setAllLinks] = useState([])
   const [displayedLinks, setDisplayedLinks] = useState([])
@@ -48,11 +47,6 @@ const HomePage = () => {
       filtered = filtered.filter(link => link.category === selectedCategory)
     }
     
-    // Apply filter type
-    if (filterType === 'featured') {
-      filtered = filtered.filter(link => link.isFeatured)
-    }
-    
     // Apply search term
     if (searchTerm.trim()) {
       filtered = filtered.filter(link => 
@@ -67,7 +61,7 @@ const HomePage = () => {
     
     setLinks(filtered)
     setDisplayCount(20) // Reset display count when filters change
-  }, [searchTerm, allLinks, filterType, selectedCategory])
+  }, [searchTerm, allLinks, selectedCategory])
 
   // Lazy loading - display limited links
   useEffect(() => {
@@ -321,41 +315,13 @@ const HomePage = () => {
               </motion.div>
             )}
             
-            {/* Fire Filter Button */}
-            <div className="flex justify-center">
-              <motion.button
-                onClick={() => setFilterType(filterType === 'all' ? 'featured' : 'all')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-serif font-medium transition-all duration-300 shadow-md ${
-                  filterType === 'featured'
-                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg'
-                    : 'bg-vintage-paper/90 dark:bg-dark-card/90 border border-vintage-gold/30 dark:border-dark-border text-vintage-black dark:text-dark-text hover:bg-vintage-gold/10 dark:hover:bg-dark-accent/10'
-                }`}
-              >
-                <motion.span 
-                  className="text-2xl"
-                  animate={filterType === 'featured' ? { 
-                    scale: [1, 1.2, 1],
-                    rotate: [0, 10, -10, 0]
-                  } : {}}
-                  transition={{ 
-                    duration: 0.5,
-                    repeat: filterType === 'featured' ? Infinity : 0,
-                    repeatDelay: 0.5
-                  }}
-                >
-                  🔥
-                </motion.span>
-                <span>{filterType === 'featured' ? 'Showing Featured' : 'Show Featured Only'}</span>
-              </motion.button>
-            </div>
+
           </motion.div>
         </div>
       </section>
       
-      {/* Category Selection - Hidden during search, featured filter, or when search is focused */}
-      {!searchTerm && filterType === 'all' && !isSearchFocused && (
+      {/* Category Selection - Hidden during search or when search is focused */}
+      {!searchTerm && !isSearchFocused && (
         <section data-categories-section className="py-12 px-6 lg:px-8 bg-vintage-paper dark:bg-dark-card border-b border-vintage-gold/20 dark:border-dark-border">
           <div className="max-w-7xl mx-auto">
             <motion.div
@@ -385,9 +351,8 @@ const HomePage = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="mb-12"
           >
-            <h2 className="text-3xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4 flex items-center space-x-2">
-              <span>{searchTerm ? `Search Results for "${searchTerm}"` : filterType === 'featured' ? 'Featured Links' : 'All Links'}</span>
-              {filterType === 'featured' && <span className="text-3xl">🔥</span>}
+            <h2 className="text-3xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
+              {searchTerm ? `Search Results for "${searchTerm}"` : 'All Links'}
             </h2>
             <p className="text-vintage-coffee dark:text-dark-muted font-serif">
               {links.length} link{links.length !== 1 ? 's' : ''} found

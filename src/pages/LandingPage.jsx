@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Link2, Zap, Shield, TrendingUp, Users, Star, Check, X, Sparkles, Rocket, Lock, Code, Palette, Brain, Eye, EyeOff } from 'lucide-react'
+import { Star, X, Sparkles, Rocket, Lock, Code, Palette, Brain, Eye, EyeOff, Zap, Shield } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import apiService from '../lib/api'
@@ -14,31 +14,14 @@ const LandingPage = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [promotedLink, setPromotedLink] = useState(null)
-  const [previewLinks, setPreviewLinks] = useState([])
   const { signIn, signUp, signInWithGoogle, user } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Redirect if already logged in
     if (user) {
       navigate('/home')
     }
   }, [user, navigate])
-
-  useEffect(() => {
-    const fetchLinks = async () => {
-      try {
-        const data = await apiService.getLinks({ page: 1, limit: 100 })
-        const promoted = data.links.find(link => link.isPromoted)
-        setPromotedLink(promoted)
-        setPreviewLinks(data.links.slice(0, 6))
-      } catch (error) {
-        console.error('Error fetching links:', error)
-      }
-    }
-    fetchLinks()
-  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -224,173 +207,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Promoted Link Banner */}
-      {promotedLink && (
-        <section className="py-12 px-6 bg-gradient-to-br from-vintage-gold/10 via-vintage-brass/5 to-vintage-gold/10 dark:from-vintage-gold/5 dark:via-vintage-brass/5 dark:to-vintage-gold/5 border-y-2 border-vintage-gold/30 dark:border-vintage-gold/20">
-          <div className="max-w-7xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="relative"
-            >
-              <motion.div
-                className="absolute -inset-1 bg-gradient-to-r from-vintage-gold via-vintage-brass to-vintage-gold rounded-3xl blur-xl opacity-20"
-                animate={{ opacity: [0.2, 0.3, 0.2] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              />
-              
-              <motion.div 
-                className="absolute -top-4 -right-4 z-10"
-                animate={{ scale: [1, 1.03, 1] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <div className="bg-gradient-to-r from-vintage-gold to-vintage-brass text-white text-sm font-bold px-4 py-2 rounded-full shadow-glow flex items-center space-x-1">
-                  <span>⭐</span>
-                  <span>PROMOTED</span>
-                </div>
-              </motion.div>
 
-              <div className="relative bg-gradient-to-br from-vintage-paper to-vintage-cream dark:from-dark-card dark:to-dark-bg rounded-3xl p-8 shadow-vault border-2 border-vintage-gold/40 dark:border-vintage-gold/30 overflow-hidden">
-                <div className="absolute top-0 left-0 w-24 h-24 border-l-4 border-t-4 border-vintage-gold/40 rounded-tl-3xl" />
-                <div className="absolute bottom-0 right-0 w-24 h-24 border-r-4 border-b-4 border-vintage-gold/40 rounded-br-3xl" />
-                
-                <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
-                  <div className="flex-1 space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <motion.span 
-                        className="text-4xl"
-                        animate={{ scale: [1, 1.1, 1] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        📢
-                      </motion.span>
-                      <h3 className="text-3xl md:text-4xl font-vintage font-bold bg-gradient-to-r from-vintage-gold via-vintage-brass to-vintage-gold bg-clip-text text-transparent">
-                        {promotedLink.title}
-                      </h3>
-                    </div>
-                    {promotedLink.description && (
-                      <p className="text-lg text-vintage-coffee dark:text-dark-muted font-serif leading-relaxed">
-                        {promotedLink.description}
-                      </p>
-                    )}
-                    {promotedLink.tags && promotedLink.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {promotedLink.tags.slice(0, 5).map((tag, index) => (
-                          <motion.span
-                            key={index}
-                            initial={{ opacity: 0, scale: 0 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: index * 0.1 }}
-                            className="px-4 py-2 bg-vintage-gold/20 dark:bg-vintage-gold/10 text-vintage-brown dark:text-vintage-gold text-sm rounded-full border border-vintage-gold/30 font-serif font-medium"
-                          >
-                            {tag}
-                          </motion.span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <motion.a
-                    href={promotedLink.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="relative group"
-                  >
-                    <motion.div
-                      className="absolute -inset-2 bg-gradient-to-r from-vintage-gold to-vintage-brass rounded-2xl blur-lg opacity-40 group-hover:opacity-60 transition-opacity duration-300"
-                    />
-                    <div className="relative bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-10 py-5 rounded-2xl font-serif font-bold shadow-glow flex items-center space-x-3 text-lg">
-                      <span>Explore Now</span>
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
-                    </div>
-                  </motion.a>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-      )}
-
-      {/* Preview Links Section */}
-      {previewLinks.length > 0 && (
-        <section className="py-20 px-6 bg-vintage-cream dark:bg-dark-bg">
-          <div className="max-w-7xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-12"
-            >
-              <h2 className="text-4xl md:text-5xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
-                Featured Resources
-              </h2>
-              <p className="text-xl text-vintage-coffee dark:text-dark-muted font-serif">
-                Your shortcut to the best developer tools, design kits, and open-source projects
-              </p>
-            </motion.div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              {previewLinks.map((link, index) => (
-                <motion.div
-                  key={link._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ y: -5 }}
-                  className="bg-vintage-paper dark:bg-dark-card rounded-2xl p-6 border border-vintage-gold/20 dark:border-dark-border shadow-md cursor-pointer group"
-                  onClick={() => window.open(link.url, '_blank')}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <h3 className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text group-hover:text-vintage-gold transition-colors">
-                      {link.title}
-                    </h3>
-                    <svg className="w-5 h-5 text-vintage-gold opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </div>
-                  {link.description && (
-                    <p className="text-vintage-coffee dark:text-dark-muted font-serif text-sm mb-4 line-clamp-2">
-                      {link.description}
-                    </p>
-                  )}
-                  {link.tags && link.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {link.tags.slice(0, 3).map((tag, i) => (
-                        <span key={i} className="px-3 py-1 bg-vintage-gold/10 text-vintage-brown dark:text-vintage-gold text-xs rounded-full font-serif">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center"
-            >
-              <motion.button
-                onClick={() => { setShowAuth(true); setIsLogin(false) }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white rounded-xl font-serif font-bold text-lg shadow-glow"
-              >
-                View More 
-              </motion.button>
-            </motion.div>
-          </div>
-        </section>
-      )}
 
       {/* Categories Preview */}
       <section className="py-20 px-6 bg-vintage-paper dark:bg-dark-card border-y border-vintage-gold/20 dark:border-dark-border">

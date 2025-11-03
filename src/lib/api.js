@@ -78,6 +78,13 @@ class ApiService {
     });
   }
 
+  async trackReferral(id) {
+    return this.request(`/links/${id}/referral`, {
+      method: 'POST',
+      requireAuth: false
+    });
+  }
+
   async getCategoryStats() {
     return this.request('/links/stats/categories', { requireAuth: false });
   }

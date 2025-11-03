@@ -49,9 +49,7 @@ router.get('/', async (req, res) => {
       query.$text = { $search: search };
     }
     
-    // Use lean() for faster queries and select only needed fields
     const links = await Link.find(query)
-      .select('title url description category tags publishedDate clickCount shareCount createdAt')
       .sort(search ? { score: { $meta: 'textScore' } } : { createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)
@@ -59,8 +57,7 @@ router.get('/', async (req, res) => {
     
     const total = await Link.countDocuments(query);
     
-    // Set cache headers
-    res.set('Cache-Control', 'public, max-age=300'); // 5 minutes
+    res.set('Cache-Control', 'public, max-age=300');
     
     res.json({
       links,
@@ -117,6 +114,25 @@ router.post('/:id/share', async (req, res) => {
     }
     
     res.json({ message: 'Share count updated', shareCount: link.shareCount });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Track referral clicks (ref=linkshala)
+router.post('/:id/referral', async (req, res) => {
+  try {
+    const link = await Link.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { referralCount: 1 } },
+      { new: true }
+    );
+    
+    if (!link) {
+      return res.status(404).json({ error: 'Link not found' });
+    }
+    
+    res.json({ message: 'Referral tracked', referralCount: link.referralCount });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
