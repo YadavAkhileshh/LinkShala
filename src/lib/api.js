@@ -195,6 +195,11 @@ class ApiService {
     });
   }
 
+  // Telegram GitHub Repos
+  async getGithubRepos() {
+    return this.request('/telegram/github-repos', { requireAuth: false });
+  }
+
   isAuthenticated() {
     return !!this.token;
   }

@@ -11,6 +11,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import LinkDetailPage from './pages/LinkDetailPage'
 import AboutPage from './pages/AboutPage'
 import BookmarksPage from './pages/BookmarksPage'
+import ReposPage from './pages/ReposPage'
 import NotFoundPage from './pages/NotFoundPage'
 import AuthCallback from './pages/AuthCallback'
 
@@ -35,6 +36,7 @@ function AnimatedRoutes() {
           <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/about" element={<ProtectedRoute><AboutPage /></ProtectedRoute>} />
           <Route path="/bookmarks" element={<ProtectedRoute><BookmarksPage /></ProtectedRoute>} />
+          <Route path="/repos" element={<ProtectedRoute><ReposPage /></ProtectedRoute>} />
           <Route path="/magic" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
           <Route path="/link/:id" element={<ProtectedRoute><LinkDetailPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFoundPage />} />

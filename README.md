@@ -183,4 +183,4 @@ MIT License - feel free to use for your own projects!
 
 ---
 
-**Crafted with ❤️, caffeine, and way too many console.logs — for developers, by a developer**
+**Crafted with ❤️, caffeine, and way too many console.logs — for developers, by me**

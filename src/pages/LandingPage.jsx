@@ -336,10 +336,10 @@ const LandingPage = () => {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
-              Why Choose LinkShala?
+              What Makes Us Different?
             </h2>
             <p className="text-xl text-vintage-coffee dark:text-dark-muted font-serif max-w-2xl mx-auto">
-              Built by developer, for developers. Everything you need in one place.
+              Made by one developer, for all developers. All your tools in one spot.
             </p>
           </motion.div>
 

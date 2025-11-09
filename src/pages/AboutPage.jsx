@@ -5,23 +5,23 @@ const AboutPage = () => {
   const features = [
     {
       icon: Code,
-      title: "Passion-Driven",
-      description: "Created by a developer who understands the daily challenges of finding quality resources and tools."
+      title: "Solo Project",
+      description: "Built by one developer who gets your daily struggle of finding good tools."
     },
     {
       icon: Zap,
-      title: "Lightning Fast",
-      description: "Optimized performance with instant search, smooth animations, and responsive design across all devices."
+      title: "Super Fast",
+      description: "Quick search, smooth animations, and works great on any device."
     },
     {
       icon: Users,
-      title: "Community Focused",
-      description: "Growing collection of resources curated for the developer community worldwide."
+      title: "For the Community",
+      description: "Growing collection of handpicked resources for developers worldwide."
     },
     {
       icon: Heart,
       title: "Open Source",
-      description: "Transparent development. Contribute, suggest improvements, or fork the project on GitHub."
+      description: "Everything is transparent. Contribute, suggest ideas, or fork it on GitHub."
     }
   ]
 
@@ -107,10 +107,10 @@ const AboutPage = () => {
             className="text-center mb-12"
           >
             <h2 className="text-4xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
-              Why Choose LinkShala?
+              What Makes Us Special?
             </h2>
             <p className="text-vintage-brown dark:text-dark-muted font-serif text-lg max-w-2xl mx-auto">
-              Discover what makes LinkShala the go-to platform for developers worldwide
+              Simple, fast, and built for developers like you
             </p>
           </motion.div>
 

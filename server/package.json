@@ -14,15 +14,16 @@
     "activate-all": "node scripts/activateAllLinks.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^8.0.0",
+    "axios": "^1.6.0",
+    "bcryptjs": "^2.4.3",
+    "cheerio": "^1.1.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
-    "helmet": "^7.1.0",
+    "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
-    "axios": "^1.6.0"
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

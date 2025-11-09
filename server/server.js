@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 
 import linksRouter from './routes/links.js';
 import adminRouter from './routes/admin.js';
+import telegramRouter from './routes/telegram.js';
 
 dotenv.config();
 
@@ -17,12 +18,17 @@ const PORT = process.env.PORT || 5002;
 app.use(helmet());
 app.use(cors());
 
-// Anti-scraping middleware
+// Anti-scraping middleware (skip for telegram route)
 app.use((req, res, next) => {
+  // Allow telegram route to make axios requests
+  if (req.path.startsWith('/api/telegram')) {
+    return next();
+  }
+  
   const userAgent = req.get('user-agent') || '';
   const blockedAgents = [
     'scrapy', 'crawler', 'spider', 'bot', 'scraper',
-    'curl', 'wget', 'python-requests', 'axios', 'postman'
+    'curl', 'wget', 'python-requests', 'postman'
   ];
   
   const isBlocked = blockedAgents.some(agent => 
@@ -68,6 +74,7 @@ mongoose.connect(process.env.MONGODB_URI)
 // Routes
 app.use('/api/links', linksRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/telegram', telegramRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

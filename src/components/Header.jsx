@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Menu, X, Bookmark } from 'lucide-react'
+import { Menu, X, Bookmark, Github } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
 import bookmarkService from '../lib/bookmarkService'
 import ProfileDropdown from './ProfileDropdown'
@@ -42,6 +42,11 @@ const Header = () => {
       path: '/bookmarks',
       icon: Bookmark,
       badge: bookmarkCount > 0 ? bookmarkCount : null
+    },
+    { 
+      name: 'GitHub', 
+      path: '/repos',
+      icon: Github
     }
   ]
 
