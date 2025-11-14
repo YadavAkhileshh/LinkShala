@@ -1,26 +1,10 @@
 User-agent: *
-Disallow: /api/
-Disallow: /admin/
+Allow: /
+Sitemap: https://linkkshala.vercel.app/sitemap.xml
 
+# Allow all search engines
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
 Allow: /
-
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: SemrushBot
-Disallow: /
-
-User-agent: DotBot
-Disallow: /
-
-User-agent: MJ12bot
-Disallow: /
-
-User-agent: BLEXBot
-Disallow: /
-
-Crawl-delay: 10
