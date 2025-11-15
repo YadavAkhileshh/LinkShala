@@ -8,6 +8,15 @@ const router = express.Router();
 let repoHistory = [];
 const MAX_HISTORY = 100;
 
+// Get repo history 
+router.get('/github-repos/history', async (req, res) => {
+  try {
+    res.json(repoHistory);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch history' });
+  }
+});
+
 router.get('/github-repos', async (req, res) => {
   try {
     console.log('Fetching from Telegram...');
@@ -90,15 +99,6 @@ router.get('/github-repos', async (req, res) => {
       error: 'Failed to fetch Telegram data',
       details: error.message 
     });
-  }
-});
-
-// Get repo history
-router.get('/github-repos/history', async (req, res) => {
-  try {
-    res.json(repoHistory);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch history' });
   }
 });
 
