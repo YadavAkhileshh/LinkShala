@@ -4,6 +4,10 @@ import * as cheerio from 'cheerio';
 
 const router = express.Router();
 
+// In-memory history storage 
+let repoHistory = [];
+const MAX_HISTORY = 100;
+
 router.get('/github-repos', async (req, res) => {
   try {
     console.log('Fetching from Telegram...');
@@ -66,6 +70,19 @@ router.get('/github-repos', async (req, res) => {
     });
     
     console.log(`Found ${repos.length} repos`);
+    // Store in history (avoid duplicates)
+    repos.forEach(repo => {
+      const exists = repoHistory.find(h => h.url === repo.url);
+      if (!exists) {
+        repoHistory.unshift({ ...repo, addedAt: new Date().toISOString() });
+      }
+    });
+    
+    // Keep only last MAX_HISTORY items
+    if (repoHistory.length > MAX_HISTORY) {
+      repoHistory = repoHistory.slice(0, MAX_HISTORY);
+    }
+    
     res.json(repos.slice(0, 20));
   } catch (error) {
     console.error('Telegram fetch error:', error.message);
@@ -73,6 +90,15 @@ router.get('/github-repos', async (req, res) => {
       error: 'Failed to fetch Telegram data',
       details: error.message 
     });
+  }
+});
+
+// Get repo history
+router.get('/github-repos/history', async (req, res) => {
+  try {
+    res.json(repoHistory);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch history' });
   }
 });
 

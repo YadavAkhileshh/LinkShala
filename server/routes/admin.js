@@ -157,6 +157,14 @@ router.put('/links/:id', authenticateAdmin, async (req, res) => {
       updateData.url = normalizedUrl;
     }
     
+    // If promoting this link, unpromote all others
+    if (req.body.isPromoted === true) {
+      await Link.updateMany(
+        { _id: { $ne: req.params.id }, isPromoted: true },
+        { isPromoted: false }
+      );
+    }
+    
     const link = await Link.findByIdAndUpdate(
       req.params.id,
       updateData,

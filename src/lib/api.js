@@ -200,6 +200,10 @@ class ApiService {
     return this.request('/telegram/github-repos', { requireAuth: false });
   }
 
+  async getGithubReposHistory() {
+    return this.request('/telegram/github-repos/history', { requireAuth: false });
+  }
+
   isAuthenticated() {
     return !!this.token;
   }

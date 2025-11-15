@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Github, Star, GitFork, ExternalLink, Clock, User, RefreshCw, Bookmark, Code2, Eye } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Github, Star, GitFork, ExternalLink, Clock, User, RefreshCw, Bookmark, Code2, Eye, History, X } from 'lucide-react';
 import apiService from '../lib/api';
 import bookmarkService from '../lib/bookmarkService';
 
@@ -9,6 +9,9 @@ const ReposPage = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [bookmarkedRepos, setBookmarkedRepos] = useState(new Set());
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
     fetchRepos();
@@ -69,6 +72,34 @@ const ReposPage = () => {
     fetchRepos(true);
   };
 
+  const fetchHistory = async () => {
+    try {
+      setLoadingHistory(true);
+      const data = await apiService.getGithubReposHistory();
+      setHistory(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setHistory([]);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleShowHistory = () => {
+    setShowHistory(true);
+    fetchHistory();
+  };
+
+  useEffect(() => {
+    if (showHistory) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showHistory]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg flex items-center justify-center">
@@ -105,16 +136,27 @@ const ReposPage = () => {
                 </div>
               </div>
               
-              <motion.button
-                onClick={handleRefresh}
-                disabled={refreshing}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center space-x-2 px-4 py-2 bg-vintage-gold text-white rounded-lg font-semibold shadow-md hover:bg-vintage-brass transition-colors disabled:opacity-50"
-              >
-                <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
-                <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
-              </motion.button>
+              <div className="flex gap-3">
+                <motion.button
+                  onClick={handleShowHistory}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center space-x-2 px-4 py-2 bg-vintage-paper dark:bg-dark-card border-2 border-vintage-gold text-vintage-gold rounded-lg font-semibold shadow-md hover:bg-vintage-gold hover:text-white transition-all"
+                >
+                  <History size={18} />
+                  <span>History</span>
+                </motion.button>
+                <motion.button
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center space-x-2 px-4 py-2 bg-vintage-gold text-white rounded-lg font-semibold shadow-md hover:bg-vintage-brass transition-colors disabled:opacity-50"
+                >
+                  <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+                  <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -254,6 +296,115 @@ const ReposPage = () => {
           )}
         </div>
       </section>
+
+      {/* History Modal */}
+      <AnimatePresence>
+        {showHistory && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowHistory(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-vintage-paper dark:bg-dark-card rounded-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden shadow-2xl border-2 border-vintage-gold/30"
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-vintage-gold to-vintage-brass p-6 flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                    <History size={24} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-vintage font-bold text-white">Repository History</h2>
+                    <p className="text-white/80 font-serif text-sm">Previously featured repositories</p>
+                  </div>
+                </div>
+                <motion.button
+                  onClick={() => setShowHistory(false)}
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition-colors"
+                >
+                  <X size={20} className="text-white" />
+                </motion.button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]">
+                {loadingHistory ? (
+                  <div className="text-center py-12">
+                    <Github size={48} className="text-vintage-gold animate-pulse mx-auto mb-4" />
+                    <p className="text-vintage-brown dark:text-dark-muted font-serif">Loading history...</p>
+                  </div>
+                ) : history.length === 0 ? (
+                  <div className="text-center py-12">
+                    <History size={48} className="text-vintage-gold/40 mx-auto mb-4" />
+                    <h3 className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-2">
+                      No history yet
+                    </h3>
+                    <p className="text-vintage-brown dark:text-dark-muted font-serif">
+                      Repositories will appear here as they're featured
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {history.map((repo, index) => (
+                      <motion.div
+                        key={repo.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.03 }}
+                        className="bg-vintage-cream dark:bg-dark-bg rounded-xl p-4 border border-vintage-gold/20 hover:border-vintage-gold/40 transition-all group"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <Github size={18} className="text-vintage-gold flex-shrink-0" />
+                              <h3 className="font-vintage font-bold text-vintage-black dark:text-dark-text truncate">
+                                {repo.owner}/{repo.repoName}
+                              </h3>
+                            </div>
+                            <p className="text-sm text-vintage-brass dark:text-dark-accent font-semibold mb-2 line-clamp-1">
+                              {repo.title}
+                            </p>
+                            {repo.description && repo.description !== 'No description available' && (
+                              <p className="text-xs text-vintage-brown dark:text-dark-muted line-clamp-2">
+                                {repo.description}
+                              </p>
+                            )}
+                            {repo.addedAt && (
+                              <div className="flex items-center space-x-1 mt-2 text-xs text-vintage-brown/60 dark:text-dark-muted/60">
+                                <Clock size={12} />
+                                <span>{new Date(repo.addedAt).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                          </div>
+                          <motion.a
+                            href={`${repo.url}?ref=linkshala`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-vintage-gold to-vintage-brass rounded-lg flex items-center justify-center shadow-md hover:shadow-lg transition-all"
+                          >
+                            <ExternalLink size={18} className="text-white" />
+                          </motion.a>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
