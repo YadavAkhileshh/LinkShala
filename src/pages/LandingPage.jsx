@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Star, X, Sparkles, Rocket, Lock, Code, Palette, Brain, Eye, EyeOff, Zap, Shield } from 'lucide-react'
+import { X, Sparkles, Rocket, Lock, Code, Palette, Brain, Eye, EyeOff, Zap, Shield } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import apiService from '../lib/api'
@@ -170,26 +170,50 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4 pt-4"
+              className="flex flex-col items-center justify-center gap-3 px-4 pt-4"
             >
-              <motion.button
-                onClick={() => { setShowAuth(true); setIsLogin(false) }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white rounded-xl font-serif font-bold text-base sm:text-lg shadow-glow flex items-center justify-center space-x-2"
-              >
-                <Rocket className="w-5 h-5" />
-                <span>Join Free</span>
-              </motion.button>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+                <motion.button
+                  onClick={() => { setShowAuth(true); setIsLogin(false) }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white rounded-xl font-serif font-bold text-base sm:text-lg shadow-glow flex items-center justify-center space-x-2"
+                >
+                  <Rocket className="w-5 h-5" />
+                  <span>Join Free</span>
+                </motion.button>
 
-              <motion.button
-                onClick={() => { setShowAuth(true); setIsLogin(true) }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-vintage-paper dark:bg-dark-card border-2 border-vintage-gold/30 dark:border-dark-border text-vintage-black dark:text-dark-text rounded-xl font-serif font-bold text-base sm:text-lg hover:bg-vintage-gold/10 transition-colors"
+                <motion.button
+                  onClick={() => { setShowAuth(true); setIsLogin(true) }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-vintage-paper dark:bg-dark-card border-2 border-vintage-gold/30 dark:border-dark-border text-vintage-black dark:text-dark-text rounded-xl font-serif font-bold text-base sm:text-lg hover:bg-vintage-gold/10 transition-colors"
+                >
+                  Login
+                </motion.button>
+              </div>
+
+              {/* ProductHunt Button */}
+              <motion.a
+                href="https://www.producthunt.com/posts/linkshala?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-linkshala"
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex items-center space-x-2 bg-white dark:bg-gray-900 px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all mt-2"
               >
-                Login
-              </motion.button>
+                <svg width="20" height="20" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 40C31.0457 40 40 31.0457 40 20C40 8.95431 31.0457 0 20 0C8.95431 0 0 8.95431 0 20C0 31.0457 8.95431 40 20 40Z" fill="#FF6154"/>
+                  <path d="M20 11H15V29H20V23H23C26.3137 23 29 20.3137 29 17C29 13.6863 26.3137 11 23 11H20ZM20 19V15H23C24.1046 15 25 15.8954 25 17C25 18.1046 24.1046 19 23 19H20Z" fill="white"/>
+                </svg>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium leading-tight uppercase tracking-wide">Featured on</span>
+                  <span className="text-xs font-bold text-gray-900 dark:text-white leading-tight">Product Hunt</span>
+                </div>
+              </motion.a>
             </motion.div>
 
             {/* Stats */}
@@ -366,29 +390,6 @@ const LandingPage = () => {
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Social Proof */}
-      <section className="py-20 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <div className="flex items-center justify-center space-x-2 mb-6">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-8 h-8 fill-vintage-gold text-vintage-gold" />
-              ))}
-            </div>
-            <h3 className="text-3xl md:text-4xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
-              Trusted by 1000+ Developers
-            </h3>
-            <p className="text-xl text-vintage-coffee dark:text-dark-muted font-serif max-w-2xl mx-auto">
-              Join thousands of developers who save hours every week finding the right tools and resources.
-            </p>
-          </motion.div>
         </div>
       </section>
 
