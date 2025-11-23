@@ -34,26 +34,21 @@ app.use(helmet({
   xssFilter: true
 }));
 
-// CORS - Restrict to your domains only
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5002',
-  'https://linkshala.vercel.app',
-  'https://linkshala-backend.onrender.com'
-];
-
+// CORS - Allow all origins (public API)
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Log requests in development
+if (process.env.NODE_ENV === 'development') {
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path}`);
+    next();
+  });
+}
 
 // Anti-scraping middleware (skip for telegram route)
 app.use((req, res, next) => {
