@@ -14,6 +14,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5002;
 
+// Trust proxy
+app.set('trust proxy', 1);
+
 // Security middleware - Helmet with strict CSP
 app.use(helmet({
   contentSecurityPolicy: {
