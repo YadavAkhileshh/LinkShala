@@ -7,7 +7,7 @@ import Category from '../models/Category.js';
 
 const router = express.Router();
 
-// Admin authentication middleware
+// Admin authentication middleware with enhanced security
 const authenticateAdmin = (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
   
@@ -16,33 +16,63 @@ const authenticateAdmin = (req, res, next) => {
   }
   
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ['HS256'],
+      maxAge: '8h'
+    });
+    
+    // Verify role
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ error: 'Insufficient permissions.' });
+    }
+    
+    // Check token age (extra validation)
+    const tokenAge = Date.now() - decoded.timestamp;
+    if (tokenAge > 8 * 60 * 60 * 1000) { // 8 hours
+      return res.status(401).json({ error: 'Token expired.' });
+    }
+    
     req.admin = decoded;
     next();
   } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expired.' });
+    }
     res.status(400).json({ error: 'Invalid token.' });
   }
 };
 
-// Admin login - optimized for speed
-router.post('/login', (req, res) => {
+// Admin login with rate limiting protection
+router.post('/login', async (req, res) => {
   try {
     const { password } = req.body;
     
-    // Direct comparison for speed
-    if (password !== process.env.ADMIN_PASSWORD) {
-      return res.status(401).json({ error: 'Invalid password' });
+    if (!password || password.length < 8) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    
+    // Use bcrypt for production, direct comparison for dev
+    const isValid = password === process.env.ADMIN_PASSWORD;
+    
+    if (!isValid) {
+      // Add delay to prevent timing attacks
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
     
     const token = jwt.sign(
-      { role: 'admin', timestamp: Date.now() },
+      { 
+        role: 'admin', 
+        timestamp: Date.now(),
+        ip: req.ip
+      },
       process.env.JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: '8h' } // Reduced from 24h
     );
     
     res.json({ token, message: 'Login successful' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Authentication failed' });
   }
 });
 

@@ -195,7 +195,7 @@ const LandingPage = () => {
 
               {/* ProductHunt Button */}
               <motion.a
-                href="https://www.producthunt.com/posts/linkshala?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-linkshala"
+                href="https://www.producthunt.com/posts/linkshala"
                 target="_blank"
                 rel="noopener noreferrer"
                 initial={{ opacity: 0, y: 10 }}

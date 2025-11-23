@@ -14,9 +14,46 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5002;
 
-// Security middleware
-app.use(helmet());
-app.use(cors());
+// Security middleware - Helmet with strict CSP
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  },
+  frameguard: { action: 'deny' },
+  noSniff: true,
+  xssFilter: true
+}));
+
+// CORS - Restrict to your domains only
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5002',
+  'https://linkshala.vercel.app',
+  'https://linkshala-backend.onrender.com'
+];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Anti-scraping middleware (skip for telegram route)
 app.use((req, res, next) => {
@@ -42,29 +79,61 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rate limiting - stricter for public endpoints
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+// Rate limiting - Very strict for public endpoints
+const publicLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 50, // 50 requests per 15 min
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.path.startsWith('/api/admin')
 });
-app.use('/api/links', limiter);
+app.use('/api/links', publicLimiter);
 
-// Admin rate limiting
+// Admin login rate limiting - Prevent brute force
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // Only 5 login attempts per 15 min
+  message: { error: 'Too many login attempts, please try again later.' },
+  skipSuccessfulRequests: true
+});
+app.use('/api/admin/login', adminLoginLimiter);
+
+// Admin operations rate limiting
 const adminLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 500,
+  max: 200,
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 app.use('/api/admin', adminLimiter);
 
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+// Body parsing middleware with size limits
+app.use(express.json({ limit: '1mb' })); // Reduced from 10mb
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// Prevent parameter pollution
+app.use((req, res, next) => {
+  if (req.query) {
+    Object.keys(req.query).forEach(key => {
+      if (Array.isArray(req.query[key])) {
+        req.query[key] = req.query[key][0];
+      }
+    });
+  }
+  next();
+});
+
+// Add security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  next();
+});
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
