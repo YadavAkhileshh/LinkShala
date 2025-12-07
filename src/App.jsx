@@ -54,7 +54,7 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg transition-colors duration-300 relative overflow-x-hidden">
+        <div className="min-h-screen bg-vintage-cream dark:bg-black transition-colors duration-300 relative overflow-x-hidden">
           {/* Particle System Background */}
           <ParticleSystem count={30} color="rgba(218, 165, 32, 0.6)" />
           

@@ -145,8 +145,26 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg transition-colors duration-300">
       {/* Hero Section */}
-      <section className="relative py-20 px-6 lg:px-8 bg-vintage-paper dark:bg-dark-card border-b border-vintage-gold/20 dark:border-dark-border">
-        <div className="max-w-7xl mx-auto text-center">
+      <section className="relative py-20 px-6 lg:px-8 bg-vintage-paper dark:bg-dark-card border-b border-vintage-gold/20 dark:border-dark-border overflow-hidden">
+        {/* Noise Texture Background - Light Mode */}
+        <div
+          className="absolute inset-0 z-0 opacity-100 dark:opacity-0 transition-opacity duration-300"
+          style={{
+            background: "#f5f0e8",
+            backgroundImage: "radial-gradient(circle at 1px 1px, rgba(218, 165, 32, 0.25) 1px, transparent 0)",
+            backgroundSize: "20px 20px",
+          }}
+        />
+        {/* Noise Texture Background - Dark Mode */}
+        <div
+          className="absolute inset-0 z-0 opacity-0 dark:opacity-100 transition-opacity duration-300"
+          style={{
+            background: "#1a1a1a",
+            backgroundImage: "radial-gradient(circle at 1px 1px, rgba(218, 165, 32, 0.35) 1px, transparent 0)",
+            backgroundSize: "20px 20px",
+          }}
+        />
+        <div className="max-w-7xl mx-auto text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Sparkles, Rocket, Lock, Code, Palette, Brain, Eye, EyeOff, Zap, Shield } from 'lucide-react'
+import { X, Sparkles, Rocket, Lock, Code, Palette, Brain, Eye, EyeOff, Zap, Shield, Sun, Moon } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import apiService from '../lib/api'
+import { useTheme } from '../contexts/ThemeContext'
 
 const LandingPage = () => {
   const [showAuth, setShowAuth] = useState(false)
@@ -17,6 +18,7 @@ const LandingPage = () => {
   const [recentLinks, setRecentLinks] = useState([])
   const { signIn, signUp, signInWithGoogle, user } = useAuth()
   const navigate = useNavigate()
+  const { isDark, toggleTheme } = useTheme()
 
   useEffect(() => {
     if (user) {
@@ -96,9 +98,37 @@ const LandingPage = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg">
+    <div className="min-h-screen bg-vintage-cream dark:bg-black transition-colors duration-500">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 py-16 sm:py-20 overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 py-16 sm:py-20 overflow-hidden bg-vintage-cream dark:bg-black transition-colors duration-500">
+        {/* Top Fade Grid Background - Light Mode */}
+        <div
+          className="absolute inset-0 z-0 opacity-100 dark:opacity-0 transition-opacity duration-300"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+              linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)
+            `,
+            backgroundSize: "20px 30px",
+            WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
+            maskImage: "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
+          }}
+        />
+        
+        {/* Top Fade Grid Background - Dark Mode */}
+        <div
+          className="absolute inset-0 z-0 opacity-0 dark:opacity-100 transition-opacity duration-300"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(218,165,32,0.15) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(218,165,32,0.15) 1px, transparent 1px)
+            `,
+            backgroundSize: "20px 30px",
+            WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
+            maskImage: "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
+          }}
+        />
+        
         {/* Animated Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
@@ -125,7 +155,7 @@ const LandingPage = () => {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center space-x-2 bg-vintage-gold/20 dark:bg-vintage-gold/10 px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-vintage-gold/30"
+              className="inline-flex items-center space-x-2 bg-vintage-gold/20 dark:bg-vintage-gold/10 px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-vintage-gold shadow-[0_0_15px_rgba(218,165,32,0.3)]"
             >
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-vintage-gold" />
               <span className="text-sm sm:text-base text-vintage-brown dark:text-vintage-gold font-serif font-medium">
@@ -154,14 +184,12 @@ const LandingPage = () => {
               transition={{ delay: 0.4 }}
               className="max-w-3xl mx-auto px-4 space-y-3 sm:space-y-4"
             >
-              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-vintage-coffee dark:text-dark-muted font-serif leading-relaxed">
-                <span className="font-semibold text-vintage-brass">React's vibing</span> with{' '}
-                <span className="font-semibold text-vintage-brass">AI</span>,{' '}
-                <span className="font-semibold text-vintage-brass">design's coding itself</span>, and your next big thing's already{' '}
-                <span className="font-semibold text-vintage-brass">compiling</span>.
+              <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-sans font-medium text-vintage-black dark:text-white leading-tight tracking-tight">
+                If your <span className="font-bold bg-gradient-to-r from-vintage-gold to-vintage-brass bg-clip-text text-transparent">ideas are fast</span>,<br className="hidden sm:block" /> your{' '}
+                <span className="font-bold bg-gradient-to-r from-vintage-brass to-vintage-gold bg-clip-text text-transparent">tools should be faster</span>
               </p>
-              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-vintage-black dark:text-dark-text">
-                ⚡ Dive in. Decode. <span className="text-vintage-gold">Dominate.</span>
+              <p className="text-base sm:text-lg md:text-xl font-sans text-vintage-coffee dark:text-gray-400 mt-4 tracking-wide">
+                <span className="font-bold text-vintage-gold">Linkshala</span> helps you move like a <span className="font-bold text-vintage-brass">pro</span>.
               </p>
             </motion.div>
 
@@ -247,7 +275,7 @@ const LandingPage = () => {
 
 
       {/* Featured Resources Preview */}
-      <section className="py-20 px-6 bg-vintage-paper dark:bg-dark-card border-y border-vintage-gold/20 dark:border-dark-border">
+      <section className="py-20 px-6 bg-vintage-paper dark:bg-black border-y border-vintage-gold/20 dark:border-dark-border">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -310,7 +338,7 @@ const LandingPage = () => {
       </section>
 
       {/* Categories Preview */}
-      <section className="py-20 px-6 bg-vintage-cream dark:bg-dark-bg">
+      <section className="py-20 px-6 bg-vintage-cream dark:bg-black">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -351,7 +379,7 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-6 bg-vintage-cream dark:bg-dark-bg">
+      <section className="py-20 px-6 bg-vintage-cream dark:bg-black">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -376,7 +404,7 @@ const LandingPage = () => {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ y: -10 }}
-                className="bg-vintage-cream dark:bg-dark-bg rounded-2xl p-8 border border-vintage-gold/20 dark:border-dark-border shadow-lg"
+                className="bg-vintage-cream dark:bg-gray-900 rounded-2xl p-8 border border-vintage-gold/20 dark:border-dark-border shadow-lg"
               >
                 <div className={`w-14 h-14 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center mb-6 shadow-lg`}>
                   <feature.icon className="w-7 h-7 text-white" />
@@ -394,7 +422,7 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-gradient-to-br from-vintage-gold/10 via-vintage-brass/5 to-vintage-gold/10 dark:from-vintage-gold/5 dark:via-vintage-brass/5 dark:to-vintage-gold/5 border-y-2 border-vintage-gold/30 dark:border-vintage-gold/20">
+      <section className="py-20 px-6 bg-gradient-to-br from-vintage-gold/10 via-vintage-brass/5 to-vintage-gold/10 dark:from-black dark:via-black dark:to-black border-y-2 border-vintage-gold/30 dark:border-vintage-gold/20">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -418,6 +446,19 @@ const LandingPage = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* Theme Toggle Button */}
+      <motion.button
+        onClick={toggleTheme}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        className="fixed bottom-6 right-6 p-2 bg-vintage-gold/90 hover:bg-vintage-gold text-white rounded-full shadow-lg z-40 transition-colors"
+        aria-label="Toggle theme"
+      >
+        {isDark ? <Sun size={16} /> : <Moon size={16} />}
+      </motion.button>
 
       {/* Auth Modal */}
       <AnimatePresence>
