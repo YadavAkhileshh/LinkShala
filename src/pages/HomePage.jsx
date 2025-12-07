@@ -176,26 +176,26 @@ const HomePage = () => {
               transition={{ duration: 0.8 }}
               className="mb-8"
             >
-              <h1 className="text-6xl md:text-8xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-8 leading-tight">
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-6 leading-tight">
                 <motion.span
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2, duration: 0.8 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.6 }}
+                  className="block"
                 >
-                  Discover
+                  Fuel
                 </motion.span>
-                <br />
                 <motion.span
-                  className="bg-gradient-to-r from-vintage-gold via-vintage-brass to-vintage-gold bg-clip-text text-transparent"
-                  initial={{ opacity: 0, x: 50 }}
+                  className="bg-gradient-to-r from-vintage-gold via-vintage-brass to-vintage-gold bg-clip-text text-transparent block"
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ 
                     opacity: 1, 
-                    x: 0,
+                    y: 0,
                     backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
                   }}
                   transition={{ 
                     delay: 0.4, 
-                    duration: 0.8,
+                    duration: 0.6,
                     backgroundPosition: {
                       duration: 4,
                       repeat: Infinity,
@@ -206,47 +206,42 @@ const HomePage = () => {
                     backgroundSize: '200% 200%'
                   }}
                 >
-                  Excellence
+                  Your Next Build
                 </motion.span>
               </h1>
             </motion.div>
             
-            {/* Crazy Attractive Subtitle */}
             <motion.div 
-              className="mb-12 max-w-4xl mx-auto"
+              className="mb-12 max-w-3xl mx-auto space-y-5"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
               <motion.p 
-                className="text-2xl md:text-3xl text-vintage-coffee dark:text-dark-muted font-serif leading-relaxed mb-4"
+                className="text-xl md:text-2xl text-vintage-black dark:text-gray-300 font-sans leading-relaxed"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: 0.7 }}
               >
-                 <span className="font-bold text-vintage-gold">500+ handpicked gems.</span>{' '}
-                <span className="font-bold text-vintage-brass">Zero fluff.</span>{' '}
-                <span className="font-bold text-vintage-black dark:text-dark-text">Pure fire.</span>
+                500+ resources picked to make building feel effortless.
               </motion.p>
               
               <motion.p
-                className="text-xl md:text-2xl text-vintage-brown dark:text-dark-muted font-serif leading-relaxed"
+                className="text-lg md:text-xl text-vintage-brown dark:text-gray-400 font-sans leading-relaxed"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.85 }}
+              >
+                React tools. AI shortcuts. Smart picks for serious developers.
+              </motion.p>
+              
+              <motion.p 
+                className="text-xl md:text-2xl text-vintage-black dark:text-white font-sans pt-2"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
               >
-                From <span className="font-semibold text-vintage-gold">React wizardry</span> to{' '}
-                <span className="font-semibold text-vintage-gold">AI sorcery</span> —{' '}
-                <span className="font-bold text-vintage-black dark:text-dark-text">everything a dev craves</span>. 🔥
-              </motion.p>
-              
-              <motion.p 
-                className="text-2xl md:text-3xl font-bold text-vintage-black dark:text-dark-text mt-6"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.2 }}
-              >
-                ⚡ Stop scrolling. Start building. <span className="text-vintage-gold">Ship faster.</span>
+                Start exploring. The good stuff is <span className="text-vintage-gold font-semibold">inside</span>...
               </motion.p>
             </motion.div>
           </motion.div>
