@@ -24,7 +24,7 @@ A professional platform for discovering and sharing curated developer resources.
 
 ### 1. Clone and Install
 ```bash
-git clone https://github.com/yourusername/linkshala.git
+git clone https://github.com/YadavAkhileshh/linkshala.git
 cd linkshala
 
 # Install frontend dependencies
