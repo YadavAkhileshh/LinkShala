@@ -2,67 +2,91 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap');
 
 @layer base {
   * {
     scroll-behavior: smooth;
   }
-  
+
   html {
     scroll-behavior: smooth;
     scroll-padding-top: 80px;
   }
-  
+
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
     transition: background-color 0.3s ease, color 0.3s ease;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: 0.01em;
   }
-  
+
+  /* Custom selection color */
+  ::selection {
+    background-color: rgba(218, 165, 32, 0.25);
+    color: inherit;
+  }
+
+  ::-moz-selection {
+    background-color: rgba(218, 165, 32, 0.25);
+    color: inherit;
+  }
+
   .font-vintage {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    letter-spacing: 0.02em;
+    font-weight: 500;
   }
-  
+
   .font-serif {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Source Sans 3', -apple-system, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 600;
   }
 }
 
 @layer utilities {
   .shadow-vault {
-    box-shadow: 
+    box-shadow:
       0 4px 6px -1px rgba(139, 94, 60, 0.1),
       0 2px 4px -1px rgba(139, 94, 60, 0.06),
       inset 0 1px 0 rgba(218, 165, 32, 0.1);
   }
-  
+
   .shadow-vault-lg {
-    box-shadow: 
+    box-shadow:
       0 10px 15px -3px rgba(139, 94, 60, 0.1),
       0 4px 6px -2px rgba(139, 94, 60, 0.05),
       inset 0 1px 0 rgba(218, 165, 32, 0.15);
   }
-  
+
   .shadow-glow {
     box-shadow: 0 0 20px rgba(218, 165, 32, 0.3);
   }
-  
+
   .perspective-1000 {
     perspective: 1000px;
   }
-  
+
   .line-clamp-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+    line-clamp: 3;
     overflow: hidden;
   }
-  
+
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    line-clamp: 2;
     overflow: hidden;
   }
 }
@@ -71,6 +95,7 @@
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -80,7 +105,7 @@
   animation: shimmer 2s infinite;
 }
 
-/* Custom scrollbar with smooth transitions */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -93,20 +118,12 @@
 ::-webkit-scrollbar-thumb {
   background: #daa520;
   border-radius: 4px;
-  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #b8860b;
 }
 
-/* Smooth scrolling for all scrollable elements */
-.overflow-y-auto,
-.overflow-auto {
-  scroll-behavior: smooth;
-}
-
-/* Dark mode scrollbar */
 .dark ::-webkit-scrollbar-track {
   background: #374151;
 }

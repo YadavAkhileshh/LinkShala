@@ -2,37 +2,41 @@ import { Link } from 'react-router-dom'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
-  const lastUpdated = new Date().toLocaleDateString('en-US', { 
-    day: 'numeric', 
-    month: 'long', 
-    year: 'numeric'
-  })
 
   return (
-    <footer className="bg-vintage-paper dark:bg-dark-card py-6 px-6 lg:px-8 border-t border-vintage-gold/20 dark:border-dark-border transition-colors duration-300">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-center text-sm text-vintage-coffee dark:text-dark-muted space-y-3 md:space-y-0">
-          <div className="flex flex-col items-center md:items-start space-y-1">
-            <div>linkshala – {currentYear}</div>
-            <a href="mailto:linkshala.world@gmail.com" className="text-vintage-gold hover:text-vintage-brass transition-colors flex items-center space-x-1">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
-              </svg>
-              <span>Support</span>
+    <footer className="bg-[#fefdfb] dark:bg-[#0c0c0c] py-8 px-4 sm:px-6 lg:px-8 border-t border-gray-100 dark:border-white/[0.04]">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm">
+          {/* Left - Brand */}
+          <div className="flex items-center gap-2">
+            <span className="font-vintage text-lg text-vintage-gold">LinkShala</span>
+            <span className="text-gray-300 dark:text-gray-700">|</span>
+            <span className="text-gray-400 dark:text-gray-500">Developer Resources</span>
+          </div>
+
+          {/* Center - Made by */}
+          <div className="text-gray-400 dark:text-gray-500">
+            Crafted with care by{' '}
+            <a
+              href="https://github.com/YadavAkhileshh"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-vintage-gold hover:text-vintage-brass transition-colors"
+            >
+              Akhilesh
             </a>
           </div>
-          
-          <div className="font-serif text-center md:text-left">
-            <div className="flex items-center space-x-2">
-              
-              <span className="text-vintage-brown dark:text-dark-muted">Coded with caffeine by</span>
-              <a href="https://github.com/YadavAkhileshh" target="_blank" rel="noopener noreferrer" className="text-vintage-gold font-bold hover:text-vintage-brass transition-colors underline decoration-vintage-gold/30">Akhilesh</a>
-            </div>
-          </div>
-          
-          <div>
-            last updated: {lastUpdated}
+
+          {/* Right - Links & Year */}
+          <div className="flex items-center gap-4 text-gray-400 dark:text-gray-500">
+            <a
+              href="mailto:linkshala.world@gmail.com"
+              className="hover:text-vintage-gold transition-colors"
+            >
+              Contact
+            </a>
+            <span className="text-gray-300 dark:text-gray-700">|</span>
+            <span>{currentYear}</span>
           </div>
         </div>
       </div>

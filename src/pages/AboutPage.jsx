@@ -1,277 +1,192 @@
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Heart, Code, Zap, Users, Star, Github, Twitter, Mail } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Heart, Code, Zap, Users, Github, Twitter, Mail, ArrowRight } from 'lucide-react'
 
 const AboutPage = () => {
-  const features = [
-    {
-      icon: Code,
-      title: "Solo Project",
-      description: "Built by one developer who gets your daily struggle of finding good tools."
-    },
-    {
-      icon: Zap,
-      title: "Super Fast",
-      description: "Quick search, smooth animations, and works great on any device."
-    },
-    {
-      icon: Users,
-      title: "For the Community",
-      description: "Growing collection of handpicked resources for developers worldwide."
-    },
-    {
-      icon: Heart,
-      title: "Open Source",
-      description: "Everything is transparent. Contribute, suggest ideas, or fork it on GitHub."
-    }
-  ]
-
-  const stats = [
-    { number: "500+", label: "Curated Links" },
-    { number: "1K+", label: "Monthly Visits" },
-    { number: "10+", label: "Categories" },
-    { number: "99.9%", label: "Uptime" }
-  ]
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   return (
-    <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg">
-      {/* Hero Section */}
-      <section className="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
+    <div className="min-h-screen bg-[#fefdfb] dark:bg-[#0c0c0c]">
+      {/* Hero */}
+      <section className="relative py-24 px-6 overflow-hidden">
+        {/* Organic background lines */}
+        <svg className="absolute top-0 left-0 w-full h-full opacity-[0.04] dark:opacity-[0.02]" viewBox="0 0 1000 600" preserveAspectRatio="none">
+          <path d="M0,300 Q250,200 500,300 T1000,300" stroke="currentColor" strokeWidth="1" fill="none" className="text-vintage-gold" />
+          <path d="M0,350 Q250,250 500,350 T1000,350" stroke="currentColor" strokeWidth="0.5" fill="none" className="text-vintage-brass" />
+        </svg>
+
+        <div className="max-w-3xl mx-auto text-center relative z-10">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-sm tracking-[0.2em] uppercase text-vintage-gold/80 mb-6"
+          >
+            About
+          </motion.p>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-5xl font-vintage text-gray-900 dark:text-white mb-6"
           >
-            <h1 className="text-5xl md:text-6xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-6">
-              About <span className="text-vintage-gold">LinkShala</span>
-            </h1>
-            <p className="text-xl text-vintage-brown dark:text-dark-muted font-serif max-w-3xl mx-auto leading-relaxed">
-              Your ultimate destination for discovering, organizing, and sharing the best developer tools, 
-              resources, and inspiration. Crafted with passion for the developer community.
+            Built for developers,
+            <br />
+            <span className="text-vintage-gold">by a developer</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-lg text-gray-500 dark:text-gray-400 max-w-xl mx-auto"
+          >
+            LinkShala is a curated collection of the best tools and resources
+            for developers. No clutter, no noise-just quality.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* Story */}
+      <section className="py-16 px-6">
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-6 text-gray-600 dark:text-gray-400"
+          >
+            <p className="text-lg leading-relaxed">
+              I got tired of bookmarking random links, losing them, and spending hours
+              searching for that one tool I saw somewhere. So I built LinkShala-a simple
+              place to keep the good stuff organized.
+            </p>
+            <p className="text-lg leading-relaxed">
+              Every link here is something I've actually used or found genuinely useful.
+              No sponsored picks, no filler content. Just resources that help you build
+              better things faster.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Mission Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="bg-vintage-paper dark:bg-dark-card rounded-3xl p-8 md:p-12 shadow-vault border border-vintage-gold/20 dark:border-dark-border"
-          >
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-6">
-                 Mission 
-                </h2>
-                <p className="text-vintage-brown dark:text-dark-muted font-serif text-lg leading-relaxed mb-6">
-                  I believe that great developers deserve great tools. LinkShala was born from my frustration 
-                  of spending countless hours searching for reliable resources, quality libraries, and 
-                  inspiration scattered across the web.
+      {/* Features */}
+      <section className="py-16 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              { icon: Code, title: "Solo Project", desc: "Built by one dev who understands the struggle" },
+              { icon: Zap, title: "Fast", desc: "No bloat, just quick access to resources" },
+              { icon: Users, title: "Community", desc: "Growing collection for developers worldwide" },
+              { icon: Heart, title: "Open", desc: "Transparent curation, community-driven" }
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-white dark:bg-[#111] rounded-xl p-6 border border-gray-100 dark:border-white/[0.06]"
+              >
+                <div className="w-10 h-10 bg-vintage-gold/10 rounded-lg flex items-center justify-center mb-4">
+                  <item.icon className="w-5 h-5 text-vintage-gold" />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {item.desc}
                 </p>
-                <p className="text-vintage-brown dark:text-dark-muted font-serif text-lg leading-relaxed">
-                  My mission is simple: to create a centralized, curated collection of the best developer 
-                  resources, making it easier for creators to find what they need and focus on what they do best - building amazing things.
-                </p>
-              </div>
-              <div className="relative">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.3 }}
-                  className="bg-gradient-to-br from-vintage-gold to-vintage-brass rounded-2xl p-8 text-white shadow-glow"
-                >
-                  <Code size={48} className="mb-4" />
-                  <h3 className="text-xl font-serif font-semibold mb-2">Quality First</h3>
-                  <p className="font-serif opacity-90">
-                    Every resource is manually reviewed and tested to ensure it meets my high standards for quality and reliability.
-                  </p>
-                </motion.div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-4xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
-              What Makes Us Special?
-            </h2>
-            <p className="text-vintage-brown dark:text-dark-muted font-serif text-lg max-w-2xl mx-auto">
-              Simple, fast, and built for developers like you
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => {
-              const Icon = feature.icon
-              return (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ y: -5 }}
-                  className="bg-vintage-paper dark:bg-dark-card rounded-2xl p-6 shadow-vault border border-vintage-gold/20 dark:border-dark-border text-center group"
-                >
-                  <div className="w-16 h-16 bg-gradient-to-br from-vintage-gold to-vintage-brass rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                    <Icon size={32} className="text-white" />
-                  </div>
-                  <h3 className="text-xl font-serif font-semibold text-vintage-black dark:text-dark-text mb-3">
-                    {feature.title}
-                  </h3>
-                  <p className="text-vintage-brown dark:text-dark-muted font-serif leading-relaxed">
-                    {feature.description}
-                  </p>
-                </motion.div>
-              )
-            })}
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+      {/* Stats */}
+      <section className="py-16 px-6">
+        <div className="max-w-3xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="bg-gradient-to-br from-vintage-gold to-vintage-brass rounded-3xl p-8 md:p-12 text-white shadow-glow"
+            className="bg-vintage-gold rounded-2xl p-10 text-center"
           >
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-vintage font-bold mb-4">
-                LinkShala by the Numbers
-              </h2>
-              <p className="text-white/90 font-serif text-lg">
-                Join thousands of developers who trust LinkShala for their daily workflow
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="text-4xl md:text-5xl font-vintage font-bold mb-2">
-                    {stat.number}
-                  </div>
-                  <div className="text-white/90 font-serif text-lg">
-                    {stat.label}
-                  </div>
-                </motion.div>
+            <div className="grid grid-cols-4 gap-6">
+              {[
+                { num: "500+", label: "Links" },
+                { num: "1K+", label: "Visitors" },
+                { num: "10+", label: "Categories" },
+                { num: "99%", label: "Uptime" }
+              ].map((stat) => (
+                <div key={stat.label}>
+                  <p className="text-2xl md:text-3xl font-bold text-white mb-1">{stat.num}</p>
+                  <p className="text-sm text-white/70">{stat.label}</p>
+                </div>
               ))}
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
+      {/* Connect */}
+      <section className="py-16 px-6">
+        <div className="max-w-xl mx-auto text-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
           >
-            <h2 className="text-4xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-6">
-              Socials
+            <h2 className="text-2xl font-vintage text-gray-900 dark:text-white mb-6">
+              Let's connect
             </h2>
-            <p className="text-vintage-brown dark:text-dark-muted font-serif text-lg leading-relaxed mb-8">
-              LinkShala is crafted by a passionate developer who understands the daily challenges 
-              of finding quality resources. I'm committed to making the developer experience better, 
-              one curated link at a time.
-            </p>
-            
-            <div className="flex justify-center space-x-6">
-              <motion.a
-                href="https://github.com/YadavAkhileshh"
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-12 h-12 bg-vintage-paper dark:bg-dark-card border border-vintage-gold/20 dark:border-dark-border rounded-full flex items-center justify-center text-vintage-brown dark:text-dark-muted hover:text-vintage-gold dark:hover:text-dark-accent transition-colors shadow-md"
-              >
-                <Github size={24} />
-              </motion.a>
-              <motion.a
-                href="https://x.com/_Yakhil"
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-12 h-12 bg-vintage-paper dark:bg-dark-card border border-vintage-gold/20 dark:border-dark-border rounded-full flex items-center justify-center text-vintage-brown dark:text-dark-muted hover:text-vintage-gold dark:hover:text-dark-accent transition-colors shadow-md"
-              >
-                <Twitter size={24} />
-              </motion.a>
-              <motion.a
-                href="mailto:linkshala.world@gmail.com"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-12 h-12 bg-vintage-paper dark:bg-dark-card border border-vintage-gold/20 dark:border-dark-border rounded-full flex items-center justify-center text-vintage-brown dark:text-dark-muted hover:text-vintage-gold dark:hover:text-dark-accent transition-colors shadow-md"
-              >
-                <Mail size={24} />
-              </motion.a>
+
+            <div className="flex justify-center gap-4 mb-8">
+              {[
+                { icon: Github, href: "https://github.com/YadavAkhileshh", label: "GitHub" },
+                { icon: Twitter, href: "https://x.com/_Yakhil", label: "Twitter" },
+                { icon: Mail, href: "mailto:linkshala.world@gmail.com", label: "Email" }
+              ].map((social) => (
+                <motion.a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-12 h-12 bg-white dark:bg-[#111] border border-gray-100 dark:border-white/[0.06] rounded-xl flex items-center justify-center text-gray-500 hover:text-vintage-gold transition-colors"
+                >
+                  <social.icon size={20} />
+                </motion.a>
+              ))}
             </div>
+
+            <p className="text-sm text-gray-400 mb-8">
+              Questions or suggestions? <br />
+              <a href="mailto:linkshala.world@gmail.com" className="text-vintage-gold hover:underline">
+                linkshala.world@gmail.com
+              </a>
+            </p>
           </motion.div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="bg-vintage-paper dark:bg-dark-card rounded-3xl p-8 md:p-12 text-center shadow-vault border border-vintage-gold/20 dark:border-dark-border"
+      {/* CTA */}
+      <section className="py-16 px-6 border-t border-gray-100 dark:border-white/[0.04]">
+        <div className="max-w-xl mx-auto text-center">
+          <h2 className="text-xl font-vintage text-gray-900 dark:text-white mb-4">
+            Ready to explore?
+          </h2>
+          <Link
+            to="/home"
+            className="inline-flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-3 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
           >
-            <Star size={48} className="text-vintage-gold mx-auto mb-6" />
-            <h2 className="text-3xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
-              Ready to Explore?
-            </h2>
-            <p className="text-vintage-brown dark:text-dark-muted font-serif text-lg mb-6 max-w-2xl mx-auto">
-              Join thousands of developers who have already discovered their next favorite tool. 
-              Start exploring our curated collection today.
-            </p>
-            <div className="mb-8">
-              <p className="text-vintage-brown dark:text-dark-muted font-serif text-sm mb-2">Need help or have suggestions?</p>
-              <a href="mailto:linkshala.world@gmail.com" className="text-vintage-gold hover:text-vintage-brass transition-colors font-serif font-medium flex items-center justify-center space-x-2">
-                <Mail size={18} />
-                <span>linkshala.world@gmail.com</span>
-              </a>
-            </div>
-            <motion.a
-              href="/"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center space-x-2 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-8 py-4 rounded-xl font-serif font-medium shadow-glow hover:shadow-xl transition-all duration-300"
-            >
-              <span>Start Exploring</span>
-              <Zap size={20} />
-            </motion.a>
-          </motion.div>
+            Browse Resources
+            <ArrowRight size={16} />
+          </Link>
         </div>
       </section>
     </div>

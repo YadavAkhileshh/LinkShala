@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Share2, ExternalLink, Calendar, Bookmark, BookmarkCheck } from 'lucide-react'
+import { ArrowLeft, Share2, ExternalLink, Calendar, Bookmark, BookmarkCheck, Globe, Copy, Clock, Eye, Tag, ArrowRight } from 'lucide-react'
 import apiService from '../lib/api'
 import bookmarkService from '../lib/bookmarkService'
 
@@ -12,48 +12,37 @@ const LinkDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [relatedLinks, setRelatedLinks] = useState([])
   const shareMenuRef = useRef(null)
 
   useEffect(() => {
+    window.scrollTo(0, 0)
     loadLinkDetails()
-    
-    // Load Chatbase only on this page
+
+    // Load chatbase chatbot
     const loadChatbot = () => {
       const script = document.createElement('script')
-      script.innerHTML = `
-        (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="u3EUI6O2hCNxZuSrAv9Ij";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
-      `
+      script.innerHTML = `(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="u3EUI6O2hCNxZuSrAv9Ij";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();`
       document.head.appendChild(script)
     }
-    
     loadChatbot()
-    
-    // Cleanup when component unmounts
+
     return () => {
       const chatbotElements = document.querySelectorAll('[id*="chatbase"], [class*="chatbase"], iframe[src*="chatbase"]')
       chatbotElements.forEach(el => el.remove())
-      
-      if (window.chatbase) {
-        delete window.chatbase
-      }
+      if (window.chatbase) delete window.chatbase
     }
   }, [id])
 
-  // Close share menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (shareMenuRef.current && !shareMenuRef.current.contains(event.target)) {
         setShowShareMenu(false)
       }
     }
-
-    if (showShareMenu) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
+    if (showShareMenu) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showShareMenu])
 
   const loadLinkDetails = async () => {
@@ -63,6 +52,19 @@ const LinkDetailPage = () => {
       setLink(data)
       const bookmarked = await bookmarkService.isBookmarked(data._id)
       setIsBookmarked(bookmarked)
+
+      // Load related links from same category
+      if (data.category) {
+        try {
+          const allLinks = await apiService.getLinks()
+          const related = allLinks
+            .filter(l => l.category === data.category && l._id !== data._id)
+            .slice(0, 3)
+          setRelatedLinks(related)
+        } catch (e) {
+          console.log('Could not load related links')
+        }
+      }
     } catch (error) {
       console.error('Error loading link details:', error)
     } finally {
@@ -70,106 +72,71 @@ const LinkDetailPage = () => {
     }
   }
 
-
-
-  const handleShare = async (platform) => {
+  const getDomain = () => {
     try {
-      await apiService.shareLink(id)
-      const shareUrl = window.location.href
-      const shareText = `🚀 Discover ${link.title} - One of the best curated resources on the internet! Come and explore amazing tools & websites at LinkShala 💎✨`
-      
-      switch (platform) {
-        case 'twitter':
-          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}&hashtags=webdev,tools,resources`)
-          break
-        case 'linkedin':
-          window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`)
-          break
-        case 'github':
-          const githubText = `# ${link.title}\n\n${link.description || 'Amazing resource found on LinkShala'}\n\n🔗 ${shareUrl}\n\n> Curated by LinkShala - Explore the best websites on the internet!`
-          await navigator.clipboard.writeText(githubText)
-          const githubEvent = new CustomEvent('showToast', {
-            detail: { message: 'GitHub-formatted text copied to clipboard!', type: 'success' }
-          })
-          window.dispatchEvent(githubEvent)
-          break
-        case 'devto':
-          const devtoText = `Check out this amazing resource: ${link.title}\n\n${shareUrl}\n\n#webdev #tools #resources`
-          window.open(`https://dev.to/new?prefill=${encodeURIComponent(devtoText)}`)
-          break
-        
-        case 'whatsapp':
-          window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`)
-          break
-        case 'copy':
-          const copyText = `🚀 ${link.title}\n\n${link.description || 'Amazing curated resource'}\n\n✨ Discover more incredible tools and websites at LinkShala - your gateway to the best of the internet!\n\n🔗 ${shareUrl}`
-          await navigator.clipboard.writeText(copyText)
-          const event = new CustomEvent('showToast', {
-            detail: { message: 'Link with description copied to clipboard!', type: 'success' }
-          })
-          window.dispatchEvent(event)
-          break
-      }
-      setShowShareMenu(false)
-    } catch (error) {
-      console.error('Error sharing:', error)
-      const event = new CustomEvent('showToast', {
-        detail: { message: 'Failed to share link', type: 'error' }
-      })
-      window.dispatchEvent(event)
+      return new URL(link?.url).hostname.replace('www.', '')
+    } catch {
+      return 'link'
     }
   }
 
-  const handleBookmark = () => {
+  const handleShare = async (type) => {
     try {
-      if (isBookmarked) {
-        bookmarkService.removeBookmark(link._id)
-        setIsBookmarked(false)
-        const event = new CustomEvent('showToast', {
-          detail: { message: 'Removed from bookmarks', type: 'success' }
-        })
-        window.dispatchEvent(event)
-      } else {
-        bookmarkService.addBookmark(link)
-        setIsBookmarked(true)
-        const event = new CustomEvent('showToast', {
-          detail: { message: 'Added to bookmarks', type: 'success' }
-        })
-        window.dispatchEvent(event)
+      await apiService.shareLink(id)
+      const url = window.location.href
+      const text = `Check out ${link.title} on LinkShala`
+
+      if (type === 'twitter') window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`)
+      else if (type === 'linkedin') window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`)
+      else if (type === 'copy') {
+        await navigator.clipboard.writeText(url)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
       }
     } catch (error) {
-      console.error('Error handling bookmark:', error)
-      const event = new CustomEvent('showToast', {
-        detail: { message: 'Failed to update bookmark', type: 'error' }
-      })
-      window.dispatchEvent(event)
+      console.error('Error sharing:', error)
     }
+    setShowShareMenu(false)
+  }
+
+  const handleBookmark = async () => {
+    try {
+      if (isBookmarked) {
+        await bookmarkService.removeBookmark(link._id)
+        setIsBookmarked(false)
+      } else {
+        await bookmarkService.addBookmark(link)
+        setIsBookmarked(true)
+      }
+      window.dispatchEvent(new CustomEvent('bookmarkChanged'))
+    } catch (error) {
+      console.error('Error bookmarking:', error)
+    }
+  }
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 border-4 border-vintage-gold border-t-transparent rounded-full"
-        />
+      <div className="min-h-screen bg-[#fefdfb] dark:bg-[#0c0c0c] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-vintage-gold/30 border-t-vintage-gold rounded-full animate-spin" />
       </div>
     )
   }
 
   if (!link) {
     return (
-      <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg flex items-center justify-center">
+      <div className="min-h-screen bg-[#fefdfb] dark:bg-[#0c0c0c] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
-            Link not found
-          </h2>
-          <button
-            onClick={() => navigate('/')}
-            className="bg-vintage-gold text-white px-6 py-3 rounded-lg hover:bg-vintage-brass transition-colors"
-          >
-            Go Back Home
+          <h2 className="text-xl font-vintage text-gray-900 dark:text-white mb-2">Link not found</h2>
+          <button onClick={() => navigate('/home')} className="text-vintage-gold hover:text-vintage-brass">
+            Go back home
           </button>
         </div>
       </div>
@@ -177,243 +144,258 @@ const LinkDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg py-8">
-      <div className="max-w-4xl mx-auto px-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-8"
+    <div className="min-h-screen bg-[#fefdfb] dark:bg-[#0c0c0c] transition-colors">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        {/* Back Button */}
+        <motion.button
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:hover:text-white mb-8 transition-colors"
         >
-          <button
-            onClick={() => {
-              const scrollPos = sessionStorage.getItem('homeScrollPos')
-              navigate('/home')
-              setTimeout(() => {
-                if (scrollPos) {
-                  window.scrollTo(0, parseInt(scrollPos))
-                }
-              }, 100)
-            }}
-            className="flex items-center space-x-2 text-vintage-brown dark:text-dark-muted hover:text-vintage-gold transition-colors"
+          <ArrowLeft size={18} />
+          <span className="text-sm">Back</span>
+        </motion.button>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <motion.article
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="lg:col-span-2 bg-white dark:bg-[#111] rounded-2xl border border-gray-100 dark:border-white/[0.06] overflow-hidden shadow-sm"
           >
-            <ArrowLeft size={20} />
-            <span className="font-serif">Back</span>
-          </button>
-          
-          <div className="flex items-center space-x-3">
-            {/* Bookmark Button */}
-            <motion.button
-              onClick={handleBookmark}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`px-4 py-3 rounded-lg transition-all duration-300 flex items-center space-x-2 shadow-lg ${
-                isBookmarked 
-                  ? 'bg-vintage-gold text-white hover:bg-vintage-brass' 
-                  : 'bg-vintage-paper dark:bg-dark-card border border-vintage-gold/30 dark:border-dark-border text-vintage-brown dark:text-dark-muted hover:bg-vintage-gold/10 dark:hover:bg-vintage-gold/20'
-              }`}
-            >
-              {isBookmarked ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
-              <span className="font-serif font-medium hidden sm:inline">
-                {isBookmarked ? 'Saved' : 'Save'}
-              </span>
-            </motion.button>
-            
-            {/* Share Button */}
-            <div className="relative" ref={shareMenuRef}>
-              <motion.button
-                onClick={() => setShowShareMenu(!showShareMenu)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-6 py-3 rounded-lg hover:from-vintage-brass hover:to-vintage-gold transition-all duration-300 flex items-center space-x-2 shadow-lg"
-              >
-                <Share2 size={18} />
-                <span className="font-serif font-medium">Share Link</span>
-              </motion.button>
-            
-            <AnimatePresence>
-              {showShareMenu && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: -10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                  className="absolute right-0 top-12 bg-vintage-paper dark:bg-dark-card border border-vintage-gold/20 dark:border-dark-border rounded-lg shadow-vault p-2 z-10"
-                >
-                  <div className="flex flex-col space-y-1 min-w-[180px]">
-                    <button
-                      onClick={() => handleShare('twitter')}
-                      className="px-3 py-2 text-left hover:bg-vintage-gold/10 dark:hover:bg-vintage-gold/20 rounded text-sm flex items-center space-x-2 text-vintage-black dark:text-white transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
-                      <span>Twitter</span>
-                    </button>
-                    <button
-                      onClick={() => handleShare('linkedin')}
-                      className="px-3 py-2 text-left hover:bg-vintage-gold/10 dark:hover:bg-vintage-gold/20 rounded text-sm flex items-center space-x-2 text-vintage-black dark:text-white transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                      <span>LinkedIn</span>
-                    </button>
-                    <button
-                      onClick={() => handleShare('github')}
-                      className="px-3 py-2 text-left hover:bg-vintage-gold/10 dark:hover:bg-vintage-gold/20 rounded text-sm flex items-center space-x-2 text-vintage-black dark:text-white transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                      <span>GitHub</span>
-                    </button>
-                    <button
-                      onClick={() => handleShare('devto')}
-                      className="px-3 py-2 text-left hover:bg-vintage-gold/10 dark:hover:bg-vintage-gold/20 rounded text-sm flex items-center space-x-2 text-vintage-black dark:text-white transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M7.42 10.05c-.18-.16-.46-.23-.84-.23H6l.02 2.44.04 2.45h.56c.42 0 .63-.05.83-.26.24-.25.26-.38.26-2.2 0-1.91-.02-1.96-.29-2.2zM0 4.94v14.12h24V4.94H0zM8.56 15.3c-.44.58-1.06.77-2.53.77H4.71V8.53h1.4c1.67 0 2.16.18 2.6.9.27.43.29.6.32 2.57.05 2.23-.02 2.73-.47 3.3zm5.09-5.47h-2.47v1.77h1.52v1.28l-.72.04-.75.03v1.77l1.22.03 1.2.04v1.28h-1.6c-1.53 0-1.6-.01-1.87-.3l-.3-.28v-3.16c0-3.02.01-3.18.25-3.48.23-.31.25-.31 1.88-.31h1.64v1.3zm4.68 5.45c-.17.43-.64.79-1 .79-.18 0-.45-.15-.67-.39-.32-.32-.45-.63-.82-2.08l-.9-3.39-.45-1.67h.76c.4 0 .75.02.75.05 0 .06 1.16 4.54 1.26 4.83.04.15.32-.7.73-2.3l.66-2.52.74-.04c.4-.02.73 0 .73.04 0 .14-1.67 6.38-1.8 6.68z"/></svg>
-                      <span>Dev.to</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => handleShare('whatsapp')}
-                      className="px-3 py-2 text-left hover:bg-vintage-gold/10 dark:hover:bg-vintage-gold/20 rounded text-sm flex items-center space-x-2 text-vintage-black dark:text-white transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.488"/></svg>
-                      <span>WhatsApp</span>
-                    </button>
-                    <button
-                      onClick={() => handleShare('copy')}
-                      className="px-3 py-2 text-left hover:bg-vintage-gold/10 dark:hover:bg-vintage-gold/20 rounded text-sm flex items-center space-x-2 text-vintage-black dark:text-white transition-colors border-t border-vintage-gold/20 dark:border-dark-border"
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-                      <span>Copy Link</span>
-                    </button>
+            {/* Header with gradient */}
+            <div className="relative p-6 sm:p-8 border-b border-gray-100 dark:border-white/[0.06] bg-gradient-to-br from-vintage-gold/5 to-transparent">
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 bg-white dark:bg-[#1a1a1a] rounded-xl flex items-center justify-center border border-gray-100 dark:border-white/[0.08] shadow-sm">
+                  <img
+                    src={`https://www.google.com/s2/favicons?domain=${getDomain()}&sz=64`}
+                    alt=""
+                    className="w-9 h-9"
+                    onError={(e) => { e.target.style.display = 'none' }}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-vintage-gold bg-vintage-gold/10 px-2 py-0.5 rounded">
+                      {link.category}
+                    </span>
+                    {link.isPromoted && (
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-600 bg-amber-100 dark:bg-amber-900/20 px-2 py-0.5 rounded">
+                        Featured
+                      </span>
+                    )}
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <h1 className="text-xl sm:text-2xl font-vintage text-gray-900 dark:text-white leading-tight">
+                    {link.title}
+                  </h1>
+                </div>
+              </div>
             </div>
-          </div>
-        </motion.div>
 
-        {/* Main Content */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-vintage-paper dark:bg-dark-card rounded-2xl p-8 shadow-vault border border-vintage-gold/20 dark:border-dark-border mb-8"
-        >
-          {/* Category Badge */}
-          {link.category && (
-            <div className="mb-4">
-              <span className="inline-block px-4 py-2 bg-vintage-gold/20 dark:bg-vintage-gold/10 text-vintage-gold font-serif font-semibold rounded-full text-sm border border-vintage-gold/30">
-                {link.category.charAt(0).toUpperCase() + link.category.slice(1)}
-              </span>
-            </div>
-          )}
-
-          {/* Title - Clickable */}
-          <a 
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-block"
-          >
-            <h1 className="text-4xl md:text-5xl font-vintage font-bold text-vintage-black dark:text-dark-text group-hover:text-vintage-gold mb-6 leading-tight transition-colors duration-300 cursor-pointer">
-              {link.title}
-              {link.isFeatured && <span className="ml-3 text-3xl">🔥</span>}
-              <ExternalLink className="inline-block ml-3 mb-2" size={32} />
-            </h1>
-          </a>
-          
-          {/* Meta Info */}
-          <div className="flex flex-wrap items-center gap-4 text-sm text-vintage-brown dark:text-dark-muted mb-6 pb-6 border-b border-vintage-gold/20 dark:border-dark-border">
-            <div className="flex items-center space-x-2">
-              <Calendar size={16} />
-              <span className="font-serif">Added {new Date(link.publishedDate || link.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <span className="font-serif">Active & Verified</span>
-            </div>
-          </div>
-          
-          {/* Description */}
-          {link.description && (
-            <div className="mb-8">
-              <h2 className="text-2xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">About This Resource</h2>
-              <div className="p-6 bg-gradient-to-br from-vintage-gold/5 to-vintage-brass/5 dark:from-dark-accent/5 dark:to-dark-accent/10 rounded-xl border border-vintage-gold/20 dark:border-dark-accent/20">
-                <p className="text-lg text-vintage-coffee dark:text-dark-muted font-serif leading-relaxed">
+            {/* Content */}
+            <div className="p-6 sm:p-8">
+              {/* Description */}
+              {link.description && (
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6 text-base">
                   {link.description}
                 </p>
-              </div>
-            </div>
-          )}
-          
-          {/* Tags */}
-          {link.tags && link.tags.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-3">Topics</h3>
-              <div className="flex flex-wrap gap-3">
-                {link.tags.map((tag, index) => (
-                  <motion.span
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                    whileHover={{ scale: 1.05 }}
-                    className="px-4 py-2 bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent text-sm font-serif font-medium rounded-full border border-vintage-gold/30 dark:border-dark-accent/30 cursor-default"
+              )}
+
+              {/* Meta Info */}
+              <div className="flex flex-wrap gap-4 text-sm text-gray-400 mb-6 pb-6 border-b border-gray-100 dark:border-white/[0.06]">
+                <div className="flex items-center gap-1.5">
+                  <Globe size={14} />
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-vintage-gold transition-colors"
                   >
-                    #{tag}
-                  </motion.span>
-                ))}
+                    {getDomain()}
+                  </a>
+                </div>
+                {link.createdAt && (
+                  <div className="flex items-center gap-1.5">
+                    <Calendar size={14} />
+                    <span>Added {formatDate(link.createdAt)}</span>
+                  </div>
+                )}
+                {link.clicks > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <Eye size={14} />
+                    <span>{link.clicks} views</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Tags */}
+              {link.tags && link.tags.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
+                    <Tag size={12} />
+                    <span>Tags</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {link.tags.map((tag, i) => (
+                      <span
+                        key={i}
+                        className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-white/[0.03] px-3 py-1.5 rounded-lg border border-gray-100 dark:border-white/[0.06]"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex flex-wrap items-center gap-3 pt-6 border-t border-gray-100 dark:border-white/[0.06]">
+                <motion.a
+                  href={`${link.url}${link.url.includes('?') ? '&' : '?'}ref=linkshala`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-vintage-gold hover:bg-vintage-brass text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-sm"
+                >
+                  <ExternalLink size={16} />
+                  Visit Website
+                </motion.a>
+
+                <motion.button
+                  onClick={handleBookmark}
+                  whileTap={{ scale: 0.95 }}
+                  className={`p-3.5 rounded-xl border transition-colors ${isBookmarked
+                    ? 'bg-vintage-gold/10 border-vintage-gold/30 text-vintage-gold'
+                    : 'border-gray-200 dark:border-white/10 text-gray-500 hover:border-vintage-gold hover:text-vintage-gold'
+                    }`}
+                >
+                  {isBookmarked ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
+                </motion.button>
+
+                <div className="relative" ref={shareMenuRef}>
+                  <motion.button
+                    onClick={() => setShowShareMenu(!showShareMenu)}
+                    whileTap={{ scale: 0.95 }}
+                    className="p-3.5 rounded-xl border border-gray-200 dark:border-white/10 text-gray-500 hover:border-vintage-gold hover:text-vintage-gold transition-colors"
+                  >
+                    <Share2 size={18} />
+                  </motion.button>
+
+                  <AnimatePresence>
+                    {showShareMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        className="absolute bottom-full right-0 mb-2 bg-white dark:bg-[#111] border border-gray-100 dark:border-white/10 rounded-xl shadow-lg p-2 min-w-[140px]"
+                      >
+                        {[
+                          { id: 'twitter', label: 'Twitter' },
+                          { id: 'linkedin', label: 'LinkedIn' },
+                          { id: 'copy', label: copied ? 'Copied!' : 'Copy link' }
+                        ].map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => handleShare(item.id)}
+                            className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg transition-colors"
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
-          )}
+          </motion.article>
 
-          {/* Why This Resource Section */}
-          <div className="mb-8 p-6 bg-vintage-cream dark:bg-dark-bg rounded-xl border border-vintage-gold/20 dark:border-dark-border">
-            <h3 className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4 flex items-center space-x-2">
-              <span>✨</span>
-              <span>Why This Resource?</span>
-            </h3>
-            <ul className="space-y-3 text-vintage-coffee dark:text-dark-muted font-serif">
-              <li className="flex items-start space-x-3">
-                <span className="text-vintage-gold mt-1">✓</span>
-                <span>Handpicked and verified by our team</span>
-              </li>
-              <li className="flex items-start space-x-3">
-                <span className="text-vintage-gold mt-1">✓</span>
-                <span>Trusted by thousands of developers worldwide</span>
-              </li>
-              <li className="flex items-start space-x-3">
-                <span className="text-vintage-gold mt-1">✓</span>
-                <span>Regularly updated and maintained</span>
-              </li>
-              <li className="flex items-start space-x-3">
-                <span className="text-vintage-gold mt-1">✓</span>
-                <span>Part of our curated collection of {link.category || 'premium'} resources</span>
-              </li>
-            </ul>
-          </div>
-          
-          {/* CTA Button */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <motion.a
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex-1 flex items-center justify-center space-x-2 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-8 py-4 rounded-xl font-serif font-bold text-lg hover:from-vintage-brass hover:to-vintage-gold transition-all duration-300 shadow-glow"
-            >
-              <ExternalLink size={22} />
-              <span>Visit {link.title} →</span>
-            </motion.a>
-          </div>
+          {/* Sidebar */}
+          <motion.aside
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="space-y-6"
+          >
+            {/* Quick Info Card */}
+            <div className="bg-white dark:bg-[#111] rounded-2xl border border-gray-100 dark:border-white/[0.06] p-5">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Quick Info</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Category</span>
+                  <span className="text-gray-900 dark:text-white font-medium">{link.category}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Domain</span>
+                  <span className="text-gray-900 dark:text-white font-medium truncate max-w-[120px]">{getDomain()}</span>
+                </div>
+                {link.createdAt && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Added</span>
+                    <span className="text-gray-900 dark:text-white font-medium">
+                      {new Date(link.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
 
-          {/* Additional Info */}
-          <div className="mt-8 pt-6 border-t border-vintage-gold/20 dark:border-dark-border">
-            <p className="text-sm text-vintage-brown/70 dark:text-dark-muted/70 font-serif text-center">
-              💡 Found this helpful? Share it with your developer friends!
-            </p>
-          </div>
-        </motion.div>
+            {/* Related Links */}
+            {relatedLinks.length > 0 && (
+              <div className="bg-white dark:bg-[#111] rounded-2xl border border-gray-100 dark:border-white/[0.06] p-5">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">More in {link.category}</h3>
+                <div className="space-y-3">
+                  {relatedLinks.map((related) => (
+                    <Link
+                      key={related._id}
+                      to={`/link/${related._id}`}
+                      className="block group"
+                    >
+                      <div className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors">
+                        <div className="w-8 h-8 bg-gray-50 dark:bg-white/[0.03] rounded-lg flex items-center justify-center flex-shrink-0">
+                          <img
+                            src={`https://www.google.com/s2/favicons?domain=${new URL(related.url).hostname}&sz=32`}
+                            alt=""
+                            className="w-4 h-4"
+                            onError={(e) => { e.target.style.display = 'none' }}
+                          />
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-vintage-gold transition-colors line-clamp-1">
+                          {related.title}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+                <Link
+                  to="/home"
+                  className="flex items-center justify-center gap-1 mt-4 text-xs text-vintage-gold hover:text-vintage-brass transition-colors"
+                >
+                  <span>Browse all</span>
+                  <ArrowRight size={12} />
+                </Link>
+              </div>
+            )}
 
+            {/* CTA Card */}
+            <div className="bg-gradient-to-br from-vintage-gold/10 to-amber-50/50 dark:from-vintage-gold/5 dark:to-transparent rounded-2xl border border-vintage-gold/20 p-5">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Found this useful?</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                Bookmark it to access later or share with your team.
+              </p>
+              <button
+                onClick={handleBookmark}
+                className={`w-full text-sm font-medium py-2.5 rounded-lg transition-colors ${isBookmarked
+                  ? 'bg-vintage-gold/20 text-vintage-gold'
+                  : 'bg-vintage-gold hover:bg-vintage-brass text-white'
+                  }`}
+              >
+                {isBookmarked ? 'Bookmarked' : 'Save for later'}
+              </button>
+            </div>
+          </motion.aside>
+        </div>
       </div>
     </div>
   )

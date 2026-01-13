@@ -1,20 +1,15 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { Bookmark } from 'lucide-react'
+import { Bookmark, BookmarkCheck, ArrowUpRight, ExternalLink } from 'lucide-react'
 import apiService from '../lib/api'
 import bookmarkService from '../lib/bookmarkService'
 import { trackLinkClick } from '../lib/analytics'
 
 const LinkCard = ({ link, index }) => {
   const navigate = useNavigate()
-  const [stats, setStats] = useState({
-    clickCount: link.clickCount || 0,
-    shareCount: link.shareCount || 0
-  })
-  const [isHovered, setIsHovered] = useState(false)
-  const [isSharing, setIsSharing] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
+  const [faviconError, setFaviconError] = useState(false)
 
   useEffect(() => {
     const checkBookmark = async () => {
@@ -25,298 +20,143 @@ const LinkCard = ({ link, index }) => {
   }, [link._id, link.id])
 
   const handleCardClick = async (e) => {
-    // If clicking on action buttons, don't navigate
-    if (e.target.closest('.action-button')) {
-      return
-    }
-    
-    // Save scroll position before navigating
+    if (e.target.closest('.action-button')) return
     sessionStorage.setItem('homeScrollPos', window.scrollY || 0)
-    
-    // Navigate to detail page
     navigate(`/link/${link._id || link.id}`)
-  }
-  
-  const handleVisitLink = async (e) => {
-    e.stopPropagation()
-    try {
-      if (link._id) {
-        await apiService.getLink(link._id)
-        setStats(prev => ({ ...prev, clickCount: prev.clickCount + 1 }))
-      }
-      trackLinkClick(link.title || link.name, link.url)
-    } catch (err) {
-      console.log('Error updating click count:', err)
-    }
-    
-    window.open(link.url, '_blank', 'noopener,noreferrer')
-  }
-
-  const handleShare = async (e) => {
-    e.stopPropagation()
-    setIsSharing(true)
-    
-    try {
-      if (link._id) {
-        await apiService.shareLink(link._id)
-        setStats(prev => ({ ...prev, shareCount: prev.shareCount + 1 }))
-      }
-      
-      const shareData = {
-        title: link.title || link.name,
-        text: link.description,
-        url: link.url,
-      }
-      
-      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-        await navigator.share(shareData)
-      } else {
-        // Fallback to clipboard
-        await navigator.clipboard.writeText(link.url)
-        // Show success feedback without alert
-        const event = new CustomEvent('showToast', {
-          detail: { message: 'Link copied to clipboard!', type: 'success' }
-        })
-        window.dispatchEvent(event)
-      }
-    } catch (err) {
-      console.log('Error sharing:', err)
-      // Show error feedback
-      const event = new CustomEvent('showToast', {
-        detail: { message: 'Failed to share link', type: 'error' }
-      })
-      window.dispatchEvent(event)
-    }
-    
-    setTimeout(() => setIsSharing(false), 1000)
   }
 
   const handleBookmark = async (e) => {
     e.stopPropagation()
-    
     if (isBookmarked) {
       await bookmarkService.removeBookmark(link._id || link.id)
       setIsBookmarked(false)
-      const event = new CustomEvent('showToast', {
-        detail: { message: 'Bookmark removed!', type: 'success' }
-      })
-      window.dispatchEvent(event)
+      window.dispatchEvent(new CustomEvent('showToast', {
+        detail: { message: 'Removed from bookmarks', type: 'success' }
+      }))
     } else {
       await bookmarkService.addBookmark(link)
       setIsBookmarked(true)
-      const event = new CustomEvent('showToast', {
+      window.dispatchEvent(new CustomEvent('showToast', {
         detail: { message: 'Bookmarked!', type: 'success' }
-      })
-      window.dispatchEvent(event)
+      }))
     }
-    
-    // Notify other components
     window.dispatchEvent(new CustomEvent('bookmarkChanged'))
   }
 
+  const getDomain = () => {
+    try {
+      return new URL(link.url).hostname.replace('www.', '')
+    } catch {
+      return 'link'
+    }
+  }
 
+  const getFaviconUrl = () => {
+    try {
+      const url = new URL(link.url)
+      return `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=64`
+    } catch {
+      return null
+    }
+  }
+
+  const getInitial = () => {
+    return (link.title || 'L')[0].toUpperCase()
+  }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30, rotateX: -15 }}
-      animate={{ opacity: 1, y: 0, rotateX: 0 }}
-      transition={{ 
-        duration: 0.6, 
-        delay: index * 0.1,
-        type: "spring",
-        stiffness: 100
-      }}
-      whileHover={{ 
-        y: -8,
-        rotateY: 5,
-        transition: { duration: 0.3 }
-      }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      className="group cursor-pointer perspective-1000"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, delay: Math.min(index * 0.02, 0.15) }}
+      className="group cursor-pointer h-full"
       onClick={handleCardClick}
     >
-      <div className="relative bg-gradient-to-br from-vintage-cream to-vintage-paper dark:from-dark-card dark:to-dark-bg border border-vintage-gold/20 dark:border-dark-border rounded-2xl p-6 shadow-vault hover:shadow-vault-lg transition-all duration-500 overflow-hidden">
-        
-        {/* Decorative Corner Elements */}
-        <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-vintage-gold/30 rounded-tl-2xl" />
-        <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-vintage-gold/30 rounded-br-2xl" />
-        
-        {/* Animated Background Pattern */}
-        <motion.div 
-          className="absolute inset-0 opacity-5 dark:opacity-10"
-          animate={{
-            backgroundPosition: isHovered ? ['0% 0%', '100% 100%'] : '0% 0%',
-          }}
-          transition={{ duration: 2, ease: "linear" }}
-          style={{
-            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(218, 165, 32, 0.1) 10px, rgba(218, 165, 32, 0.1) 20px)',
-            backgroundSize: '40px 40px'
-          }}
-        />
-        
-        {/* Main Content */}
-        <div className="relative z-10">
-          {/* Title Section */}
-          <div className="mb-4">
-            <motion.h3 
-              className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-2 leading-tight flex items-center space-x-2"
-              animate={{
-                color: isHovered ? '#daa520' : undefined
-              }}
-              transition={{ duration: 0.3 }}
-            >
-              <span>{link.title || link.name}</span>
-            </motion.h3>
-            
-            {/* Stats Bar */}
-            <div className="flex items-center justify-between text-xs text-vintage-brown/50 dark:text-dark-muted/50">
-              <div className="flex items-center space-x-2">
-                <motion.div 
-                  className="w-2 h-2 rounded-full bg-vintage-gold"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
+      <div className="relative h-full bg-white dark:bg-[#141414] rounded-xl border border-gray-200/80 dark:border-white/[0.08] p-4 sm:p-5 hover:border-gray-300 dark:hover:border-white/[0.12] hover:shadow-sm transition-all duration-200">
+
+        {/* Header */}
+        <div className="flex items-start justify-between mb-3 sm:mb-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-gray-50 dark:bg-white/[0.05] flex items-center justify-center overflow-hidden border border-gray-100 dark:border-white/[0.06] flex-shrink-0">
+              {!faviconError ? (
+                <img
+                  src={getFaviconUrl()}
+                  alt=""
+                  className="w-5 h-5 sm:w-6 sm:h-6 object-contain"
+                  onError={() => setFaviconError(true)}
                 />
-                <span className="font-serif">{link.category ? link.category.charAt(0).toUpperCase() + link.category.slice(1) : 'Featured'}</span>
-              </div>
-              <div className="flex items-center space-x-1 text-vintage-brown/40 dark:text-dark-muted/40">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
-                </svg>
-                <span className="font-serif text-xs">
-                  {new Date(link.publishedDate || link.createdAt).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric' 
-                  })}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Description */}
-          {link.description && (
-            <div className="mb-4">
-              <p className="text-sm text-vintage-coffee dark:text-dark-muted font-serif leading-relaxed line-clamp-2">
-                {link.description}
-              </p>
-            </div>
-          )}
-
-          {/* Interactive Features */}
-          <div className="mb-4 space-y-2">
-            <motion.div 
-              className="flex items-center justify-between p-2 bg-vintage-gold/5 dark:bg-dark-accent/5 rounded-lg border border-vintage-gold/10 dark:border-dark-accent/10"
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="text-xs text-vintage-brown/70 dark:text-dark-muted/70 font-serif">Live & Active</span>
-              </div>
-              <div className="flex items-center space-x-1 text-xs text-vintage-brown/50 dark:text-dark-muted/50">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span className="font-serif">Curated</span>
-              </div>
-            </motion.div>
-            
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center space-x-2 text-vintage-brown/60 dark:text-dark-muted/60">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"/>
-                </svg>
-                <span className="font-serif">Quality Assured</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-1 h-1 rounded-full bg-vintage-gold"></div>
-                <div className="w-1 h-1 rounded-full bg-vintage-gold"></div>
-                <div className="w-1 h-1 rounded-full bg-vintage-gold/50"></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Tags */}
-          {link.tags && link.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {link.tags.slice(0, 3).map((tag, tagIndex) => (
-                <motion.span
-                  key={tagIndex}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.1 * tagIndex }}
-                  className="px-3 py-1 bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent text-xs rounded-full border border-vintage-gold/20 dark:border-dark-accent/20"
-                >
-                  {tag}
-                </motion.span>
-              ))}
-              {link.tags.length > 3 && (
-                <span className="text-xs text-vintage-brown/50 dark:text-dark-muted px-2 py-1">
-                  +{link.tags.length - 3} more
-                </span>
+              ) : (
+                <span className="text-xs sm:text-sm font-semibold text-gray-400">{getInitial()}</span>
               )}
             </div>
-          )}
-
-          {/* Footer Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-vintage-gold/10 dark:border-dark-border">
-            <div className="text-xs text-vintage-brown/50 dark:text-dark-muted font-serif">
-              {link.category && (
-                <span className="capitalize bg-vintage-gold/10 dark:bg-dark-accent/10 px-2 py-1 rounded">
-                  {link.category}
-                </span>
-              )}
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <motion.button
-                onClick={handleBookmark}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="action-button flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-serif transition-all duration-300 bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-brown dark:text-dark-accent hover:bg-vintage-gold hover:text-white"
-              >
-                <Bookmark className="w-3 h-3" />
-                <span>Save</span>
-              </motion.button>
-              
-              <motion.a
-                href={`${link.url}${link.url.includes('?') ? '&' : '?'}ref=linkshala`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={async (e) => {
-                  e.stopPropagation()
-                  if (link._id) {
-                    try {
-                      await apiService.trackReferral(link._id)
-                    } catch (err) {
-                      console.log('Error tracking referral:', err)
-                    }
-                  }
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="action-button flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-serif transition-all duration-300 bg-vintage-gold text-white hover:bg-vintage-brass"
-                title="Visit link directly"
-              >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-                <span>Visit</span>
-              </motion.a>
-            </div>
+            <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-vintage-gold bg-vintage-gold/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+              {link.category || 'Resource'}
+            </span>
           </div>
+
+          <motion.button
+            onClick={handleBookmark}
+            whileTap={{ scale: 0.9 }}
+            className={`action-button p-1 sm:p-1.5 rounded-lg transition-colors flex-shrink-0 ${isBookmarked
+                ? 'text-vintage-gold'
+                : 'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400'
+              }`}
+          >
+            {isBookmarked ? <BookmarkCheck size={15} className="sm:w-4 sm:h-4" /> : <Bookmark size={15} className="sm:w-4 sm:h-4" />}
+          </motion.button>
         </div>
 
-        {/* Hover Glow Effect */}
-        <motion.div 
-          className="absolute inset-0 rounded-2xl"
-          animate={{
-            boxShadow: isHovered 
-              ? '0 0 30px rgba(218, 165, 32, 0.3)' 
-              : '0 0 0px rgba(218, 165, 32, 0)'
-          }}
-          transition={{ duration: 0.3 }}
-        />
+        {/* Title */}
+        <h3 className="text-[14px] sm:text-[15px] font-semibold text-gray-900 dark:text-white leading-snug mb-1.5 sm:mb-2 line-clamp-2 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
+          {link.title || link.name}
+        </h3>
+
+        {/* Description */}
+        {link.description && (
+          <p className="text-[12px] sm:text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2 mb-3 sm:mb-4">
+            {link.description}
+          </p>
+        )}
+
+        {/* Tags */}
+        {link.tags && link.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-3 sm:mb-4">
+            {link.tags.slice(0, 3).map((tag, i) => (
+              <span
+                key={i}
+                className="text-[9px] sm:text-[10px] text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/[0.03] px-1.5 sm:px-2 py-0.5 rounded"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-gray-100 dark:border-white/[0.05]">
+          <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-gray-400">
+            <ExternalLink size={10} className="sm:w-[11px] sm:h-[11px]" />
+            <span className="truncate max-w-[80px] sm:max-w-[100px]">{getDomain()}</span>
+          </div>
+
+          <motion.a
+            href={`${link.url}${link.url.includes('?') ? '&' : '?'}ref=linkshala`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={async (e) => {
+              e.stopPropagation()
+              if (link._id) {
+                try { await apiService.trackReferral(link._id) } catch { }
+              }
+              trackLinkClick(link.title, link.url)
+            }}
+            whileTap={{ scale: 0.97 }}
+            className="action-button flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-medium text-vintage-gold border border-vintage-gold/30 hover:bg-vintage-gold/10 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg transition-colors"
+          >
+            Visit
+            <ArrowUpRight size={11} className="sm:w-3 sm:h-3" />
+          </motion.a>
+        </div>
       </div>
     </motion.div>
   )

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Github, Star, GitFork, ExternalLink, Clock, User, RefreshCw, Bookmark, Code2, Eye, History, X } from 'lucide-react';
+import { Github, Star, GitFork, ExternalLink, Clock, RefreshCw, Bookmark, BookmarkCheck, History, X, ArrowUpRight } from 'lucide-react';
 import apiService from '../lib/api';
 import bookmarkService from '../lib/bookmarkService';
 
@@ -14,6 +14,7 @@ const ReposPage = () => {
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     fetchRepos();
     loadBookmarks();
   }, []);
@@ -52,9 +53,9 @@ const ReposPage = () => {
     try {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
-      
+
       const data = await apiService.getGithubRepos();
-      
+
       if (Array.isArray(data)) {
         setRepos(data);
       } else {
@@ -102,194 +103,152 @@ const ReposPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg flex items-center justify-center">
+      <div className="min-h-screen bg-[#fefdfb] dark:bg-[#0c0c0c] flex items-center justify-center">
         <div className="text-center">
-          <Github size={48} className="text-vintage-gold animate-pulse mx-auto mb-4" />
-          <p className="text-vintage-brown dark:text-dark-muted font-serif">Loading repos...</p>
+          <div className="w-8 h-8 border-2 border-vintage-gold/30 border-t-vintage-gold rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400 text-sm">Loading repositories...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg transition-colors duration-300">
+    <div className="min-h-screen bg-[#fefdfb] dark:bg-[#0c0c0c] transition-colors duration-300">
       {/* Header */}
-      <section className="relative py-16 px-6 lg:px-8 bg-vintage-paper dark:bg-dark-card border-b border-vintage-gold/20 dark:border-dark-border">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-12 md:py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            className="text-center mb-8 md:mb-12"
           >
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-vintage-gold to-vintage-brass rounded-2xl flex items-center justify-center shadow-lg">
-                  <Github size={32} className="text-white" />
-                </div>
-                <div>
-                  <h1 className="text-4xl md:text-5xl font-vintage font-bold text-vintage-black dark:text-dark-text">
-                    GitHub Repos
-                  </h1>
-                  <p className="text-vintage-brown dark:text-dark-muted font-serif mt-2">
-                    Handpicked repositories • Updated daily
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <motion.button
-                  onClick={handleShowHistory}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-vintage-paper dark:bg-dark-card border-2 border-vintage-gold text-vintage-gold rounded-lg font-semibold shadow-md hover:bg-vintage-gold hover:text-white transition-all"
-                >
-                  <History size={18} />
-                  <span>History</span>
-                </motion.button>
-                <motion.button
-                  onClick={handleRefresh}
-                  disabled={refreshing}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-vintage-gold text-white rounded-lg font-semibold shadow-md hover:bg-vintage-brass transition-colors disabled:opacity-50"
-                >
-                  <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
-                  <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
-                </motion.button>
-              </div>
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-vintage-gold/10 dark:bg-vintage-gold/5 border border-vintage-gold/20 rounded-full mb-4 md:mb-6">
+              <Github size={14} className="text-vintage-gold" />
+              <span className="text-xs sm:text-sm font-medium text-vintage-gold">Open Source</span>
             </div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-vintage text-gray-900 dark:text-white mb-3 md:mb-4">
+              GitHub Repositories
+            </h1>
+            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-lg mx-auto px-4">
+              Handpicked open-source projects for developers. Updated daily with the best repos.
+            </p>
           </motion.div>
+
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 md:mb-12">
+            <button
+              onClick={handleShowHistory}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-[#141414] border border-gray-200 dark:border-white/[0.08] text-gray-700 dark:text-gray-300 rounded-lg text-xs sm:text-sm font-medium hover:border-vintage-gold/30 transition-colors"
+            >
+              <History size={14} />
+              <span>History</span>
+            </button>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-vintage-gold hover:bg-vintage-brass text-white rounded-lg text-xs sm:text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+              <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+            </button>
+          </div>
         </div>
       </section>
 
       {/* Repos Grid */}
-      <section className="py-12 px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section className="pb-12 md:pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-5">
             {repos.map((repo, index) => (
-              <motion.div
+              <motion.a
                 key={repo.id}
-                initial={{ opacity: 0, y: 30 }}
+                href={`${repo.url}?ref=linkshala`}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05, duration: 0.4 }}
-                className="group relative"
+                transition={{ delay: index * 0.03 }}
+                className="group block"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-vintage-gold/20 to-vintage-brass/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                
-                <div className="relative bg-vintage-paper dark:bg-dark-card rounded-2xl p-6 border-2 border-vintage-gold/20 dark:border-dark-border hover:border-vintage-gold/40 transition-all duration-300 shadow-lg h-full flex flex-col">
-                  {/* Bookmark Button */}
-                  <motion.button
-                    onClick={() => toggleBookmark(repo)}
-                    className="absolute -top-3 -right-3 z-10"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all ${
-                      bookmarkedRepos.has(repo.url)
-                        ? 'bg-gradient-to-br from-vintage-gold to-vintage-brass'
-                        : 'bg-vintage-paper dark:bg-dark-card border-2 border-vintage-gold/40'
-                    }`}>
-                      <Bookmark 
-                        size={20} 
-                        className={bookmarkedRepos.has(repo.url) ? 'text-white fill-white' : 'text-vintage-gold'} 
-                      />
+                <div className="h-full bg-white dark:bg-[#141414] rounded-xl border border-gray-200/80 dark:border-white/[0.08] p-5 sm:p-6 hover:border-vintage-gold/30 hover:shadow-sm transition-all duration-200">
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 bg-vintage-gold/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Github size={16} className="text-vintage-gold sm:w-[18px] sm:h-[18px]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400 truncate">{repo.owner}</p>
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                          {repo.repoName}
+                        </h3>
+                      </div>
                     </div>
-                  </motion.button>
 
-                  {/* Owner Badge */}
-                  <div className="flex items-center space-x-2 mb-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-vintage-gold/20 to-vintage-brass/20 rounded-full flex items-center justify-center border-2 border-vintage-gold/30">
-                      <User size={18} className="text-vintage-gold" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-vintage-brown/60 dark:text-dark-muted/60 font-semibold">Repository by</p>
-                      <p className="text-sm font-bold text-vintage-black dark:text-dark-text">{repo.owner}</p>
-                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleBookmark(repo);
+                      }}
+                      className={`p-2 rounded-lg transition-colors flex-shrink-0 ${bookmarkedRepos.has(repo.url)
+                          ? 'text-vintage-gold bg-vintage-gold/10'
+                          : 'text-gray-300 dark:text-gray-600 hover:text-vintage-gold hover:bg-vintage-gold/5'
+                        }`}
+                    >
+                      {bookmarkedRepos.has(repo.url) ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                    </button>
                   </div>
 
-                  {/* Repo Name with Icon */}
-                  <div className="mb-4">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Github size={22} className="text-vintage-gold" />
-                      <h3 className="text-2xl font-vintage font-bold text-vintage-black dark:text-dark-text line-clamp-1">
-                        {repo.repoName}
-                      </h3>
-                    </div>
-                    <p className="text-base font-semibold text-vintage-brass dark:text-dark-accent line-clamp-2 leading-snug">
-                      {repo.title}
-                    </p>
-                  </div>
+                  {/* Title */}
+                  <h4 className="text-[14px] sm:text-[15px] font-medium text-gray-900 dark:text-white mb-2 line-clamp-2 leading-snug group-hover:text-vintage-gold transition-colors">
+                    {repo.title}
+                  </h4>
 
-                  {/* Description */}
-                  {repo.description && repo.description !== 'No description available' && (
-                    <p className="text-vintage-brown dark:text-dark-muted font-sans text-sm leading-relaxed mb-6 flex-grow line-clamp-3">
+                  {/* Description - Now showing properly */}
+                  {repo.description && repo.description !== 'No description available' ? (
+                    <p className="text-[12px] sm:text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed mb-4 line-clamp-3">
                       {repo.description}
                     </p>
-                  )}
-                  {(!repo.description || repo.description === 'No description available') && (
-                    <div className="mb-6 flex-grow" />
+                  ) : (
+                    <p className="text-[12px] sm:text-[13px] text-gray-400 dark:text-gray-500 leading-relaxed mb-4 italic">
+                      Open source repository on GitHub
+                    </p>
                   )}
 
-                  {/* Stats Row */}
-                  <div className="flex items-center space-x-4 mb-4 pb-4 border-b border-vintage-gold/20">
-                    <motion.div 
-                      className="flex items-center space-x-1"
-                      whileHover={{ scale: 1.1 }}
-                    >
-                      <Star size={16} className="text-vintage-gold" />
-                      <span className="text-xs font-semibold text-vintage-brown dark:text-dark-muted">Featured</span>
-                    </motion.div>
-                    <motion.div 
-                      className="flex items-center space-x-1"
-                      whileHover={{ scale: 1.1 }}
-                    >
-                      <GitFork size={16} className="text-vintage-brass" />
-                      <span className="text-xs font-semibold text-vintage-brown dark:text-dark-muted">Open Source</span>
-                    </motion.div>
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4">
+                    <span className="flex items-center gap-1 text-[9px] sm:text-[10px] text-vintage-gold bg-vintage-gold/10 px-2 py-1 rounded">
+                      <Star size={9} />
+                      Featured
+                    </span>
+                    <span className="flex items-center gap-1 text-[9px] sm:text-[10px] text-gray-500 bg-gray-50 dark:bg-white/[0.03] px-2 py-1 rounded">
+                      <GitFork size={9} />
+                      Open Source
+                    </span>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <motion.a
-                      href={`${repo.url}?ref=linkshala`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      whileHover={{ scale: 1.03, y: -2 }}
-                      whileTap={{ scale: 0.97 }}
-                      className="flex-1 flex items-center justify-center space-x-2 bg-gradient-to-r from-vintage-gold to-vintage-brass text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-2xl transition-all relative overflow-hidden group"
-                    >
-                      <motion.div
-                        className="absolute inset-0 bg-white/20"
-                        initial={{ x: '-100%' }}
-                        whileHover={{ x: '100%' }}
-                        transition={{ duration: 0.5 }}
-                      />
-                      <Code2 size={18} className="relative z-10" />
-                      <span className="relative z-10">Explore Code</span>
-                    </motion.a>
-                    <motion.a
-                      href={`${repo.url}?ref=linkshala`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      whileHover={{ scale: 1.1, rotate: [0, -10, 10, 0] }}
-                      whileTap={{ scale: 0.9 }}
-                      className="w-12 h-12 flex items-center justify-center bg-vintage-paper dark:bg-dark-bg border-2 border-vintage-gold/40 rounded-xl hover:bg-vintage-gold/10 transition-all group"
-                    >
-                      <Eye size={18} className="text-vintage-gold group-hover:scale-110 transition-transform" />
-                    </motion.a>
+                  {/* Footer - Single CTA */}
+                  <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100 dark:border-white/[0.05]">
+                    <span className="text-[11px] sm:text-xs text-gray-400 truncate">
+                      github.com/{repo.owner}
+                    </span>
+                    <span className="flex items-center gap-1 text-vintage-gold text-xs sm:text-sm font-medium group-hover:gap-2 transition-all">
+                      View Repo
+                      <ArrowUpRight size={14} />
+                    </span>
                   </div>
                 </div>
-              </motion.div>
+              </motion.a>
             ))}
           </div>
 
           {repos.length === 0 && (
-            <div className="text-center py-24">
-              <Github size={64} className="text-vintage-gold/40 mx-auto mb-4" />
-              <h3 className="text-2xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-2">
-                No repos found
+            <div className="text-center py-16 sm:py-20">
+              <Github size={36} className="text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 className="text-base sm:text-lg font-vintage text-gray-900 dark:text-white mb-2">
+                No repositories found
               </h3>
-              <p className="text-vintage-brown dark:text-dark-muted font-serif">
+              <p className="text-gray-500 text-sm">
                 Check back later for fresh repositories
               </p>
             </div>
@@ -304,99 +263,85 @@ const ReposPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={() => setShowHistory(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-vintage-paper dark:bg-dark-card rounded-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden shadow-2xl border-2 border-vintage-gold/30"
+              className="bg-white dark:bg-[#141414] rounded-xl w-full max-w-lg sm:max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-hidden shadow-xl border border-gray-200 dark:border-white/[0.08]"
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-vintage-gold to-vintage-brass p-6 flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                    <History size={24} className="text-white" />
+              <div className="bg-vintage-gold p-4 sm:p-5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white/20 rounded-lg flex items-center justify-center">
+                    <History size={16} className="text-white sm:w-[18px] sm:h-[18px]" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-vintage font-bold text-white">Repository History</h2>
-                    <p className="text-white/80 font-serif text-sm">Previously featured repositories</p>
+                    <h2 className="text-sm sm:text-base font-semibold text-white">Repository History</h2>
+                    <p className="text-white/70 text-[10px] sm:text-xs">Previously featured repos</p>
                   </div>
                 </div>
-                <motion.button
+                <button
                   onClick={() => setShowHistory(false)}
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition-colors"
+                  className="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition-colors"
                 >
-                  <X size={20} className="text-white" />
-                </motion.button>
+                  <X size={14} className="text-white sm:w-[16px] sm:h-[16px]" />
+                </button>
               </div>
 
               {/* Content */}
-              <div className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]">
+              <div className="p-4 sm:p-5 overflow-y-auto max-h-[calc(85vh-70px)] sm:max-h-[calc(80vh-80px)]">
                 {loadingHistory ? (
-                  <div className="text-center py-12">
-                    <Github size={48} className="text-vintage-gold animate-pulse mx-auto mb-4" />
-                    <p className="text-vintage-brown dark:text-dark-muted font-serif">Loading history...</p>
+                  <div className="text-center py-10 sm:py-12">
+                    <div className="w-6 h-6 border-2 border-vintage-gold/30 border-t-vintage-gold rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-gray-500 text-sm">Loading history...</p>
                   </div>
                 ) : history.length === 0 ? (
-                  <div className="text-center py-12">
-                    <History size={48} className="text-vintage-gold/40 mx-auto mb-4" />
-                    <h3 className="text-xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-2">
+                  <div className="text-center py-10 sm:py-12">
+                    <History size={28} className="text-gray-300 mx-auto mb-3" />
+                    <h3 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white mb-1">
                       No history yet
                     </h3>
-                    <p className="text-vintage-brown dark:text-dark-muted font-serif">
-                      Repositories will appear here as they're featured
+                    <p className="text-gray-500 text-xs sm:text-sm">
+                      Repositories will appear here as they are featured
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {history.map((repo, index) => (
-                      <motion.div
+                      <a
                         key={repo.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.03 }}
-                        className="bg-vintage-cream dark:bg-dark-bg rounded-xl p-4 border border-vintage-gold/20 hover:border-vintage-gold/40 transition-all group"
+                        href={`${repo.url}?ref=linkshala`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block bg-gray-50 dark:bg-white/[0.02] rounded-lg p-3 sm:p-4 border border-gray-100 dark:border-white/[0.04] hover:border-vintage-gold/20 transition-colors"
                       >
-                        <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start justify-between gap-3 sm:gap-4">
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <Github size={18} className="text-vintage-gold flex-shrink-0" />
-                              <h3 className="font-vintage font-bold text-vintage-black dark:text-dark-text truncate">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Github size={12} className="text-vintage-gold flex-shrink-0 sm:w-[14px] sm:h-[14px]" />
+                              <h3 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate">
                                 {repo.owner}/{repo.repoName}
                               </h3>
                             </div>
-                            <p className="text-sm text-vintage-brass dark:text-dark-accent font-semibold mb-2 line-clamp-1">
+                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1 truncate">
                               {repo.title}
                             </p>
-                            {repo.description && repo.description !== 'No description available' && (
-                              <p className="text-xs text-vintage-brown dark:text-dark-muted line-clamp-2">
-                                {repo.description}
-                              </p>
-                            )}
                             {repo.addedAt && (
-                              <div className="flex items-center space-x-1 mt-2 text-xs text-vintage-brown/60 dark:text-dark-muted/60">
-                                <Clock size={12} />
+                              <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-gray-400">
+                                <Clock size={9} />
                                 <span>{new Date(repo.addedAt).toLocaleDateString()}</span>
                               </div>
                             )}
                           </div>
-                          <motion.a
-                            href={`${repo.url}?ref=linkshala`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-vintage-gold to-vintage-brass rounded-lg flex items-center justify-center shadow-md hover:shadow-lg transition-all"
-                          >
-                            <ExternalLink size={18} className="text-white" />
-                          </motion.a>
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 bg-vintage-gold hover:bg-vintage-brass rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
+                            <ExternalLink size={12} className="text-white sm:w-[14px] sm:h-[14px]" />
+                          </div>
                         </div>
-                      </motion.div>
+                      </a>
                     ))}
                   </div>
                 )}

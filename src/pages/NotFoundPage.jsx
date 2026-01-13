@@ -36,7 +36,7 @@ const NotFoundPage = () => {
             Page Not Found
           </h2>
           <p className="text-lg text-vintage-brown dark:text-dark-muted font-serif leading-relaxed">
-           Whoops! Even the best explorers sometimes get lost… welcome to LinkShala!
+            Whoops! Even the best explorers sometimes get lost… welcome to LinkShala!
           </p>
         </motion.div>
 
@@ -68,7 +68,7 @@ const NotFoundPage = () => {
             <Home size={20} />
             <span>Go Home</span>
           </motion.button>
-          
+
           <motion.button
             onClick={() => navigate(-1)}
             whileHover={{ scale: 1.05 }}
@@ -88,9 +88,9 @@ const NotFoundPage = () => {
           className="mt-12 p-6 bg-vintage-paper dark:bg-dark-card rounded-2xl border border-vintage-gold/20 dark:border-dark-border shadow-vault"
         >
           <p className="text-sm text-vintage-brown dark:text-dark-muted font-serif italic">
-            "Not all heroes wear capes… some just share awesome links." 
+            "Not all heroes wear capes… some just share awesome links."
             <br />
-            <span className="text-vintage-gold">— Akhilesh Yadav</span>
+            <span className="text-vintage-gold">- Akhilesh Yadav</span>
           </p>
         </motion.div>
       </motion.div>

@@ -22,12 +22,29 @@ const HomePage = () => {
   const [hasMore, setHasMore] = useState(true)
   const [showBackToTop, setShowBackToTop] = useState(false)
   const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 })
   const scrollContainerRef = useRef(null)
   const searchTimeoutRef = useRef(null)
-  
+  const heroRef = useRef(null)
+
+  // Mouse tracking for subtle cursor effect
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (heroRef.current) {
+        const rect = heroRef.current.getBoundingClientRect()
+        setMousePos({
+          x: ((e.clientX - rect.left) / rect.width) * 100,
+          y: ((e.clientY - rect.top) / rect.height) * 100
+        })
+      }
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
+
   useEffect(() => {
     loadInitialData()
-    
+
     // Restore scroll position
     const savedScrollPos = sessionStorage.getItem('homeScrollPos')
     if (savedScrollPos) {
@@ -41,15 +58,15 @@ const HomePage = () => {
   // Instant filtering with client-side logic
   useEffect(() => {
     let filtered = allLinks
-    
+
     // Apply category filter
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(link => link.category === selectedCategory)
     }
-    
+
     // Apply search term
     if (searchTerm.trim()) {
-      filtered = filtered.filter(link => 
+      filtered = filtered.filter(link =>
         link.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         link.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         link.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -58,7 +75,7 @@ const HomePage = () => {
         trackSearch(searchTerm)
       }
     }
-    
+
     setLinks(filtered)
     setDisplayCount(20) // Reset display count when filters change
   }, [searchTerm, allLinks, selectedCategory])
@@ -75,16 +92,16 @@ const HomePage = () => {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
-  
+
   const loadInitialData = async () => {
     try {
       setIsLoading(true)
       const data = await apiService.getLinks({ page: 1, limit: 1000 })
-      
+
       setAllLinks(data.links)
       setLinks(data.links)
       setRecentLinks(data.links.slice(0, 6))
-      
+
       setHasMore(data.currentPage < data.totalPages)
       setCurrentPage(1)
     } catch (error) {
@@ -98,12 +115,12 @@ const HomePage = () => {
     try {
       setIsLoading(true)
       const page = reset ? 1 : currentPage + 1
-      
-      const params = { page, limit: 20}
+
+      const params = { page, limit: 20 }
       if (selectedCategory !== 'all') params.category = selectedCategory
-      
+
       const data = await apiService.getLinks(params)
-      
+
       if (reset) {
         setAllLinks(data.links)
         setLinks(data.links)
@@ -113,7 +130,7 @@ const HomePage = () => {
         setLinks(prev => [...prev, ...data.links])
         setCurrentPage(page)
       }
-      
+
       setHasMore(data.currentPage < data.totalPages)
     } catch (error) {
       console.error('Error loading links:', error)
@@ -125,12 +142,12 @@ const HomePage = () => {
   const handleViewMore = () => {
     setDisplayCount(prev => prev + 20)
   }
-  
+
   const handleSearch = (e) => {
     const term = e.target.value
     setSearchTerm(term)
   }
-  
+
   const handleCategoryChange = (category) => {
     setSelectedCategory(category)
     setSearchTerm('')
@@ -141,368 +158,300 @@ const HomePage = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
-  
+
   return (
-    <div className="min-h-screen bg-vintage-cream dark:bg-dark-bg transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-b from-[#fefdfb] via-[#fffef9] to-[#fefdfb] dark:from-[#0c0c0c] dark:via-[#0f0f0f] dark:to-[#0c0c0c] transition-colors duration-300">
       {/* Hero Section */}
-      <section className="relative py-20 px-6 lg:px-8 bg-vintage-paper dark:bg-dark-card border-b border-vintage-gold/20 dark:border-dark-border overflow-hidden">
-        {/* Noise Texture Background - Light Mode */}
+      <section ref={heroRef} className="relative py-20 md:py-28 px-6 lg:px-8 overflow-hidden">
+        {/* Cursor-following glow */}
         <div
-          className="absolute inset-0 z-0 opacity-100 dark:opacity-0 transition-opacity duration-300"
+          className="absolute inset-0 pointer-events-none transition-opacity duration-300"
           style={{
-            background: "#f5f0e8",
-            backgroundImage: "radial-gradient(circle at 1px 1px, rgba(218, 165, 32, 0.25) 1px, transparent 0)",
-            backgroundSize: "20px 20px",
+            background: `radial-gradient(600px circle at ${mousePos.x}% ${mousePos.y}%, rgba(218,165,32,0.06), transparent 40%)`
           }}
         />
-        {/* Noise Texture Background - Dark Mode */}
-        <div
-          className="absolute inset-0 z-0 opacity-0 dark:opacity-100 transition-opacity duration-300"
-          style={{
-            background: "#1a1a1a",
-            backgroundImage: "radial-gradient(circle at 1px 1px, rgba(218, 165, 32, 0.35) 1px, transparent 0)",
-            backgroundSize: "20px 20px",
-          }}
-        />
-        <div className="max-w-7xl mx-auto text-center relative z-10">
+
+        {/* Background */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Floating gradient blobs */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            animate={{
+              x: [0, 50, 0],
+              y: [0, -30, 0],
+              rotate: [0, 10, 0]
+            }}
+            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-gradient-to-br from-vintage-gold/30 via-amber-300/20 to-transparent rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{
+              x: [0, -40, 0],
+              y: [0, 40, 0],
+              rotate: [0, -15, 0]
+            }}
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-gradient-to-br from-amber-200/20 via-vintage-brass/15 to-transparent rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+            transition={{ duration: 8, repeat: Infinity }}
+            className="absolute top-1/3 right-1/4 w-72 h-72 bg-gradient-to-br from-rose-300/10 to-violet-300/10 rounded-full blur-2xl"
+          />
+
+          {/* Flowing lines */}
+          <svg className="absolute inset-0 w-full h-full opacity-20 dark:opacity-10" preserveAspectRatio="none">
+            <motion.path
+              d="M0,100 Q200,50 400,100 T800,100 T1200,100"
+              stroke="url(#gold-gradient)"
+              strokeWidth="1"
+              fill="none"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 2, ease: "easeInOut" }}
+            />
+            <motion.path
+              d="M0,200 Q300,150 600,200 T1200,200"
+              stroke="url(#gold-gradient)"
+              strokeWidth="0.5"
+              fill="none"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 2.5, delay: 0.5 }}
+            />
+            <defs>
+              <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#DAA520" stopOpacity="0" />
+                <stop offset="50%" stopColor="#DAA520" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#B8860B" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          {/* Floating particles */}
+          {[...Array(12)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full"
+              style={{
+                left: `${10 + (i * 7) % 80}%`,
+                top: `${15 + (i * 11) % 70}%`,
+                width: `${4 + (i % 3) * 2}px`,
+                height: `${4 + (i % 3) * 2}px`,
+                background: i % 2 === 0
+                  ? 'linear-gradient(135deg, #DAA520 0%, #B8860B 100%)'
+                  : 'linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%)'
+              }}
+              animate={{
+                y: [0, -30 - (i % 4) * 10, 0],
+                x: [0, (i % 2 === 0 ? 10 : -10), 0],
+                opacity: [0.3, 0.7, 0.3],
+                scale: [1, 1.2, 1]
+              }}
+              transition={{
+                duration: 4 + i * 0.5,
+                repeat: Infinity,
+                delay: i * 0.3,
+                ease: "easeInOut"
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="max-w-5xl mx-auto text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
+            {/* Badge */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-vintage-gold/10 dark:bg-vintage-gold/5 border border-vintage-gold/20 rounded-full mb-8"
             >
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-6 leading-tight">
-                <motion.span
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.6 }}
-                  className="block"
-                >
-                  Fuel
-                </motion.span>
-                <motion.span
-                  className="bg-gradient-to-r from-vintage-gold via-vintage-brass to-vintage-gold bg-clip-text text-transparent block"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ 
-                    opacity: 1, 
-                    y: 0,
-                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
-                  }}
-                  transition={{ 
-                    delay: 0.4, 
-                    duration: 0.6,
-                    backgroundPosition: {
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "linear"
-                    }
-                  }}
-                  style={{
-                    backgroundSize: '200% 200%'
-                  }}
-                >
-                  Your Next Build
-                </motion.span>
-              </h1>
+              <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+              <span className="text-sm font-medium text-vintage-gold">500+ Curated Resources</span>
             </motion.div>
-            
-            <motion.div 
-              className="mb-12 max-w-3xl mx-auto space-y-5"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
+
+            {/* Main Headline with shimmer */}
+            <div className="relative">
+              <motion.h1
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-vintage text-gray-900 dark:text-white mb-6 leading-[1.1]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                Fuel Your
+                <br />
+                <span className="relative inline-block">
+                  <motion.span
+                    className="bg-gradient-to-r from-vintage-gold via-amber-400 to-vintage-brass bg-clip-text text-transparent bg-[length:200%_auto]"
+                    animate={{ backgroundPosition: ['0% center', '200% center'] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                  >
+                    Next Project
+                  </motion.span>
+                  {/* Animated underline */}
+                  <motion.svg
+                    className="absolute -bottom-2 left-0 w-full h-4"
+                    viewBox="0 0 200 10"
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    transition={{ delay: 0.8, duration: 0.8 }}
+                  >
+                    <motion.path
+                      d="M0,5 Q50,0 100,5 T200,5"
+                      stroke="url(#underline-gradient)"
+                      strokeWidth="3"
+                      fill="none"
+                      strokeLinecap="round"
+                    />
+                    <defs>
+                      <linearGradient id="underline-gradient">
+                        <stop offset="0%" stopColor="#DAA520" />
+                        <stop offset="100%" stopColor="#B8860B" />
+                      </linearGradient>
+                    </defs>
+                  </motion.svg>
+                </span>
+              </motion.h1>
+            </div>
+
+            <motion.p
+              className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
             >
-              <motion.p 
-                className="text-xl md:text-2xl text-vintage-black dark:text-gray-300 font-sans leading-relaxed"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7 }}
-              >
-                500+ resources picked to make building feel effortless.
-              </motion.p>
-              
-              <motion.p
-                className="text-lg md:text-xl text-vintage-brown dark:text-gray-400 font-sans leading-relaxed"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.85 }}
-              >
-                React tools. AI shortcuts. Smart picks for serious developers.
-              </motion.p>
-              
-              <motion.p 
-                className="text-xl md:text-2xl text-vintage-black dark:text-white font-sans pt-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1 }}
-              >
-                Start exploring. The good stuff is <span className="text-vintage-gold font-semibold">inside</span>...
-              </motion.p>
+              Handpicked tools, libraries, and resources for developers.
+              <span className="block mt-2 text-gray-500 dark:text-gray-500 text-base">
+                <motion.span
+                  className="inline-block mx-2 font-medium text-gray-800 dark:text-white"
+                  whileHover={{ scale: 1.1, color: '#DAA520' }}
+                >React</motion.span>•
+                <motion.span
+                  className="inline-block mx-2 font-medium text-gray-800 dark:text-white"
+                  whileHover={{ scale: 1.1, color: '#DAA520' }}
+                >AI Tools</motion.span>•
+                <motion.span
+                  className="inline-block mx-2 font-medium text-gray-800 dark:text-white"
+                  whileHover={{ scale: 1.1, color: '#DAA520' }}
+                >Design</motion.span>•
+                <motion.span
+                  className="inline-block mx-2 font-medium text-gray-800 dark:text-white"
+                  whileHover={{ scale: 1.1, color: '#DAA520' }}
+                >More</motion.span>
+              </span>
+            </motion.p>
+
+            {/* Stats row */}
+            <motion.div
+              className="flex flex-wrap items-center justify-center gap-6 md:gap-8 text-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
+            >
+              <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                Updated daily
+              </span>
+              <span className="text-gray-300 dark:text-gray-600">|</span>
+              <span className="text-gray-500 dark:text-gray-400">Free forever</span>
+              <span className="text-gray-300 dark:text-gray-600">|</span>
+              <span className="text-gray-500 dark:text-gray-400">Community driven</span>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Promoted Link Section - 3D Effect */}
+
+      {/* Premium Pick Section */}
       {allLinks.filter(link => link.isPromoted).length > 0 && (
-        <section className="relative py-16 px-6 lg:px-8 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-vintage-gold/5 via-transparent to-vintage-brass/5"></div>
-          
-          <div className="max-w-6xl mx-auto relative z-10">
+        <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+          {/* Background decorations */}
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-50/80 via-transparent to-vintage-gold/5 dark:from-vintage-gold/[0.03] dark:via-transparent dark:to-amber-900/[0.02]" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-vintage-gold/30 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-vintage-gold/30 to-transparent" />
+
+          <div className="max-w-4xl mx-auto relative z-10">
+            {/* Section Header */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center mb-8"
+            >
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-vintage-gold text-white text-[10px] sm:text-xs font-semibold uppercase tracking-wider rounded-full mb-4">
+                <Star size={12} className="fill-white" />
+                Premium Pick
+              </span>
+            </motion.div>
+
             {allLinks.filter(link => link.isPromoted).slice(0, 1).map((link) => {
-              const sponsorUrl = link.url.includes('?') 
-                ? `${link.url}&ref=linkshala` 
-                : `${link.url}?ref=linkshala`
-              
+              const sponsorUrl = link.url.includes('?') ? `${link.url}&ref=linkshala` : `${link.url}?ref=linkshala`
+
               return (
                 <motion.div
                   key={link._id}
-                  initial={{ opacity: 0, y: 40 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8 }}
-                  className="relative perspective-1000"
+                  className="relative"
                 >
-                  {/* Floating Badge */}
-                  <motion.div
-                    className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-30"
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ 
-                      y: [0, -8, 0],
-                      scale: 1,
-                      rotate: 0
-                    }}
-                    transition={{ 
-                      y: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-                      scale: { duration: 0.6, type: "spring" },
-                      rotate: { duration: 0.6, type: "spring" }
-                    }}
-                  >
-                    <motion.div 
-                      className="relative bg-gradient-to-r from-vintage-gold via-vintage-brass to-vintage-gold text-white px-8 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center space-x-2 overflow-hidden"
-                      whileHover={{ scale: 1.1 }}
-                      style={{ backgroundSize: '200% 200%' }}
-                      animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
-                      transition={{ backgroundPosition: { duration: 3, repeat: Infinity, ease: "linear" } }}
-                    >
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      >
-                        <Sparkles size={18} className="fill-white" />
-                      </motion.div>
-                      <span className="text-base">PREMIUM PICK</span>
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                      >
-                        <Star size={18} className="fill-white" />
-                      </motion.div>
-                    </motion.div>
-                  </motion.div>
+                  {/* Glow effect */}
+                  <div className="absolute -inset-1 bg-gradient-to-r from-vintage-gold/20 via-amber-400/20 to-vintage-brass/20 rounded-2xl blur-xl opacity-60" />
 
-                  <motion.div
-                    whileHover={{ 
-                      rotateY: 2,
-                      rotateX: -2,
-                      scale: 1.02,
-                      transition: { duration: 0.3 }
-                    }}
-                    style={{ transformStyle: 'preserve-3d' }}
-                    className="grid md:grid-cols-2 gap-0 bg-vintage-paper dark:bg-dark-card rounded-3xl overflow-hidden shadow-2xl border-2 border-vintage-gold/40"
-                  >
-                    {/* Left: Visual with 3D effect */}
-                    <div className="relative bg-gradient-to-br from-vintage-gold/20 to-vintage-brass/20 p-10 flex items-center justify-center">
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(218,165,32,0.2),transparent_70%)]"></div>
-                      
-                      <div className="relative z-10 text-center">
-                        {/* Logo Display with Amazing Look */}
-                        <motion.div
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ duration: 0.6 }}
-                          className="relative w-44 h-44 mx-auto mb-8"
-                        >
-                          {/* Rotating glow rings */}
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                            className="absolute inset-0 rounded-full border-2 border-dashed border-vintage-gold/40"
-                          />
-                          <motion.div
-                            animate={{ rotate: -360 }}
-                            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                            className="absolute inset-3 rounded-full border-2 border-dotted border-vintage-brass/40"
-                          />
-                          
-                          {/* Logo container with pulsing glow */}
-                          <motion.div
-                            animate={{ 
-                              boxShadow: [
-                                '0 0 30px rgba(218,165,32,0.4), 0 0 60px rgba(218,165,32,0.2)',
-                                '0 0 50px rgba(218,165,32,0.6), 0 0 80px rgba(218,165,32,0.3)',
-                                '0 0 30px rgba(218,165,32,0.4), 0 0 60px rgba(218,165,32,0.2)'
-                              ]
-                            }}
-                            transition={{ duration: 3, repeat: Infinity }}
-                            className="absolute inset-6 bg-white dark:bg-dark-card rounded-2xl flex items-center justify-center overflow-hidden border-4 border-vintage-gold/20"
-                            style={{ transform: 'translateZ(50px)' }}
-                          >
-                            {/* Shimmer effect */}
-                            <motion.div
-                              className="absolute inset-0 bg-gradient-to-r from-transparent via-vintage-gold/20 to-transparent"
-                              animate={{ x: ['-200%', '200%'] }}
-                              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                            />
-                            
-                            {/* Website Logo/Favicon */}
-                            <img
-                              src={`https://www.google.com/s2/favicons?domain=${new URL(link.url).hostname}&sz=128`}
-                              alt={`${link.title} logo`}
-                              className="w-24 h-24 object-contain relative z-10"
-                              onError={(e) => {
-                                e.target.style.display = 'none'
-                                e.target.nextElementSibling.style.display = 'flex'
-                              }}
-                            />
-                            {/* Fallback icon */}
-                            <Sparkles size={64} className="text-vintage-gold hidden" style={{ display: 'none' }} />
-                          </motion.div>
-                        </motion.div>
-                        
-                        <motion.h3 
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.3 }}
-                          className="text-3xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-3"
-                        >
-                          {link.title}
-                        </motion.h3>
-                        <motion.div 
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.4 }}
-                          className="inline-flex items-center space-x-2 px-4 py-2 bg-white/50 dark:bg-black/30 rounded-full backdrop-blur-sm"
-                        >
-                          <Zap size={16} className="text-vintage-gold" />
-                          <span className="font-bold text-vintage-brown dark:text-dark-text text-sm uppercase">{link.category}</span>
-                        </motion.div>
-                      </div>
-                      
-                      {/* Floating particles */}
-                      <motion.div
-                        className="absolute top-10 right-10"
-                        animate={{ 
-                          y: [0, -20, 0],
-                          rotate: [0, 180, 360]
-                        }}
-                        transition={{ duration: 6, repeat: Infinity }}
-                      >
-                        <Star size={24} className="text-vintage-gold/40" />
-                      </motion.div>
-                      <motion.div
-                        className="absolute bottom-10 left-10"
-                        animate={{ 
-                          y: [0, 20, 0],
-                          rotate: [0, -180, -360]
-                        }}
-                        transition={{ duration: 5, repeat: Infinity }}
-                      >
-                        <Sparkles size={20} className="text-vintage-brass/40" />
-                      </motion.div>
-                    </div>
+                  <div className="relative bg-white dark:bg-[#111] rounded-2xl border border-vintage-gold/20 overflow-hidden shadow-lg">
+                    {/* Top accent */}
+                    <div className="h-1 bg-gradient-to-r from-vintage-gold via-amber-400 to-vintage-brass" />
 
-                    {/* Right: Content */}
-                    <div className="p-10 flex flex-col justify-between bg-vintage-cream dark:bg-dark-bg" style={{ transform: 'translateZ(20px)' }}>
-                      <div>
-                        <div className="flex items-center space-x-1 mb-4">
-                          {[...Array(5)].map((_, i) => (
-                            <motion.div
-                              key={i}
-                              initial={{ scale: 0, rotate: -180 }}
-                              animate={{ scale: 1, rotate: 0 }}
-                              transition={{ delay: i * 0.1, type: "spring" }}
-                            >
-                              <Star size={18} className="fill-vintage-gold text-vintage-gold" />
-                            </motion.div>
-                          ))}
-                          <span className="text-sm font-bold text-vintage-brown dark:text-dark-muted ml-2"> Developer's Choice</span>
+                    <div className="p-6 sm:p-8 md:p-10">
+                      <div className="flex flex-col md:flex-row md:items-start gap-5 sm:gap-6">
+                        {/* Logo */}
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-vintage-gold/10 to-amber-100/50 dark:from-vintage-gold/10 dark:to-transparent rounded-xl border border-vintage-gold/20 flex items-center justify-center flex-shrink-0">
+                          <img
+                            src={`https://www.google.com/s2/favicons?domain=${new URL(link.url).hostname}&sz=64`}
+                            alt=""
+                            className="w-7 h-7 sm:w-8 sm:h-8"
+                            onError={(e) => { e.target.style.display = 'none' }}
+                          />
                         </div>
-                        
-                        <p className="text-lg text-vintage-black dark:text-dark-text font-sans leading-relaxed mb-6">
-                          {link.description || 'Discover this premium resource carefully selected for developers. Experience excellence with our trusted partner.'}
-                        </p>
 
-                        {link.tags && link.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-6">
-                            {link.tags.slice(0, 5).map((tag, i) => (
-                              <motion.span
-                                key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ 
-                                  delay: 0.6 + i * 0.1,
-                                  duration: 0.4
-                                }}
-                                whileHover={{ 
-                                  scale: 1.05,
-                                  backgroundColor: 'rgba(218, 165, 32, 0.15)',
-                                  transition: { duration: 0.2 }
-                                }}
-                                className="px-3 py-1.5 bg-vintage-gold/10 text-vintage-brown dark:text-dark-text text-sm font-semibold rounded-lg border border-vintage-gold/30 cursor-pointer"
-                              >
-                                #{tag}
-                              </motion.span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                        {/* Content */}
+                        <div className="flex-1">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-vintage-gold bg-vintage-gold/10 px-2 py-0.5 rounded mb-2 inline-block">
+                            {link.category}
+                          </span>
+                          <h3 className="text-xl sm:text-2xl font-vintage text-gray-900 dark:text-white mb-2 sm:mb-3">
+                            {link.title}
+                          </h3>
+                          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-5 sm:mb-6 leading-relaxed">
+                            {link.description || 'A premium resource handpicked for developers.'}
+                          </p>
 
-                      <motion.a
-                        href={sponsorUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        whileHover={{ 
-                          scale: 1.05,
-                          y: -3,
-                          boxShadow: '0 25px 50px rgba(218,165,32,0.5)'
-                        }}
-                        whileTap={{ scale: 0.97 }}
-                        className="relative group block w-full bg-gradient-to-r from-vintage-gold via-vintage-brass to-vintage-gold text-white text-center py-5 rounded-2xl font-bold text-xl shadow-2xl overflow-hidden"
-                        style={{ backgroundSize: '200% 200%' }}
-                      >
-                        <motion.div
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                          animate={{ x: ['-200%', '200%'] }}
-                          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                        />
-                        <motion.div
-                          className="absolute inset-0"
-                          animate={{ 
-                            background: [
-                              'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-                              'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-                              'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)'
-                            ]
-                          }}
-                          transition={{ duration: 3, repeat: Infinity }}
-                        />
-                        <span className="relative z-10 flex items-center justify-center space-x-3">
-                          <motion.div
-                            animate={{ rotate: [0, 360] }}
-                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                          {link.tags && link.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-5 sm:mb-6">
+                              {link.tags.slice(0, 4).map((tag, i) => (
+                                <span key={i} className="text-[10px] sm:text-xs text-gray-500 bg-gray-50 dark:bg-white/[0.03] px-2 py-0.5 sm:py-1 rounded">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          <motion.a
+                            href={sponsorUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            whileTap={{ scale: 0.98 }}
+                            className="inline-flex items-center gap-2 bg-vintage-gold hover:bg-vintage-brass text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors shadow-md shadow-vintage-gold/20"
                           >
-                            <Sparkles size={22} />
-                          </motion.div>
-                          <span className="tracking-wide">Explore Now</span>
-                        </span>
-                      </motion.a>
+                            <Sparkles size={16} />
+                            Explore Now
+                          </motion.a>
+                        </div>
+                      </div>
                     </div>
-                  </motion.div>
+                  </div>
                 </motion.div>
               )
             })}
@@ -510,21 +459,22 @@ const HomePage = () => {
         </section>
       )}
 
+
       {/* Recently Added Section */}
       {recentLinks.length > 0 && (
-        <section className="py-16 px-6 lg:px-8 bg-vintage-paper dark:bg-dark-card border-b border-vintage-gold/20 dark:border-dark-border">
-          <div className="max-w-7xl mx-auto">
+        <section className="py-16 px-6 lg:px-8 bg-gray-50/80 dark:bg-white/[0.01]">
+          <div className="max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-3xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-8">Recently Added</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <h2 className="text-2xl font-vintage text-gray-900 dark:text-white mb-6">Recently Added</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {recentLinks.map((link, index) => (
-                  <LinkCard 
-                    key={link._id || link.id} 
-                    link={link} 
+                  <LinkCard
+                    key={link._id || link.id}
+                    link={link}
                     index={index}
                   />
                 ))}
@@ -535,80 +485,43 @@ const HomePage = () => {
       )}
 
       {/* Search Section */}
-      <section className="py-12 px-6 lg:px-8 bg-vintage-cream dark:bg-dark-bg">
-        <div className="max-w-4xl mx-auto">
+      <section className="py-10 px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-4"
+            transition={{ duration: 0.6 }}
           >
             {/* Search Bar */}
-            <div className="relative max-w-2xl mx-auto">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-vintage-gold/20 to-vintage-brass/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-                <div className="relative bg-vintage-paper/90 dark:bg-dark-card/90 backdrop-blur-sm rounded-2xl p-2 border border-vintage-gold/30 dark:border-dark-border shadow-vault">
-                  <div className="relative">
-                    <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-vintage-gold group-hover:text-vintage-brass transition-colors" size={22} />
-                    <input
-                      type="text"
-                      value={searchTerm}
-                      onChange={handleSearch}
-                      onFocus={() => setIsSearchFocused(true)}
-                      onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                      placeholder="Discover amazing links..."
-                      className="w-full pl-16 pr-6 py-4 bg-transparent text-vintage-black dark:text-dark-text placeholder-vintage-brown/60 dark:placeholder-dark-muted/60 text-lg font-serif focus:outline-none"
-                    />
-                    <div className="absolute inset-x-2 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-vintage-gold to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300"></div>
-                  </div>
-                </div>
-              </div>
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={handleSearch}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+                placeholder="Search resources..."
+                className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-vintage-gold/50 focus:border-vintage-gold/50 transition-all"
+              />
             </div>
-            
-            {/* Show Categories Button - appears when search is focused but empty */}
-            {isSearchFocused && !searchTerm && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex justify-center"
-              >
-                <button
-                  onClick={() => {
-                    setIsSearchFocused(false)
-                    setTimeout(() => {
-                      const categoriesSection = document.querySelector('[data-categories-section]')
-                      if (categoriesSection) {
-                        categoriesSection.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                      }
-                    }, 100)
-                  }}
-                  className="text-sm px-4 py-2 bg-vintage-gold/10 dark:bg-dark-accent/10 text-vintage-gold dark:text-dark-accent rounded-lg hover:bg-vintage-gold/20 dark:hover:bg-dark-accent/20 transition-colors font-serif"
-                >
-                  📂 Show Categories
-                </button>
-              </motion.div>
-            )}
-            
-
           </motion.div>
         </div>
       </section>
-      
-      {/* Category Selection - Hidden during search or when search is focused */}
+
+      {/* Category Selection */}
       {!searchTerm && !isSearchFocused && (
-        <section data-categories-section className="py-12 px-6 lg:px-8 bg-vintage-paper dark:bg-dark-card border-b border-vintage-gold/20 dark:border-dark-border">
-          <div className="max-w-7xl mx-auto">
+        <section data-categories-section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-gray-50/50 dark:bg-white/[0.01]">
+          <div className="max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
+              transition={{ duration: 0.6 }}
             >
-              <h2 className="text-2xl font-vintage font-bold text-vintage-black dark:text-dark-text text-center mb-8">
+              <h2 className="text-xl font-vintage text-gray-900 dark:text-white text-center mb-6">
                 Browse by Category
               </h2>
-              <CategorySelector 
+              <CategorySelector
                 selectedCategory={selectedCategory}
                 onCategoryChange={handleCategoryChange}
               />
@@ -618,36 +531,34 @@ const HomePage = () => {
       )}
 
       {/* Main Content */}
-      <section className="py-16 px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-10 sm:py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mb-12"
+            transition={{ duration: 0.6 }}
+            className="mb-8"
           >
-            <h2 className="text-3xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
+            <h2 className="text-2xl font-vintage text-gray-900 dark:text-white mb-2">
               {searchTerm ? `Search Results for "${searchTerm}"` : 'All Links'}
             </h2>
-            <p className="text-vintage-coffee dark:text-dark-muted font-serif">
+            <p className="text-sm text-gray-500 dark:text-gray-500">
               {links.length} link{links.length !== 1 ? 's' : ''} found
             </p>
           </motion.div>
 
           {/* Links Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {/* Show skeleton cards only when initially loading */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {isLoading && displayedLinks.length === 0 && (
-              Array.from({ length: 15 }).map((_, index) => (
+              Array.from({ length: 12 }).map((_, index) => (
                 <SkeletonCard key={`skeleton-${index}`} />
               ))
             )}
-            
-            {/* Show actual links */}
+
             {displayedLinks.map((link, index) => (
-              <LinkCard 
-                key={link._id || link.id} 
-                link={link} 
+              <LinkCard
+                key={link._id || link.id}
+                link={link}
                 index={index}
               />
             ))}
@@ -656,13 +567,13 @@ const HomePage = () => {
           {/* View More Button */}
           {!isLoading && displayCount < links.length && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center mt-16"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center mt-12"
             >
               <button
                 onClick={handleViewMore}
-                className="bg-gradient-to-r from-vintage-gold to-vintage-brass text-white px-8 py-3 rounded-xl font-serif font-medium hover:from-vintage-brass hover:to-vintage-gold transition-all duration-200 transform hover:scale-105 shadow-glow"
+                className="px-8 py-3 bg-vintage-gold hover:bg-vintage-brass text-white font-medium rounded-lg transition-colors"
               >
                 View More Links
               </button>
@@ -674,16 +585,16 @@ const HomePage = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center py-24"
+              className="text-center py-20"
             >
-              <div className="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-8">
-                <Search size={48} className="text-gray-400" />
+              <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Search size={32} className="text-gray-400" />
               </div>
-              <h3 className="text-2xl font-vintage font-bold text-vintage-black dark:text-dark-text mb-4">
+              <h3 className="text-xl font-vintage text-gray-900 dark:text-white mb-2">
                 No links found
               </h3>
-              <p className="text-vintage-coffee dark:text-dark-muted mb-8 max-w-md mx-auto font-serif">
-                {searchTerm 
+              <p className="text-sm text-gray-500 mb-6">
+                {searchTerm
                   ? `No links match "${searchTerm}". Try adjusting your search.`
                   : 'No links available yet.'
                 }
@@ -694,7 +605,7 @@ const HomePage = () => {
                     setSearchTerm('')
                     setSelectedCategory('all')
                   }}
-                  className="text-vintage-gold hover:text-vintage-brass font-serif font-medium"
+                  className="text-vintage-gold hover:text-vintage-brass font-medium"
                 >
                   Clear search
                 </button>
@@ -711,9 +622,9 @@ const HomePage = () => {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8 }}
           onClick={scrollToTop}
-          className="fixed bottom-24 right-8 bg-vintage-brown/80 dark:bg-dark-accent/80 text-white p-3 rounded-full shadow-lg hover:bg-vintage-brown dark:hover:bg-dark-accent transition-colors duration-200 z-40"
+          className="fixed bottom-20 right-6 bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-full shadow-lg transition-colors z-40"
         >
-          <ArrowUp size={20} />
+          <ArrowUp size={18} />
         </motion.button>
       )}
 
